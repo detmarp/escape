@@ -1,5 +1,6 @@
+[Back to Escape](../README.md) |
 
-## Part 3 - May 16, 2021
+## Day 3 - May 16, 2021
 This was an amazing walk. In all we hiked seven miles, up Flag hill from Welch Creek Road, then decended to Sunol Regional Wilderness.
 
 ![image](./2021-05-16%2013.21.30.jpg)
