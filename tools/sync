@@ -1,0 +1,70 @@
+cd $(dirname "$0")/..
+
+branchname=master
+echo "* On branch $branchname?"
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$BRANCH" != "$branchname" ]; then
+    echo Not on $branchname
+    exit 1
+fi
+echo branch is $branchname
+
+timestamp=$(date +"%Y-%m-%d_%H%m")
+label=$(uname -n)
+
+# [ ] I think these flags are overkill.  Maybe -A means the same as all of these together.
+git add -A --all --no-ignore-removal
+
+
+
+echo "* Local changes?"
+
+if [[ $(git status --porcelain) ]]; then
+  echo Committing changes
+  git commit -m "\"${timestamp}_${label}\""
+else
+  echo No local changes
+fi
+
+
+
+echo "* Fetch"
+
+git fetch
+
+
+
+
+echo "* Need to pull?"
+
+UPSTREAM=${1:-'@{u}'}
+LOCAL=$(git rev-parse @)
+REMOTE=$(git rev-parse "$UPSTREAM")
+BASE=$(git merge-base @ "$UPSTREAM")
+
+if [ $LOCAL = $REMOTE ]; then
+    echo "Up-to-date"
+elif [ $LOCAL = $BASE ]; then
+    echo "Need to pull"
+    git merge --no-edit
+elif [ $REMOTE = $BASE ]; then
+    echo "Need to push"
+else
+    echo "Diverged"
+    git merge --no-edit
+    if [ $? -ne 0 ]; then
+        # there were merge conflicts; just OK it anyway
+        git add -A --all --no-ignore-removal
+        git commit -m "merging conflicts"
+    fi
+fi
+
+
+
+git push --force-with-lease
+
+
+
+echo "* Final status"
+git status
