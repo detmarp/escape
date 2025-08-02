@@ -11,14 +11,20 @@
             line-height: 1.6;
             margin: 0;
             height: 100vh;
+            height: 100dvh; /* Use dynamic viewport height for better mobile support */
             display: flex;
             flex-direction: column;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
         }
 
         /* Prevent text size adjustment on mobile devices */
         html {
             -webkit-text-size-adjust: 100%;
             -ms-text-size-adjust: 100%;
+            overflow: hidden; /* Prevent body scroll on mobile */
         }
 
         .header {
@@ -62,7 +68,7 @@
         }
 
         .clear-button {
-            position: absolute;
+            position: fixed;
             bottom: 16px;
             right: 16px;
             font-size: 16px;
@@ -74,6 +80,7 @@
             cursor: pointer;
             font-family: inherit;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            z-index: 100;
         }
 
         .clear-button:hover {
