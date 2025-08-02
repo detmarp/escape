@@ -6,18 +6,18 @@ export default class DrawHello {
   }
 
   draw() {
-    // Fill background with midnight blue
+    // Fill background with midnight blue - assume 400x400 logical space
     this.ctx.fillStyle = 'midnightblue';
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.fillRect(0, 0, 400, 400);
 
-    // Calculate font size to fit "Hello" horizontally
+    // Calculate font size to fit "Hello" horizontally in 400px width
     const text = 'Hello';
-    let fontSize = Math.floor(this.canvas.width / text.length * 1.2);
+    let fontSize = Math.floor(400 / text.length * 1.2);
     this.ctx.font = `${fontSize}px Arial`;
 
     // Adjust font size if text is too wide
     let textWidth = this.ctx.measureText(text).width;
-    while (textWidth > this.canvas.width * 0.9 && fontSize > 10) {
+    while (textWidth > 400 * 0.9 && fontSize > 10) {
       fontSize -= 2;
       this.ctx.font = `${fontSize}px Arial`;
       textWidth = this.ctx.measureText(text).width;
@@ -28,9 +28,9 @@ export default class DrawHello {
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
 
-    // Draw the text centered
-    const centerX = this.canvas.width / 2;
-    const centerY = this.canvas.height / 2;
+    // Draw the text centered in 400x400 space
+    const centerX = 200;
+    const centerY = 200;
     this.ctx.fillText(text, centerX, centerY);
 
     // Toggle color for next frame
