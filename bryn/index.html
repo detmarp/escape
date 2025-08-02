@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scroll Layout Test</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Prevent text size adjustment on mobile devices */
+        html {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+
+        .header {
+            padding: 16px;
+            border-bottom: 1px solid #ccc;
+            flex-shrink: 0;
+        }
+
+        .add-button {
+            font-size: 16px;
+            padding: 12px 24px;
+            background: #007acc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .add-button:hover {
+            background: #005a9e;
+        }
+
+        .container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scroll-area {
+            height: 100%;
+            overflow-y: auto;
+            padding: 16px;
+            box-sizing: border-box;
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        }
+
+        .text-line {
+            margin-bottom: 8px;
+            padding: 4px 0;
+        }
+
+        .clear-button {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            font-size: 16px;
+            padding: 12px 24px;
+            background: #d73a49;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .clear-button:hover {
+            background: #cb2431;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="add-button" id="addButton">Add Text</button>
+    </div>
+
+    <div class="container">
+        <div class="scroll-area" id="scrollArea">
+            <!-- Text lines will be added here -->
+        </div>
+        <button class="clear-button" id="clearButton">Clear</button>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
