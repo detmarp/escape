@@ -1,0 +1,25 @@
+{
+  "drawers": [
+    {
+      "name": "flicker",
+      "source": "./drawflicker.js"
+    },
+    {
+      "name": "info",
+      "source": "./drawinfo.js"
+    },
+    {
+      "name": "spiral",
+      "source": "./drawspiral.js"
+    },
+    {
+      "name": "spiral",
+      "source": "./drawspiral.js"
+    },
+    {
+      "name": "hello",
+      "source": "./drawhello.js"
+    },
+    {}
+  ]
+}
