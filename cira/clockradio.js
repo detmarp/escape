@@ -12,13 +12,12 @@ export default class ClockRadio {
     };
   }
 
-  draw() {
+  draw(now = new Date()) {
     // Clear with dark red background
     this.ctx.fillStyle = this.colors.background;
     this.ctx.fillRect(0, 0, 400, 400);
 
     // Get current time
-    const now = new Date();
     let hours = now.getHours();
     const minutes = now.getMinutes();
 
@@ -46,7 +45,7 @@ export default class ClockRadio {
     // Draw colon between hours and minutes
     const colonX = startX + 2 * (digitWidth + digitSpacing) - digitSpacing / 2;
     const colonY = startY + digitHeight / 2;
-    this.drawColon(colonX, colonY);
+    this.drawColon(colonX, colonY, now);
 
     // Draw PM indicator if needed
     if (isPM) {
@@ -146,8 +145,7 @@ export default class ClockRadio {
     this.ctx.fillRect(x, y, 2, 2);
   }
 
-  drawColon(x, y) {
-    const now = new Date();
+  drawColon(x, y, now) {
     this.startPath(now.getMilliseconds() < 500);
     this.ctx.arc(x, y - 15, 4, 0, Math.PI * 2);
     this.ctx.fill();

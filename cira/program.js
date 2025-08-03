@@ -2,6 +2,8 @@ export default class Program {
   constructor(parent) {
     this.parent = parent;
     this.config = null;
+    this.startTimestamp = Date.now(); // Capture start time
+    this.speedUp = 0; // Speed multiplier (0 = normal time)
   }
 
   async setup() {
@@ -136,7 +138,7 @@ export default class Program {
 
     // Create drawer instance and start animation
     const drawer = new DrawerClass(canvas);
-    const canvas400 = new Canvas400(canvas, drawer);
+    const canvas400 = new Canvas400(canvas, drawer, this.getNow.bind(this));
     canvas400.start();
   }
 
@@ -151,6 +153,17 @@ export default class Program {
   persistGet() {
     const value = localStorage.getItem('selection');
     return value !== null ? parseInt(value, 10) : null;
+  }
+
+  getNow() {
+    if (this.speedUp === 0) {
+      return new Date(); // Normal time
+    }
+
+    // Calculate accelerated time
+    const elapsed = Date.now() - this.startTimestamp;
+    const acceleratedElapsed = elapsed * this.speedUp;
+    return new Date(this.startTimestamp + acceleratedElapsed);
   }
 
   async run() {

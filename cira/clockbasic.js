@@ -4,7 +4,7 @@ export default class ClockBasic {
     this.ctx = canvas.getContext('2d');
   }
 
-  draw() {
+  draw(now = new Date()) {
     // Clear canvas with light background
     this.ctx.fillStyle = '#f8f8f8';
     this.ctx.fillRect(0, 0, 400, 400);
@@ -57,7 +57,6 @@ export default class ClockBasic {
     }
 
     // Get current time
-    const now = new Date();
     const hours = now.getHours() % 12;
     const minutes = now.getMinutes();
     const seconds = now.getSeconds();

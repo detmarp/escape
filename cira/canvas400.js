@@ -1,7 +1,8 @@
 export default class Canvas400 {
-  constructor(canvas, drawer) {
+  constructor(canvas, drawer, getNow = () => new Date()) {
     this.canvas = canvas;
     this.drawer = drawer;
+    this.getNow = getNow;
     this.animationId = null;
   }
 
@@ -30,7 +31,7 @@ export default class Canvas400 {
 
   animate = () => {
     this.updateCanvasSize();
-    this.drawer.draw();
+    this.drawer.draw(this.getNow());
     this.animationId = requestAnimationFrame(this.animate);
   }
 

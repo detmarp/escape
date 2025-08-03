@@ -4,7 +4,7 @@ export default class ClockBasic {
     this.ctx = canvas.getContext('2d');
   }
 
-  draw() {
+  draw(now = new Date()) {
     this.ctx.fillStyle = '#fff';
     this.ctx.fillRect(0, 0, 400, 400);
 
@@ -57,11 +57,15 @@ export default class ClockBasic {
     }
 
     // Draw day hand pointing to current day
-    const now = new Date();
     const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
 
-    // Calculate angle for the day hand (center of each day's slice)
-    const dayAngle = (dayOfWeek * 2 * Math.PI / 7) + (Math.PI / 7) - Math.PI / 2;
+    // Calculate fractional day progress (0.0 = start of day, 1.0 = end of day)
+    const dayProgress = (hours + minutes / 60) / 24;
+
+    // Calculate angle for the day hand (includes fractional progress)
+    const dayAngle = (dayOfWeek + dayProgress) * (2 * Math.PI / 7) - Math.PI / 2;
 
     // Draw day hand
     this.ctx.strokeStyle = '#333';
