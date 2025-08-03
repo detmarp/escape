@@ -5,6 +5,7 @@
       "source": "./clockradio.js"
     },
     { "name": "basic", "source": "./clockbasic.js" },
+    { "name": "week", "source": "./clockweek.js" },
     {
       "name": "info",
       "source": "./drawinfo.js"
