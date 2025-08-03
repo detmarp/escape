@@ -99,9 +99,12 @@ export default class ClockRadio {
   }
 
   drawColon(x, y) {
-    this.ctx.fillStyle = this.colors.segmentOn;
+    // Blink colon: red for first half of second, gray (off) for second half
+    const now = new Date();
+    const isOn = now.getMilliseconds() < 500;
+    this.ctx.fillStyle = isOn ? this.colors.segmentOn : this.colors.segmentOff;
     this.ctx.shadowColor = this.colors.glow;
-    this.ctx.shadowBlur = 8;
+    this.ctx.shadowBlur = isOn ? 8 : 0;
 
     // Top dot
     this.ctx.beginPath();

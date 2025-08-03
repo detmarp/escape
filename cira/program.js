@@ -2,11 +2,19 @@ export default class Program {
   constructor(parent) {
     this.parent = parent;
     this.config = null;
+    this.singleContainer = null;
   }
 
   async setup() {
     const response = await fetch('./config.json');
     this.config = await response.json();
+
+    window.addEventListener('resize', () => {
+      if (this.singleContainer) {
+        this.setSizeCentered(this.singleContainer);
+      }
+    });
+
   }
 
   makeContainer() {
@@ -23,6 +31,9 @@ export default class Program {
   doMenuLayout() {
     // Remove all children from parent
     this.parent.innerHTML = '';
+
+    // Clear single container reference
+    this.singleContainer = null;
 
     // Create a div for each drawer in config
     this.config.drawers.forEach((drawer, index) => {
@@ -46,36 +57,37 @@ export default class Program {
 
       // Initialize the canvas with the appropriate drawer
       this.makeCanvas(canvas, drawer.source);
+      this.onClick(canvas, () => {
+        this.doSingleLayout(index);
+      });
     });
   }
 
+  onClick(canvas, callback) {
+    const handler = (event) => {
+      event.preventDefault();
+      callback(event);
+    };
+    canvas.addEventListener('click', handler);
+    canvas.addEventListener('touchend', handler);
+  }
+
   doSingleLayout(selectedIndex) {
-    // Remove all children from parent
     this.parent.innerHTML = '';
 
-    // Get the selected drawer
     const drawer = this.config.drawers[selectedIndex];
     if (!drawer || !drawer.source) {
       return;
     }
 
-    // Calculate the size to make it square and fit the screen
-    const parentWidth = this.parent.clientWidth || window.innerWidth;
-    const parentHeight = this.parent.clientHeight || window.innerHeight;
-    const size = Math.min(parentWidth, parentHeight) - 40; // Leave margin for border and spacing
-
-    // Ensure minimum size
-    const finalSize = Math.max(size, 200);
-
-    // Create a single container for the selected clock
     const container = document.createElement('div');
-    container.style.width = `${finalSize}px`;
-    container.style.height = `${finalSize}px`;
     container.style.border = '1px solid #ccc';
     container.style.overflow = 'hidden';
     container.style.position = 'relative';
     container.style.margin = '10px auto 0 auto'; // Top center alignment
     container.style.display = 'block';
+
+    this.setSizeCentered(container);
 
     const canvas = document.createElement('canvas');
     canvas.style.width = '100%';
@@ -87,6 +99,23 @@ export default class Program {
 
     // Initialize the canvas with the selected drawer
     this.makeCanvas(canvas, drawer.source);
+
+    this.onClick(canvas, () => {
+      this.doMenuLayout();
+    });
+    this.singleContainer = container;
+  }
+
+  setSizeCentered(element) {
+    const parentWidth = window.innerWidth;
+    const parentHeight = window.innerHeight;
+    const size = Math.min(parentWidth, parentHeight) - 40;
+    const finalSize = Math.max(size, 200);
+    console.log('finalSize:', finalSize);
+    console.log('parent.clientWidth:', this.parent.clientWidth);
+    console.log('parent.clientHeight:', this.parent.clientHeight);
+    element.style.width = `${finalSize}px`;
+    element.style.height = `${finalSize}px`;
   }
 
   async makeCanvas(canvas, jsFileName) {
@@ -102,7 +131,7 @@ export default class Program {
 
   async run() {
     await this.setup();
-    //this.doMenuLayout();
-    this.doSingleLayout(0);
+    this.doMenuLayout();
+    //this.doSingleLayout(0);
   }
 }
