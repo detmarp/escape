@@ -11,19 +11,19 @@ export default class ClockBasic {
     // Draw outer circle
     this.ctx.beginPath();
     this.ctx.arc(200, 200, 195, 0, 2 * Math.PI);
-    this.ctx.strokeStyle = 'black';
+    this.ctx.strokeStyle = '#ccc';
     this.ctx.lineWidth = 1;
     this.ctx.stroke();
 
     this.ctx.beginPath();
     this.ctx.arc(200, 200, 120, 0, 2 * Math.PI);
-    this.ctx.strokeStyle = 'black';
+    this.ctx.strokeStyle = '#ccc';
     this.ctx.lineWidth = 1;
     this.ctx.stroke();
 
     // Draw 7 pie slice lines for days of the week
     // Starting from top (12:00) and dividing into 7 equal sections
-    const colors = ['#eee', '#ccb', '#dbd', '#ecd', '#bbb', '#cdc', '#eed'];
+    const colors = ['#aee', '#bba', '#ccb', '#ab9', '#dc9', '#fec', '#9bf'];
     const dayNames = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
 
     for (let i = 0; i < 7; i++) {
@@ -39,17 +39,17 @@ export default class ClockBasic {
       this.ctx.fill();
 
       // Draw the border lines
-      const innerX = 200 + Math.cos(startAngle) * 120;
-      const innerY = 200 + Math.sin(startAngle) * 120;
-      const outerX = 200 + Math.cos(startAngle) * 195;
-      const outerY = 200 + Math.sin(startAngle) * 195;
+      // const innerX = 200 + Math.cos(startAngle) * 120;
+      // const innerY = 200 + Math.sin(startAngle) * 120;
+      // const outerX = 200 + Math.cos(startAngle) * 195;
+      // const outerY = 200 + Math.sin(startAngle) * 195;
 
-      this.ctx.beginPath();
-      this.ctx.moveTo(innerX, innerY);
-      this.ctx.lineTo(outerX, outerY);
-      this.ctx.strokeStyle = 'black';
-      this.ctx.lineWidth = 1;
-      this.ctx.stroke();
+      // this.ctx.beginPath();
+      // this.ctx.moveTo(innerX, innerY);
+      // this.ctx.lineTo(outerX, outerY);
+      // this.ctx.strokeStyle = 'black';
+      // this.ctx.lineWidth = 1;
+      // this.ctx.stroke();
 
       // Draw curved day name (flip Tuesday, Wednesday, Thursday)
       const shouldFlip = i === 2 || i === 3 || i === 4; // Tuesday, Wednesday, Thursday
