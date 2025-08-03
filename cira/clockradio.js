@@ -57,6 +57,24 @@ export default class ClockRadio {
     }
   }
 
+  startPath(on) {
+    if (on) {
+      this.ctx.shadowColor = this.colors.glow;
+      this.ctx.shadowBlur = 5;
+      this.ctx.fillStyle = this.colors.segmentOn;
+    } else {
+      this.ctx.shadowBlur = 0;
+      this.ctx.fillStyle = this.colors.segmentOff;
+    }
+    this.ctx.beginPath();
+  }
+
+  endPath() {
+    this.ctx.closePath();
+    this.ctx.fill();
+    this.ctx.shadowBlur = 0;
+  }
+
   drawDigit(digit, x, y, width, height) {
     const segments = this.getSegments(digit);
     const segmentWidth = width * 0.8;
@@ -74,49 +92,69 @@ export default class ClockRadio {
       { x: x + width * 0.1, y: y + height * 0.5, w: segmentWidth, h: thickness, horizontal: true } // middle
     ];
 
+    //  000
+    // 5   1
+    //  666
+    // 4   2
+    //  333
+    const ppp = [[0,0], [1,1], [2,2], [3,3], [4,4], [5,5], [6,6]];
+
     // Draw each segment
     for (let i = 0; i < 7; i++) {
       const isOn = segments[i];
       const pos = positions[i];
+      this.startPath(isOn);
 
-      // Set color and glow
-      if (isOn) {
-        // Draw glow
-        this.ctx.shadowColor = this.colors.glow;
-        this.ctx.shadowBlur = 5;
-        this.ctx.fillStyle = this.colors.segmentOn;
+      if (false) {
+        this.ctx.moveTo(pos.x, pos.y);
+        this.ctx.lineTo(pos.x + 10, pos.y);
+        this.ctx.lineTo(pos.x + 10, pos.y + 10);
+        this.ctx.lineTo(pos.x, pos.y + 10);
       } else {
-        this.ctx.shadowBlur = 0;
-        this.ctx.fillStyle = this.colors.segmentOff;
+      if (pos.horizontal) {
+        // Horizontal segment - hexagon shape
+        const halfThickness = pos.h / 2;
+        this.ctx.moveTo(pos.x + halfThickness, pos.y);
+        this.ctx.lineTo(pos.x + pos.w - halfThickness, pos.y);
+        this.ctx.lineTo(pos.x + pos.w, pos.y + halfThickness);
+        this.ctx.lineTo(pos.x + pos.w - halfThickness, pos.y + pos.h);
+        this.ctx.lineTo(pos.x + halfThickness, pos.y + pos.h);
+        this.ctx.lineTo(pos.x, pos.y + halfThickness);
+      } else {
+        // Vertical segment - hexagon shape
+        const halfThickness = pos.w / 2;
+        this.ctx.moveTo(pos.x, pos.y + halfThickness);
+        this.ctx.lineTo(pos.x + halfThickness, pos.y);
+        this.ctx.lineTo(pos.x + pos.w, pos.y + halfThickness);
+        this.ctx.lineTo(pos.x + pos.w, pos.y + pos.h - halfThickness);
+        this.ctx.lineTo(pos.x + halfThickness, pos.y + pos.h);
+        this.ctx.lineTo(pos.x, pos.y + pos.h - halfThickness);
       }
 
-      // Draw segment
-      this.ctx.fillRect(pos.x, pos.y, pos.w, pos.h);
     }
+    this.endPath()
+    }
+    for (let i = 0; i < 7; i++) {
+      let sx = x;
+      let sy = y;
+      this.drawSegment(sx, sy, i);
+    }
+  }
 
-    // Reset shadow
-    this.ctx.shadowBlur = 0;
+  drawSegment(x, y, i) {
+    this.ctx.fillStyle = 'cyan';
+    this.ctx.fillRect(x, y, 2, 2);
   }
 
   drawColon(x, y) {
-    // Blink colon: red for first half of second, gray (off) for second half
     const now = new Date();
-    const isOn = now.getMilliseconds() < 500;
-    this.ctx.fillStyle = isOn ? this.colors.segmentOn : this.colors.segmentOff;
-    this.ctx.shadowColor = this.colors.glow;
-    this.ctx.shadowBlur = isOn ? 8 : 0;
-
-    // Top dot
-    this.ctx.beginPath();
+    this.startPath(now.getMilliseconds() < 500);
     this.ctx.arc(x, y - 15, 4, 0, Math.PI * 2);
     this.ctx.fill();
 
-    // Bottom dot
     this.ctx.beginPath();
     this.ctx.arc(x, y + 15, 4, 0, Math.PI * 2);
     this.ctx.fill();
-
-    this.ctx.shadowBlur = 0;
   }
 
   getSegments(digit) {

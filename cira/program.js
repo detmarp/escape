@@ -2,25 +2,24 @@ export default class Program {
   constructor(parent) {
     this.parent = parent;
     this.config = null;
-    this.singleContainer = null;
   }
 
   async setup() {
     const response = await fetch('./config.json');
     this.config = await response.json();
+    this.drawers = this.config.drawers.filter(drawer => drawer.source);
 
     window.addEventListener('resize', () => {
-      if (this.singleContainer) {
-        this.setSizeCentered(this.singleContainer);
+      if (this.resizeCallback) {
+        this.resizeCallback();
       }
     });
-
   }
 
   makeContainer() {
     const container = document.createElement('div');
     container.style.width = '300px';
-    container.style.height = '200px';
+    container.style.height = '300px';
     container.style.border = '1px solid #ccc';
     container.style.overflow = 'hidden';
     container.style.position = 'relative';
@@ -29,22 +28,19 @@ export default class Program {
   }
 
   doMenuLayout() {
-    // Remove all children from parent
     this.parent.innerHTML = '';
 
-    // Clear single container reference
-    this.singleContainer = null;
+    // Set up the parent to use flexbox for horizontal wrapping
+    this.parent.style.display = 'flex';
+    this.parent.style.flexWrap = 'wrap';
+    this.parent.style.gap = '10px';
+    this.parent.style.padding = '10px';
+
+    let squares = [];
 
     // Create a div for each drawer in config
-    this.config.drawers.forEach((drawer, index) => {
-      // Skip if no source is specified
-      if (!drawer.source) {
-        return;
-      }
-
-      const div = document.createElement('div');
-
-      // Create resizable container
+    this.drawers.forEach((drawer, index) => {
+      // Create container directly (no wrapper div needed)
       const container = this.makeContainer();
 
       const canvas = document.createElement('canvas');
@@ -52,8 +48,8 @@ export default class Program {
       canvas.style.height = '100%';
 
       container.appendChild(canvas);
-      div.appendChild(container);
-      this.parent.appendChild(div);
+      this.parent.appendChild(container);
+      squares.push(container);
 
       // Initialize the canvas with the appropriate drawer
       this.makeCanvas(canvas, drawer.source);
@@ -61,6 +57,17 @@ export default class Program {
         this.doSingleLayout(index);
       });
     });
+
+     this.resizeCallback = () => {
+      let size =  200;
+      squares.forEach(container => {
+        container.style.width = `${size}px`;
+        container.style.height = `${size}px`;
+      });
+    };
+    this.resizeCallback();
+
+    this.persistClear();
   }
 
   onClick(canvas, callback) {
@@ -75,8 +82,9 @@ export default class Program {
   doSingleLayout(selectedIndex) {
     this.parent.innerHTML = '';
 
-    const drawer = this.config.drawers[selectedIndex];
-    if (!drawer || !drawer.source) {
+    const drawer = this.drawers[selectedIndex];
+    if (!drawer) {
+      this.doMenuLayout();
       return;
     }
 
@@ -87,8 +95,6 @@ export default class Program {
     container.style.margin = '10px auto 0 auto'; // Top center alignment
     container.style.display = 'block';
 
-    this.setSizeCentered(container);
-
     const canvas = document.createElement('canvas');
     canvas.style.width = '100%';
     canvas.style.height = '100%';
@@ -97,13 +103,18 @@ export default class Program {
     container.appendChild(canvas);
     this.parent.appendChild(container);
 
-    // Initialize the canvas with the selected drawer
     this.makeCanvas(canvas, drawer.source);
 
     this.onClick(canvas, () => {
       this.doMenuLayout();
     });
-    this.singleContainer = container;
+
+    this.resizeCallback = () => {
+      this.setSizeCentered(container);
+    };
+    this.resizeCallback();
+
+    this.persistSave(selectedIndex);
   }
 
   setSizeCentered(element) {
@@ -129,9 +140,28 @@ export default class Program {
     canvas400.start();
   }
 
+  persistSave(selection) {
+    localStorage.setItem('selection', selection.toString());
+  }
+
+  persistClear() {
+    localStorage.removeItem('selection');
+  }
+
+  persistGet() {
+    const value = localStorage.getItem('selection');
+    return value !== null ? parseInt(value, 10) : null;
+  }
+
   async run() {
     await this.setup();
-    this.doMenuLayout();
-    //this.doSingleLayout(0);
+
+    let selected = this.persistGet();
+    if (selected === null || selected < 0 || selected >= this.drawers.length) {
+      this.doMenuLayout();
+    }
+    else {
+      this.doSingleLayout(selected);
+    }
   }
 }
