@@ -14,14 +14,13 @@ export default class Program {
     container.style.width = '300px';
     container.style.height = '200px';
     container.style.border = '1px solid #ccc';
-    container.style.resize = 'both';
     container.style.overflow = 'hidden';
     container.style.position = 'relative';
     container.style.marginBottom = '10px';
     return container;
   }
 
-  doLayout() {
+  doMenuLayout() {
     // Remove all children from parent
     this.parent.innerHTML = '';
 
@@ -50,6 +49,46 @@ export default class Program {
     });
   }
 
+  doSingleLayout(selectedIndex) {
+    // Remove all children from parent
+    this.parent.innerHTML = '';
+
+    // Get the selected drawer
+    const drawer = this.config.drawers[selectedIndex];
+    if (!drawer || !drawer.source) {
+      return;
+    }
+
+    // Calculate the size to make it square and fit the screen
+    const parentWidth = this.parent.clientWidth || window.innerWidth;
+    const parentHeight = this.parent.clientHeight || window.innerHeight;
+    const size = Math.min(parentWidth, parentHeight) - 40; // Leave margin for border and spacing
+
+    // Ensure minimum size
+    const finalSize = Math.max(size, 200);
+
+    // Create a single container for the selected clock
+    const container = document.createElement('div');
+    container.style.width = `${finalSize}px`;
+    container.style.height = `${finalSize}px`;
+    container.style.border = '1px solid #ccc';
+    container.style.overflow = 'hidden';
+    container.style.position = 'relative';
+    container.style.margin = '10px auto 0 auto'; // Top center alignment
+    container.style.display = 'block';
+
+    const canvas = document.createElement('canvas');
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.display = 'block';
+
+    container.appendChild(canvas);
+    this.parent.appendChild(container);
+
+    // Initialize the canvas with the selected drawer
+    this.makeCanvas(canvas, drawer.source);
+  }
+
   async makeCanvas(canvas, jsFileName) {
     // Import Canvas400 and the specific drawer class
     const { default: Canvas400 } = await import('./canvas400.js');
@@ -63,6 +102,7 @@ export default class Program {
 
   async run() {
     await this.setup();
-    this.doLayout();
+    //this.doMenuLayout();
+    this.doSingleLayout(0);
   }
 }
