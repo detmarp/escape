@@ -3,7 +3,7 @@ export default class Program {
     this.parent = parent;
     this.config = null;
     this.startTimestamp = Date.now(); // Capture start time
-    this.speedUp = 0; // Speed multiplier (0 = normal time)
+    this.speedUp =0; // Speed multiplier (0 = normal time)
   }
 
   async setup() {

@@ -1,31 +1,9 @@
 {
   "drawers": [
-    {
-      "name": "clockradio",
-      "source": "./clockradio.js"
-    },
+    { "name": "clockradio", "source": "./clockradio.js" },
     { "name": "basic", "source": "./clockbasic.js" },
     { "name": "week", "source": "./clockweek.js" },
-    {
-      "name": "info",
-      "source": "./drawinfo.js"
-    },
-    {
-      "name": "hello",
-      "source": "./drawhello.js"
-    },
-    {
-      "name": "flicker",
-      "source": "./drawflicker.js"
-    },
-    {
-      "name": "spiral",
-      "source": "./drawspiral.js"
-    },
-    {
-      "name": "spiral",
-      "source": "./drawspiral.js"
-    },
+    { "name": "sunmap", "source": "./clocksunmap.js" },
     {}
   ]
 }

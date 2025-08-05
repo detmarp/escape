@@ -10,23 +10,40 @@ export default class ClockRadio {
       segmentOff: '#222',
       glow: '#f40'
     };
+
+    this.segmentSizes(60, 100);
+  }
+
+  segmentSizes(w, h) {
+    //   000
+    //  5   1
+    //   666
+    //  4   2
+    //   333
+    const thick = 10;
+    const h2 = (h - 3 * thick) / 2;
+    const w2 = (w - 2 * thick);
+    this.segments = [
+      [ thick, 0, w2, thick ],
+      [ w - thick, thick, thick, h2],
+      [ w - thick, h2 + 2 * thick, thick, h2],
+      [ thick, h - thick, w2, thick ],
+      [ 0, h2 + 2 * thick, thick, h2],
+      [ 0, thick, thick, h2],
+      // Middle segment
+      [ thick, h2 + thick, w - 2 * thick, thick ]
+    ];
   }
 
   draw(now = new Date()) {
-    // Clear with dark red background
     this.ctx.fillStyle = this.colors.background;
     this.ctx.fillRect(0, 0, 400, 400);
 
-    // Get current time
     let hours = now.getHours();
     const minutes = now.getMinutes();
-
-    // Convert to 12-hour format
     const isPM = hours >= 12;
     hours = hours % 12;
     if (hours === 0) hours = 12;
-
-    // Format time string
     const timeString = `${hours.toString().padStart(2, ' ')}${minutes.toString().padStart(2, '0')}`;
 
     // Draw the 4 digits
@@ -39,7 +56,7 @@ export default class ClockRadio {
     for (let i = 0; i < 4; i++) {
       const digit = timeString[i] === ' ' ? '' : timeString[i];
       const x = startX + i * (digitWidth + digitSpacing);
-      this.drawDigit(digit, x, startY, digitWidth, digitHeight);
+      this.drawDigit(digit, x, startY);
     }
 
     // Draw colon between hours and minutes
@@ -54,6 +71,18 @@ export default class ClockRadio {
       this.ctx.textAlign = 'right';
       this.ctx.fillText('PM', 380, startY + digitHeight + 30);
     }
+  }
+
+  fillPoints(points, on) {
+    this.startPath(on);
+    points.forEach((point, index) => {
+      if (index === 0) {
+        this.ctx.moveTo(point[0], point[1]);
+      } else {
+        this.ctx.lineTo(point[0], point[1]);
+      }
+    });
+    this.endPath();
   }
 
   startPath(on) {
@@ -76,73 +105,26 @@ export default class ClockRadio {
 
   drawDigit(digit, x, y, width, height) {
     const segments = this.getSegments(digit);
-    const segmentWidth = width * 0.8;
-    const segmentHeight = height * 0.4;
-    const thickness = 8;
 
-    // Segment positions (top, top-right, bottom-right, bottom, bottom-left, top-left, middle)
-    const positions = [
-      { x: x + width * 0.1, y: y, w: segmentWidth, h: thickness, horizontal: true },           // top
-      { x: x + width * 0.85, y: y + thickness, w: thickness, h: segmentHeight, horizontal: false }, // top-right
-      { x: x + width * 0.85, y: y + height * 0.5 + thickness, w: thickness, h: segmentHeight, horizontal: false }, // bottom-right
-      { x: x + width * 0.1, y: y + height - thickness, w: segmentWidth, h: thickness, horizontal: true }, // bottom
-      { x: x + width * 0.05, y: y + height * 0.5 + thickness, w: thickness, h: segmentHeight, horizontal: false }, // bottom-left
-      { x: x + width * 0.05, y: y + thickness, w: thickness, h: segmentHeight, horizontal: false }, // top-left
-      { x: x + width * 0.1, y: y + height * 0.5, w: segmentWidth, h: thickness, horizontal: true } // middle
-    ];
-
-    //  000
-    // 5   1
-    //  666
-    // 4   2
-    //  333
-    const ppp = [[0,0], [1,1], [2,2], [3,3], [4,4], [5,5], [6,6]];
-
-    // Draw each segment
     for (let i = 0; i < 7; i++) {
       const isOn = segments[i];
-      const pos = positions[i];
-      this.startPath(isOn);
-
-      if (false) {
-        this.ctx.moveTo(pos.x, pos.y);
-        this.ctx.lineTo(pos.x + 10, pos.y);
-        this.ctx.lineTo(pos.x + 10, pos.y + 10);
-        this.ctx.lineTo(pos.x, pos.y + 10);
-      } else {
-      if (pos.horizontal) {
-        // Horizontal segment - hexagon shape
-        const halfThickness = pos.h / 2;
-        this.ctx.moveTo(pos.x + halfThickness, pos.y);
-        this.ctx.lineTo(pos.x + pos.w - halfThickness, pos.y);
-        this.ctx.lineTo(pos.x + pos.w, pos.y + halfThickness);
-        this.ctx.lineTo(pos.x + pos.w - halfThickness, pos.y + pos.h);
-        this.ctx.lineTo(pos.x + halfThickness, pos.y + pos.h);
-        this.ctx.lineTo(pos.x, pos.y + halfThickness);
-      } else {
-        // Vertical segment - hexagon shape
-        const halfThickness = pos.w / 2;
-        this.ctx.moveTo(pos.x, pos.y + halfThickness);
-        this.ctx.lineTo(pos.x + halfThickness, pos.y);
-        this.ctx.lineTo(pos.x + pos.w, pos.y + halfThickness);
-        this.ctx.lineTo(pos.x + pos.w, pos.y + pos.h - halfThickness);
-        this.ctx.lineTo(pos.x + halfThickness, pos.y + pos.h);
-        this.ctx.lineTo(pos.x, pos.y + pos.h - halfThickness);
-      }
-
-    }
-    this.endPath()
-    }
-    for (let i = 0; i < 7; i++) {
-      let sx = x;
-      let sy = y;
-      this.drawSegment(sx, sy, i);
+      this.drawSegment(x, y, i, isOn);
     }
   }
 
-  drawSegment(x, y, i) {
-    this.ctx.fillStyle = 'cyan';
-    this.ctx.fillRect(x, y, 2, 2);
+  drawSegment(x, y, i, on) {
+    let [x2, y2, w, h] = this.segments[i];
+    x2 += x;
+    y2 += y;
+    w -= 1;
+    h -= 1
+    const points = [
+      [x2, y2],
+      [x2 + w, y2],
+      [x2 + w, y2 + h],
+      [x2, y2 + h]
+    ];
+    this.fillPoints(points, on);
   }
 
   drawColon(x, y, now) {
