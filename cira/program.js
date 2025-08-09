@@ -3,7 +3,7 @@ export default class Program {
     this.parent = parent;
     this.config = null;
     this.startTimestamp = Date.now(); // Capture start time
-    this.speedUp =0; // Speed multiplier (0 = normal time)
+    this.speedUp = 0; // Speed multiplier (0 = normal time)
   }
 
   async setup() {
@@ -124,9 +124,9 @@ export default class Program {
     const parentHeight = window.innerHeight;
     const size = Math.min(parentWidth, parentHeight) - 40;
     const finalSize = Math.max(size, 200);
-    console.log('finalSize:', finalSize);
-    console.log('parent.clientWidth:', this.parent.clientWidth);
-    console.log('parent.clientHeight:', this.parent.clientHeight);
+    //console.log('finalSize:', finalSize);
+    //console.log('parent.clientWidth:', this.parent.clientWidth);
+    //console.log('parent.clientHeight:', this.parent.clientHeight);
     element.style.width = `${finalSize}px`;
     element.style.height = `${finalSize}px`;
   }

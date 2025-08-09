@@ -14,18 +14,12 @@ export default class ClockSunMap {
       this.ctx.drawImage(this.earthImg, 0, 100, 400, 200);
     }
 
-    var utcNow = new Date(now.toUTCString().slice(0, -4));
+    var utcNow = now
+
     const sun = this.getSun(utcNow);
 
-    let centerX = 200;
-    let centerY = 200;
-    let radius = 195; // 390/2
-    // Convert latitude/longitude to x/y on the clock face
-    // Longitude: -180 (left) to +180 (right)
-    // Latitude: -90 (bottom) to +90 (top)
-    const x = 200 - (sun.longitude / 180) * 200;
+    const x = (200 + (sun.longitude / 360) * 400) % 400;
     const y = 200 - (sun.latitude / 90) * 100;
-    //console.log(`Subsolar latitude: ${sun.latitude}, longitude: ${sun.longitude}, x: ${x}, y: ${y}`);
 
     // Draw big orange dot
     this.ctx.beginPath();
@@ -43,24 +37,34 @@ export default class ClockSunMap {
     this.ctx.shadowBlur = 0;
   }
 
- getSun(datetime) {
+  getSun(datetime) {
+    // datetime is a UTC Date object
+    // Get newyears in UTC
+    const startOfYear = new Date(Date.UTC(datetime.getUTCFullYear(), 0, 1));
+    // Get d as days since new years; [0 - 365.25]
+    const d = (datetime.getTime() - startOfYear.getTime()) / 86400000;
+    // d is 0 for Jan 1, 100 for Apr 10, 359 for Xmas
 
-  const d = (datetime - new Date(Date.UTC(datetime.getFullYear(), 0, 1))) / 86400000;
+    const declination = -23.45 * Math.cos(2 * Math.PI / 365.25 * (d + 10));
+    // latitude
+    // declination is +23.45 for June 21st, -23.45 for Dec 21st
 
-  // Solar Declination (latitude)
-  const declination = -23.45 * Math.cos(2 * Math.PI / 365.25 * (d + 10));
+    const equationOfTime = -0.171 * Math.sin(0.0337 * d + 0.465) - 0.129 * Math.sin(0.0178 * d - 0.15);
+    // equationOfTime is [-0.3, 0.3] hours, wobble correction for time of year
 
-  // Equation of Time and Hour Angle (for longitude)
-  const equationOfTime = -0.171 * Math.sin(0.0337 * d + 0.465) - 0.129 * Math.sin(0.0178 * d - 0.15);
+    // Greenwich Hour Angle
+    var gha = (datetime.getUTCHours() * 15)
+        + (datetime.getUTCMinutes() * 0.25)
+        + (equationOfTime * 60 * 0.25)
+        -180; // Shift so noon = 0°
+    // gha is [0, 360]
+    // How many degrees west of Greenwich the sun is
+    // 0 for Greenwich, 90 for Mexico, 270 (-90) for India
+    const longitude = (-gha) % 360;
 
-  // Hour Angle
-  const gha = (datetime.getUTCHours() * 15) + (datetime.getUTCMinutes() * 0.25) + (equationOfTime * 60 * 0.25);
-
-  const longitude = gha % 360;
-
-  return {
-    latitude: declination,
-    longitude: longitude > 180 ? longitude - 360 : longitude,
-  };
-}
+    return {
+      latitude: declination,
+      longitude: longitude,
+    };
+  }
 }
