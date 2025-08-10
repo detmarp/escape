@@ -30,7 +30,7 @@ export default class DaxJunk {
 
     // Scene setup
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x191970); // Midnight blue background
+    scene.background = new THREE.Color(0x404080); // Midnight blue background
 
     const camera = new THREE.PerspectiveCamera(60, canvas.width / canvas.height, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ canvas: canvas });
@@ -38,16 +38,16 @@ export default class DaxJunk {
 
     // Create a cube
     const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshLambertMaterial({ color: 0x00ff88 }); // Brighter green
+    const material = new THREE.MeshLambertMaterial({ color: 0xffffff }); // Brighter green
     const cube = new THREE.Mesh(geometry, material);
     scene.add(cube);
 
     // Deep blue ambient light
-    const ambientLight = new THREE.AmbientLight(0x0066cc, 0.3); // Deep blue ambient
+    const ambientLight = new THREE.AmbientLight(0x4488dd, 0.3); // Deep blue ambient
     scene.add(ambientLight);
 
     // Bright yellow directional light
-    const directionalLight = new THREE.DirectionalLight(0xffff00, 2); // Bright yellow
+    const directionalLight = new THREE.DirectionalLight(0xffffa0, 2); // Bright yellow
     directionalLight.position.set(5, 5, 5);
     scene.add(directionalLight);
 

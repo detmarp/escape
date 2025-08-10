@@ -1,0 +1,60 @@
+import Dax from './dax.js';
+
+export default class DaxEz {
+  constructor() {
+  }
+
+  async justDoIt(canvas) {
+    const THREE = await import('https://unpkg.com/three@0.160.0/build/three.module.js');
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x404080);
+
+    const camera = new THREE.PerspectiveCamera(60, canvas.width / canvas.height, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas });
+    renderer.setSize(canvas.width, canvas.height);
+
+    const geometry = new THREE.BoxGeometry();
+    const material = new THREE.MeshLambertMaterial({ color: 0xffffff });
+    const cube = new THREE.Mesh(geometry, material);
+    scene.add(cube);
+
+    const ambientLight = new THREE.AmbientLight(0x4488dd, 0.3);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0x00ffa0, 2);
+    directionalLight.position.set(5, 5, 5);
+    scene.add(directionalLight);
+
+    camera.position.z = 4;
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      cube.rotation.x += 0.01;
+      cube.rotation.y += 0.01;
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+  }
+
+  async doIt2(canvas) {
+    this.dax = new Dax();
+    this.dax.engine.init(canvas);
+
+    const ambient = new Dax.Thing("ambient");
+    const directional = new Dax.Thing("directional");
+    const cube = new Dax.Thing("cube");
+
+    // Add them to the scene
+    this.dax.engine.scene.add(ambient);
+    this.dax.engine.scene.add(directional);
+    this.dax.engine.scene.add(cube);
+    this.dax.engine.scene.background = 0x404080;
+
+    // Start the engine
+    this.dax.engine.start();
+  }
+}
