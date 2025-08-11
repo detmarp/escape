@@ -30,29 +30,38 @@ export default class DaxJunk {
 
     // Scene setup
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x404080); // Midnight blue background
+    scene.background = new THREE.Color(0xffffff); // Midnight blue background
 
     const camera = new THREE.PerspectiveCamera(60, canvas.width / canvas.height, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ canvas: canvas });
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     renderer.setSize(canvas.width, canvas.height);
 
     // Create a cube
     const geometry = new THREE.BoxGeometry();
     const material = new THREE.MeshLambertMaterial({ color: 0xffffff }); // Brighter green
     const cube = new THREE.Mesh(geometry, material);
+    // Add cube with visible black edges
     scene.add(cube);
 
+    // Create edges for the cube
+    const edges = new THREE.EdgesGeometry(geometry);
+    const line = new THREE.LineSegments(
+      edges,
+      new THREE.LineBasicMaterial({ color: 0x000000 })
+    );
+    cube.add(line);
+
     // Deep blue ambient light
-    const ambientLight = new THREE.AmbientLight(0x4488dd, 0.3); // Deep blue ambient
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
     scene.add(ambientLight);
 
-    // Bright yellow directional light
-    const directionalLight = new THREE.DirectionalLight(0xffffa0, 2); // Bright yellow
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
     directionalLight.position.set(5, 5, 5);
     scene.add(directionalLight);
 
+
     // Move camera back a bit
-    camera.position.z = 4;
+    camera.position.z = 3;
 
     // Animation loop
     function animate() {

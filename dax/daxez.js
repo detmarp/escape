@@ -1,7 +1,33 @@
 import Dax from './dax.js';
 
 export default class DaxEz {
-  constructor() {
+  constructor(dax) {
+    this.dax = dax;
+  }
+
+  start(canvas) {
+    this.dax.engine.init(canvas);
+    this.dax.engine.start();
+  }
+
+  add(name) {
+    if (name === "cube") {
+      const geometry = new Dax.THREE.BoxGeometry(1, 1, 1);
+      const material = new Dax.THREE.MeshStandardMaterial({ color: 0x00ff00 });
+      const cube = new Dax.THREE.Mesh(geometry, material);
+      cube.name = "cube";
+      this.dax.engine.threeScene.add(cube);
+      this.lastObject = cube;
+    } else if (name === "groundgrid") {
+      const grid = new Dax.THREE.GridHelper(10, 10);
+      this.dax.engine.threeScene.add(grid);
+    }
+  }
+
+  position(x, y, z) {
+    if (this.lastObject) {
+      this.lastObject.position.set(x, y, z);
+    }
   }
 
   async justDoIt(canvas) {
@@ -44,15 +70,15 @@ export default class DaxEz {
     this.dax = new Dax();
     this.dax.engine.init(canvas);
 
-    const ambient = new Dax.Thing("ambient");
-    const directional = new Dax.Thing("directional");
-    const cube = new Dax.Thing("cube");
+    //const ambient = new Dax.Thing("ambient");
+    //const directional = new Dax.Thing("directional");
+    //const cube = new Dax.Thing("cube");
 
     // Add them to the scene
-    this.dax.engine.scene.add(ambient);
-    this.dax.engine.scene.add(directional);
-    this.dax.engine.scene.add(cube);
-    this.dax.engine.scene.background = 0x404080;
+    //this.dax.engine.scene.add(ambient);
+    //this.dax.engine.scene.add(directional);
+    //this.dax.engine.scene.add(cube);
+    //this.dax.engine.scene.background = 0x404080;
 
     // Start the engine
     this.dax.engine.start();
