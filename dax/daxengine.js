@@ -39,14 +39,6 @@ export default class DaxEngine {
       this.dt = newTime - this.time;
       this.time = newTime;
     }
-    let cube = this.threeScene.getObjectByName("cube");
-    if (cube) {
-      if (typeof cube.userData.yrot === 'undefined') {
-        cube.userData.yrot = 0;
-      }
-      cube.userData.yrot += this.dt;
-      cube.rotation.y = cube.userData.yrot;
-    }
   }
 
   draw() {
@@ -81,7 +73,7 @@ export default class DaxEngine {
 
     this.camera.position.y = 3;
     this.camera.position.z = 8;
-    this.camera.lookAt(0, 0, 0);
+    this.camera.lookAt(0, 1, 0);
 
     const ambientLight = new Dax.THREE.AmbientLight(0x404040, 1);
     this.threeScene.add(ambientLight);

@@ -73,14 +73,16 @@ export default class Program {
     resizeObserver.observe(canvas3Wrapper);
     container.appendChild(canvas3Wrapper);
 
-    const dax = new Dax();
+    const dax = new Dax(canvas1);
     dax.junk.justDoIt(canvas1);
-    dax.ez.doIt2(canvas2);
 
-    const dax2 = new Dax();
-    dax2.ez.start(canvas3);
+    dax.ez.doIt2(canvas2);
+    dax.start();
+
+    const dax2 = new Dax(canvas3);
     dax2.ez.add("cube");
     dax2.ez.position(0, 1, 0);
     dax2.ez.add("groundgrid");
+    dax2.start();
   }
 }

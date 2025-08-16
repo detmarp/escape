@@ -1,26 +1,35 @@
 import Dax from './dax.js';
+import DaxEzMesh from './daxezmesh.js';
 
 export default class DaxEz {
   constructor(dax) {
     this.dax = dax;
-  }
-
-  start(canvas) {
-    this.dax.engine.init(canvas);
-    this.dax.engine.start();
+    this.ezMesh = new DaxEzMesh(dax.constructor.THREE);
   }
 
   add(name) {
-    if (name === "cube") {
+  if (name === "cubex") {
       const geometry = new Dax.THREE.BoxGeometry(1, 1, 1);
       const material = new Dax.THREE.MeshStandardMaterial({ color: 0x00ff00 });
       const cube = new Dax.THREE.Mesh(geometry, material);
       cube.name = "cube";
-      this.dax.engine.threeScene.add(cube);
+      this.dax.scene.add(cube);
       this.lastObject = cube;
+      return;
     } else if (name === "groundgrid") {
       const grid = new Dax.THREE.GridHelper(10, 10);
-      this.dax.engine.threeScene.add(grid);
+      this.dax.scene.add(grid);
+      return;
+    }
+
+    if (this.ezMesh.canMake(name)) {
+      let thing = this.ezMesh.make(name);
+      this.lastObject = thing;
+      this.dax.scene.add(thing);
+    } else {
+      let thing = this.ezMesh.make('error');
+      this.lastObject = thing;
+      this.dax.scene.add(thing);
     }
   }
 
@@ -67,8 +76,7 @@ export default class DaxEz {
   }
 
   async doIt2(canvas) {
-    this.dax = new Dax();
-    this.dax.engine.init(canvas);
+    this.dax = new Dax(canvas);
 
     //const ambient = new Dax.Thing("ambient");
     //const directional = new Dax.Thing("directional");
@@ -81,6 +89,6 @@ export default class DaxEz {
     //this.dax.engine.scene.background = 0x404080;
 
     // Start the engine
-    this.dax.engine.start();
+    this.dax.start();
   }
 }
