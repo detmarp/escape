@@ -10,5 +10,5 @@
 - [Bryn](bryn/)
 - [Cira](cira/)
 - [Dax](dax/)
-- Eartha
+- [Eartha](eartha/)
 - [Faye](faye/)
