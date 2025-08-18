@@ -39,12 +39,14 @@ export default class Program {
     this.dax = new Dax(this.canvas1);
     this.setupScene();
     this.dax.start();
+    this.dax.startOrbitControls();
   }
 
   setupScene() {
     this.dax.ez.add("cube");
     this.dax.ez.position(0, 0.5, 0);
 
+    this.dax.ez.nextColor(0x00ff00);
     this.dax.ez.add("cube");
     this.dax.ez.position(2, 0.5, 0);
 
@@ -58,8 +60,13 @@ export default class Program {
       ["tree", 0, 0.5, -12],
       ["tree", -2, 0.5, -12],
       ["tree", -4, 0.5, -12],
+      ["ball", 0, 0.5, -8, 0xff0000],
+      ["teapot", -4, 0.5, -4],
     ];
     for (let item of list) {
+      if (item[4]) {
+        this.dax.ez.nextColor(item[4]);
+      }
       this.dax.ez.add(item[0]);
       this.dax.ez.position(item[1], item[2], item[3]);
     }

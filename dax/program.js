@@ -7,19 +7,20 @@ export default class Program {
 
   run() {
     this.makePage();
+    this.makeContents();
   }
 
   makePage() {
-    const container = document.createElement('div');
-    container.style.padding = '4px';
-    container.style.display = 'flex';
-    container.style.flexDirection = 'column';
-    container.style.alignItems = 'flex-start';
-    container.style.margin = '0';
+    this.container = document.createElement('div');
+    this.container.style.padding = '4px';
+    this.container.style.display = 'flex';
+    this.container.style.flexDirection = 'column';
+    this.container.style.alignItems = 'flex-start';
+    this.container.style.margin = '0';
 
-    const canvas1 = document.createElement('canvas');
-    canvas1.width = 40;
-    canvas1.height = 40;
+    this.canvas1 = document.createElement('canvas');
+    this.canvas1.width = 40;
+    this.canvas1.height = 40;
     const inlineText = document.createElement('span');
     inlineText.textContent = 'Here is some 3D [';
     const afterInlineText = document.createElement('span');
@@ -28,20 +29,21 @@ export default class Program {
     inlineContainer.style.display = 'flex';
     inlineContainer.style.alignItems = 'center';
     inlineContainer.appendChild(inlineText);
-    inlineContainer.appendChild(canvas1);
+    inlineContainer.appendChild(this.canvas1);
     inlineContainer.appendChild(afterInlineText);
-    container.appendChild(inlineContainer);
+    this.container.appendChild(inlineContainer);
 
-    this.parent.appendChild(container);
+    this.parent.appendChild(this.container);
+  }
+
+  makeContents() {
 
     const canvas2 = document.createElement('canvas');
     canvas2.width = 400;
     canvas2.height = 200;
     canvas2.style.border = '1px solid #222';
-    container.appendChild(canvas2);
+    this.container.appendChild(canvas2);
 
-    // Use the HTML <div contenteditable="true" style="resize: both; overflow: auto;"> trick for a native resize handle.
-    // The diagonal triangle is shown when CSS 'resize: both' is applied and 'overflow: auto' is set.
     const canvas3Wrapper = document.createElement('div');
     canvas3Wrapper.style.display = 'inline-block';
     canvas3Wrapper.style.resize = 'both';
@@ -57,7 +59,7 @@ export default class Program {
     canvas3.style.display = 'block';
     canvas3.style.width = '100%';
     canvas3.style.height = '100%';
-    // Listen for resize events on the wrapper and adjust the canvas size accordingly
+
     const resizeObserver = new ResizeObserver(entries => {
       for (const entry of entries) {
       const width = Math.round(entry.contentRect.width);
@@ -71,10 +73,10 @@ export default class Program {
       }
     });
     resizeObserver.observe(canvas3Wrapper);
-    container.appendChild(canvas3Wrapper);
+    this.container.appendChild(canvas3Wrapper);
 
-    const dax = new Dax(canvas1);
-    dax.junk.justDoIt(canvas1);
+    const dax = new Dax(this.canvas1);
+    dax.junk.justDoIt(this.canvas1);
 
     dax.ez.doIt2(canvas2);
     dax.start();

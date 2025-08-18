@@ -5,6 +5,11 @@ export default class DaxEz {
   constructor(dax) {
     this.dax = dax;
     this.ezMesh = new DaxEzMesh(dax.constructor.THREE);
+    this.params = {};
+  }
+
+  nextColor(color) {
+    this.params.nextColor = color;
   }
 
   add(name) {
@@ -22,6 +27,8 @@ export default class DaxEz {
       return;
     }
 
+    this.ezMesh.params.color = this.params.nextColor;
+
     if (this.ezMesh.canMake(name)) {
       let thing = this.ezMesh.make(name);
       this.lastObject = thing;
@@ -31,6 +38,8 @@ export default class DaxEz {
       this.lastObject = thing;
       this.dax.scene.add(thing);
     }
+
+    this.params = {};
   }
 
   position(x, y, z) {

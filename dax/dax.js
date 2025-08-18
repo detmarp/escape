@@ -1,10 +1,11 @@
-import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+import * as three from '../threejs/build/three.module.js';
+import {OrbitControls} from '../threejs/examples/jsm/controls/OrbitControls.js';
 import DaxJunk from './daxjunk.js';
 import DaxEz from './daxez.js';
 import DaxEngine from './daxengine.js';
 
 export default class Dax {
-  static THREE = THREE;
+  static THREE = three;
 
   constructor(canvas) {
     this.canvas = canvas;
@@ -23,6 +24,19 @@ export default class Dax {
     this.isRunning = true;
     this._gameLoop();
   }
+
+  startOrbitControls() {
+    try {
+      this.controls = new OrbitControls(this.camera, this.canvas);
+      this.controls.enableDamping = true;
+      this.controls.dampingFactor = 0.05;
+      this.controls.target.set(0, 1, 0);
+    } catch (error) {
+      console.error('OrbitControls error:', error);
+      console.error('Stack trace:', error.stack);
+    }
+  }
+
 
   _gameLoop() {
     if (!this.isRunning) return;
@@ -44,6 +58,10 @@ export default class Dax {
       this.dt = newTime - this.time;
       this.time = newTime;
     }
+
+    if (this.controls) {
+      this.controls.update();
+    }
   }
 
   draw() {
@@ -59,7 +77,6 @@ export default class Dax {
     let fov = aspect < 1 ? 60 : 60 / aspect;
     this.camera.aspect = aspect;
     this.camera.fov = fov;
-    console.log('aspect:', this.camera.aspect, 'fov:', this.camera.fov);
     this.camera.updateProjectionMatrix();
   }
 

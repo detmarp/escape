@@ -54,7 +54,6 @@ export default class DaxEngine {
     let fov = aspect < 1 ? 60 : 60 / aspect;
     this.camera.aspect = aspect;
     this.camera.fov = fov;
-    console.log('aspect:', this.camera.aspect, 'fov:', this.camera.fov);
     this.camera.updateProjectionMatrix();
   }
 
