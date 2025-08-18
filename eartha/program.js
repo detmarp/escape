@@ -44,7 +44,7 @@ export default class Program {
   }
 
   setupScene() {
-    this.dax.ez.nextColor(0x00ddff);
+    this.dax.ez.nextColor(0xff8800);
     this.dax.ez.add("ball");
     this.dax.ez.add("groundgrid");
 
