@@ -3,7 +3,7 @@ import Dax from '../dax/dax.js';
 export default class Ob1 {
   constructor() {
     this.vertices = new Float32Array(20 * 3);
-    this.indices = new Uint32Array (20 * 3);
+    this.indices = new Uint16Array(20 * 3);
   }
 
   build() {
@@ -19,7 +19,7 @@ export default class Ob1 {
 
     const geometry = new Dax.THREE.BufferGeometry();
     geometry.setAttribute('position', new Dax.THREE.BufferAttribute(this.vertices, 3));
-    geometry.setIndex(new Dax.THREE.BufferAttribute(this.indices, 1));
+    //geometry.setIndex(new Dax.THREE.BufferAttribute(this.indices, 1));
 
     geometry.computeVertexNormals();
 
