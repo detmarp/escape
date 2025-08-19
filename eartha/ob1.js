@@ -49,21 +49,22 @@ export default class Ob1 {
     this.verts = [];
     this.tris = [];
 
-const radius = 1;
+const radius = 0.54;
 const phi = (1 + Math.sqrt(5)) / 2;
-const a = radius * 0.85065080835204; // vertical offset for top/bottom
+const a =  0.80065080835204; // vertical offset for top/bottom
+console.log(a);
+const r_top = Math.sqrt(1 * 1 - a * a); // horizontal distance for top pentagon
+const y_upper = 1 * 0.16245985;
+//const y_upper = 1 * 0.01
+const r_upper = Math.sqrt(1 * 1 - y_upper * y_upper); // horizontal distance for upper ring
 
-const r_top = Math.sqrt(radius*radius - a*a); // horizontal distance for top/bottom pentagons
-const y_upper = radius / (2 * phi);
-const r_upper = Math.sqrt(radius*radius - y_upper*y_upper);
-
-const z1 = radius * (1) * (Math.sqrt(10 + 2*Math.sqrt(5))) / 4;
-const x1 = radius * (1) * (Math.sqrt(5) - 1) / 4;
-const x2 = radius * -(1 + Math.sqrt(5)) / 4;
-const z2 = radius * (Math.sqrt(10 - 2*Math.sqrt(5))) / 4;
+const z1 = 1 * (1) * (Math.sqrt(10 + 2*Math.sqrt(5))) / 4;
+const x1 = 1 * (1) * (Math.sqrt(5) - 1) / 4;
+const x2 = 1 * -(1 + Math.sqrt(5)) / 4;
+const z2 = 1 * (Math.sqrt(10 - 2*Math.sqrt(5))) / 4;
 
 const pent = [
-  [ radius,  0 ],
+  [ 1,  0 ],
   [  x1,  z1 ],
   [  x2,  z2 ],
   [  x2, -z2 ],
@@ -84,6 +85,7 @@ addPentagon(r_upper, y_upper);  // upper ring at +radius/phi, scaled by r/radius
 addPentagon(r_upper, -y_upper, true);  // lower ring at -radius/phi, scaled by r/radius
 addPentagon(r_top, -a, true);
 
+this.verts = this.verts.map(([x, y, z]) => [x * radius, y * radius, z * radius]);
 // this.verts = [
 //   // top pentagon (y = +a)
 //   [ pent[0][0], a, pent[0][1] ],

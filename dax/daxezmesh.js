@@ -35,7 +35,7 @@ export default class DaxEzMesh {
   }
 
   ball() {
-    const geometry = new this.THREE.SphereGeometry(0.5, 10, 10);
+    const geometry = new this.THREE.SphereGeometry(0.5, 100, 100);
     const material = this._material();
     const mesh = new this.THREE.Mesh(geometry, material);
     return mesh;
