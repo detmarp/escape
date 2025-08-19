@@ -48,7 +48,7 @@ export default class Program {
     this.dax.ez.add("ball");
     this.dax.ez.add("groundgrid");
 
-    var mesh = new Ob1().build();
-    this.dax.scene.add(mesh);
+    var group = new Ob1().build();
+    this.dax.scene.add(group);
   }
 }

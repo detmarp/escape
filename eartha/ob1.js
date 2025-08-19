@@ -22,6 +22,7 @@ export default class Ob1 {
     //geometry.setIndex(new Dax.THREE.BufferAttribute(this.indices, 1));
 
     geometry.computeVertexNormals();
+    geometry.computeBoundingSphere();
 
     const group = new Dax.THREE.Group();
 
