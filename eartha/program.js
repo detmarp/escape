@@ -47,16 +47,16 @@ export default class Program {
     this.dax.ez.nextColor(0xffffff);
     this.dax.ez.add("ball");
 
-    // crude axes
-    this.dax.ez.nextColor(0xff0000);
-    this.dax.ez.add("ball");
-    this.dax.ez.position(4, 0, 0);
-    this.dax.ez.nextColor(0x00ff00);
-    this.dax.ez.add("ball");
-    this.dax.ez.position(0, 4, 0);
-    this.dax.ez.nextColor(0x0000ff);
-    this.dax.ez.add("ball");
-    this.dax.ez.position(0, 0, 4);
+    // // crude axes
+    // this.dax.ez.nextColor(0xff0000);
+    // this.dax.ez.add("ball");
+    // this.dax.ez.position(4, 0, 0);
+    // this.dax.ez.nextColor(0x00ff00);
+    // this.dax.ez.add("ball");
+    // this.dax.ez.position(0, 4, 0);
+    // this.dax.ez.nextColor(0x0000ff);
+    // this.dax.ez.add("ball");
+    // this.dax.ez.position(0, 0, 4);
 
     this.dax.ez.add("groundgrid");
 
