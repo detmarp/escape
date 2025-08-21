@@ -7,153 +7,138 @@ export default class Ob1 {
   build() {
     this._buildParts();
     return this._buildMeshGroup();
+  }
 
-    for (let i = 0; i < 20 * 3; i++) {
-      this.vertices[i] = (Math.random() - 0.5) * 4;
+  dodecahedronVerts(shape = {}, radius = 1) {
+    const phi = (1 + Math.sqrt(5)) / 2;
+    const a = 0.80065080835204; // vertical offset for top/bottom
+    const r_top = Math.sqrt(1 * 1 - a * a); // horizontal distance for top pentagon
+    const y_upper = 1 * 0.16245985;
+    //const y_upper = 1 * 0.01
+    const r_upper = Math.sqrt(1 * 1 - y_upper * y_upper); // horizontal distance for upper ring
+
+    const z1 = 1 * (1) * (Math.sqrt(10 + 2*Math.sqrt(5))) / 4;
+    const x1 = 1 * (1) * (Math.sqrt(5) - 1) / 4;
+    const x2 = 1 * -(1 + Math.sqrt(5)) / 4;
+    const z2 = 1 * (Math.sqrt(10 - 2*Math.sqrt(5))) / 4;
+
+    const pent = [
+      [ 1,  0 ],
+      [  x1,  z1 ],
+      [  x2,  z2 ],
+      [  x2, -z2 ],
+      [  x1, -z1 ],
+    ];
+
+    shape.verts = [];
+
+    const addPentagon = (s, y, flip = false) => {
+      for (let i = 0; i < 5; i++) {
+        const x = flip ? -pent[i][0] * s : pent[i][0] * s;
+        shape.verts.push([x, y, pent[i][1] * s]);
+      }
+    };
+
+    addPentagon(r_top, a);
+    addPentagon(r_upper, y_upper);
+    addPentagon(r_upper, -y_upper, true);
+    addPentagon(r_top, -a, true);
+
+    shape.verts = shape.verts.map(([x, y, z]) => [x * radius, y * radius, z * radius]);
+    shape.radius = radius;
+
+    return shape;
+  }
+
+  dodecahedronPents(shape = {}) {
+    shape.pents = [
+      [0, 1, 2, 3, 4], // top
+      [1, 0, 5, 12, 6], // upper ring
+      [2, 1, 6, 11, 7],
+      [3, 2, 7, 10, 8],
+      [4, 3, 8, 14, 9],
+      [0, 4, 9, 13, 5],
+      [17, 16, 11, 6, 12], // lower ring
+      [16, 15, 10, 7, 11],
+      [15, 19, 14, 8, 10],
+      [19, 18, 13, 9, 14],
+      [18, 17, 12, 5, 13],
+      [15, 16, 17, 18, 19], // bottom
+    ];
+  }
+
+  separatePents(shape) {
+    const used = new Set();
+
+    for (let i = 0; i < shape.pents.length; i++) {
+      const pent = shape.pents[i];
+
+      for (let j = 0; j < pent.length; j++) {
+        const vertIndex = pent[j];
+
+        if (used.has(vertIndex)) {
+          // Vertex already used, create a copy
+          const newIndex = shape.verts.length;
+          shape.verts.push([...shape.verts[vertIndex]]);
+          shape.pents[i][j] = newIndex;
+        } else {
+          // First time using this vertex
+          used.add(vertIndex);
+        }
+      }
     }
+  }
 
-    for (let i = 0; i < 20; i++) {
-      this.indices[i * 3] = i * 3;
-      this.indices[i * 3 + 1] = i * 3 + 1;
-      this.indices[i * 3 + 2] = i * 3 + 2;
-    }
-
-    const geometry = new Dax.THREE.BufferGeometry();
-    geometry.setAttribute('position', new Dax.THREE.BufferAttribute(this.vertices, 3));
-    //geometry.setIndex(new Dax.THREE.BufferAttribute(this.indices, 1));
-
-    geometry.computeVertexNormals();
-    geometry.computeBoundingSphere();  // Needed for mobile rendering
-
-    const group = new Dax.THREE.Group();
-
-    const frontMaterial = new Dax.THREE.MeshBasicMaterial({ color: 0x00ff00, side: Dax.THREE.FrontSide });
-    const frontMesh = new Dax.THREE.Mesh(geometry, frontMaterial);
-    group.add(frontMesh);
-
-    const backMaterial = new Dax.THREE.MeshBasicMaterial({ color: 0x444444, side: Dax.THREE.BackSide });
-    const backMesh = new Dax.THREE.Mesh(geometry, backMaterial);
-    group.add(backMesh);
-
-    const wireframeMaterial = new Dax.THREE.MeshBasicMaterial({ color: 0x000000, wireframe: true,
-        polygonOffsetFactor: -1, // pull wireframe closer to camera
-        polygonOffsetUnits: -1
+  pentCenters(shape) {
+    shape.pentCenters = shape.pents.map(pent => {
+      const center = pent.reduce((acc, vertIndex) => {
+        const vert = shape.verts[vertIndex];
+        acc[0] += vert[0];
+        acc[1] += vert[1];
+        acc[2] += vert[2];
+        return acc;
+      }, [0, 0, 0]);
+      const length = Math.sqrt(center[0] ** 2 + center[1] ** 2 + center[2] ** 2);
+      return center.map(v => v * (shape.radius / length));
     });
-    const wireframeMesh = new Dax.THREE.Mesh(geometry, wireframeMaterial);
-    group.add(wireframeMesh);
-
-    return group;
   }
 
   _buildParts() {
-    this.verts = [];
-    this.tris = [];
+    const radius = 3;
+    var shape = this.dodecahedronVerts(undefined, radius);
 
-const radius = 0.54;
-const phi = (1 + Math.sqrt(5)) / 2;
-const a =  0.80065080835204; // vertical offset for top/bottom
-console.log(a);
-const r_top = Math.sqrt(1 * 1 - a * a); // horizontal distance for top pentagon
-const y_upper = 1 * 0.16245985;
-//const y_upper = 1 * 0.01
-const r_upper = Math.sqrt(1 * 1 - y_upper * y_upper); // horizontal distance for upper ring
 
-const z1 = 1 * (1) * (Math.sqrt(10 + 2*Math.sqrt(5))) / 4;
-const x1 = 1 * (1) * (Math.sqrt(5) - 1) / 4;
-const x2 = 1 * -(1 + Math.sqrt(5)) / 4;
-const z2 = 1 * (Math.sqrt(10 - 2*Math.sqrt(5))) / 4;
+    this.dodecahedronPents(shape);
+    const faces = shape.pents;
 
-const pent = [
-  [ 1,  0 ],
-  [  x1,  z1 ],
-  [  x2,  z2 ],
-  [  x2, -z2 ],
-  [  x1, -z1 ],
-];
+    this.separatePents(shape);
 
-this.verts = [];
+    let ci = shape.verts.length;
 
-const addPentagon = (s, y, flip = false) => {
-  for (let i = 0; i < 5; i++) {
-    const x = flip ? -pent[i][0] * s : pent[i][0] * s;
-    this.verts.push([x, y, pent[i][1] * s]);
-  }
-};
+    this.pentCenters(shape);
 
-addPentagon(r_top, a);
-addPentagon(r_upper, y_upper);  // upper ring at +radius/phi, scaled by r/radius
-addPentagon(r_upper, -y_upper, true);  // lower ring at -radius/phi, scaled by r/radius
-addPentagon(r_top, -a, true);
+    shape.verts = shape.verts.map(([x, y, z]) => {
+      const len = Math.sqrt(x * x + y * y + z * z);
+      const scale = 0.8 + Math.random() * 0.4;
+      return [x * scale, y * scale, z * scale];
+    });
 
-this.verts = this.verts.map(([x, y, z]) => [x * radius, y * radius, z * radius]);
-// this.verts = [
-//   // top pentagon (y = +a)
-//   [ pent[0][0], a, pent[0][1] ],
-//   [ pent[1][0], a, pent[1][1] ],
-//   [ pent[2][0], a, pent[2][1] ],
-//   [ pent[3][0], a, pent[3][1] ],
-//   [ pent[4][0], a, pent[4][1] ],
-
-//   // middle ring (10 vertices)
-// [  r,  radius / phi,  0 ],           // vertex 5
-// [  radius / phi,  radius / phi,  r ], // vertex 6
-// [ -radius / phi,  radius / phi,  r ], // vertex 7
-// [ -r,  radius / phi,  0 ],           // vertex 8
-// [  0,  radius / phi, -r ],           // vertex 9
-
-// // Lower ring (5 vertices at y = -radius/phi)
-// [  r,  -radius / phi,  0 ],          // vertex 10
-// [  radius / phi,  -radius / phi,  r ], // vertex 11
-// [ -radius / phi,  -radius / phi,  r ], // vertex 12
-// [ -r,  -radius / phi,  0 ],          // vertex 13
-// [  0,  -radius / phi, -r ],          // vertex 14
-// //
-//     // bottom pentagon (y = -a)
-
-//   [ -radius,  -a,  0 ],
-//   [  -x1, -a,  z1 ],
-//   [  -x2, -a,  z2 ],
-//   [  -x2, -a, -z2 ],
-//   [  -x1, -a, -z1 ],
-
-// ];
-    // Add 12 face centers (indices 20-31)
-    const faces = [
-      [0, 1, 2, 3, 4],     // top face
-
-      [1, 0, 5, 12, 6],
-      [2, 1, 6, 11, 7],   // middle faces
-      [3, 2, 7, 10, 8],
-      [4, 3, 8, 14, 9],
-      [0, 4, 9, 13, 5],   // bottom faces
-[17, 16, 11, 6, 12],
-[16, 15, 10, 7, 11],
-[15, 19, 14, 8, 10],
-[19, 18, 13, 9, 14],
-[18, 17, 12, 5, 13],
-
-      [15, 16, 17, 18, 19], // bottom face
-    ];
-
-    for (let i = 0; i < faces.length; i++) {
-      const face = faces[i];
-      let x = 0, y = 0, z = 0;
-      for (const vertIndex of face) {
-        x += this.verts[vertIndex][0];
-        y += this.verts[vertIndex][1];
-        z += this.verts[vertIndex][2];
+    if (shape.pentCenters) {
+      for (const center of shape.pentCenters) {
+        shape.verts.push(center);
       }
-      this.verts.push([x / 5, y / 5, z / 5]);
     }
 
-    let ci = this.verts.length - faces.length;
+    this.verts = shape.verts;
+    this.tris = [];
+
     for (let i = 0; i < faces.length; i++) {
       const face = faces[i];
       const centerIndex = ci + i;
       for (let j = 0; j < face.length; j++) {
-      const v1 = face[j];
-      const v0 = face[(j + 1) % face.length];
-      this.tris.push([v0, v1, centerIndex]);
+        const v1 = face[j];
+        const v0 = face[(j + 1) % face.length];
+        this.tris.push([v0, v1, centerIndex]);
       }
     }
   }
