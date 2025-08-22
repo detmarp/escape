@@ -1,5 +1,6 @@
 import Dax from '../dax/dax.js';
 import Ob1 from './ob1.js';
+import Shell from './shell.js';
 
 export default class Program {
   constructor(parent) {
@@ -60,7 +61,22 @@ export default class Program {
 
     this.dax.ez.add("groundgrid");
 
+    var shell = new Shell(this.dax);
+
     var group = new Ob1().build();
     this.dax.scene.add(group);
+
+    shell.drawShell.make3d();
+
+    this._addMarkers(shell);
+  }
+
+  _addMarkers(shell) {
+    for (const vert of shell.shape.verts) {
+      this.dax.ez.nextColor(0xffff00);
+      this.dax.ez.nextSize(0.1);
+      this.dax.ez.add("ball");
+      this.dax.ez.position(...vert);
+    }
   }
 }

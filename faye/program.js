@@ -53,7 +53,7 @@ export default class Program {
     this.dax.ez.add("tree");
     this.dax.ez.position(3, 0.5, 0);
 
-    var list = [
+    this.addList([
       ["tree", 0, 0.5, -10],
       ["tree", -2, 0.5, -10],
       ["tree", -4, 0.5, -10],
@@ -62,7 +62,27 @@ export default class Program {
       ["tree", -4, 0.5, -12],
       ["ball", 0, 0.5, -8, 0xff0000],
       ["teapot", -4, 0.5, -4],
-    ];
+    ]);
+
+    this.dax.ez.add("groundgrid");
+
+    this.dax.ez.nextColor(0xff0000);
+    this.dax.ez.nextSize(0.5);
+    this.dax.ez.add("ball");
+    this.dax.ez.position(0, 0, 1);
+
+    this.dax.ez.nextColor(0xffff00);
+    this.dax.ez.nextSize(0.5);
+    this.dax.ez.add("ball");
+    this.dax.ez.position(0, 0, 1.5);
+
+    this.dax.ez.nextColor(0x00ff00);
+    this.dax.ez.nextSize(0.5);
+    this.dax.ez.add("ball");
+    this.dax.ez.position(0, 0, 2);
+  }
+
+  addList(list) {
     for (let item of list) {
       if (item[4]) {
         this.dax.ez.nextColor(item[4]);
@@ -70,7 +90,5 @@ export default class Program {
       this.dax.ez.add(item[0]);
       this.dax.ez.position(item[1], item[2], item[3]);
     }
-
-    this.dax.ez.add("groundgrid");
   }
 }

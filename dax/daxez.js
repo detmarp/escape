@@ -12,8 +12,21 @@ export default class DaxEz {
     this.params.nextColor = color;
   }
 
+  nextSize(size) {
+    this.params.nextSize = size;
+  }
+
+  _getParam(name, defaultValue) {
+    if (this.params[name] !== undefined) {
+      const value = this.params[name];
+      delete this.params[name];
+      return value;
+    }
+    return defaultValue;
+  }
+
   add(name) {
-  if (name === "cubex") {
+    if (name === "cubex") {
       const geometry = new Dax.THREE.BoxGeometry(1, 1, 1);
       const material = new Dax.THREE.MeshStandardMaterial({ color: 0x00ff00 });
       const cube = new Dax.THREE.Mesh(geometry, material);
@@ -27,7 +40,8 @@ export default class DaxEz {
       return;
     }
 
-    this.ezMesh.params.color = this.params.nextColor;
+    this.ezMesh.params.color = this._getParam('nextColor', 0xffffff);
+    this.ezMesh.params.size = this._getParam('nextSize', 1);
 
     if (this.ezMesh.canMake(name)) {
       let thing = this.ezMesh.make(name);
