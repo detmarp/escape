@@ -5,8 +5,8 @@ export default class Ob1 {
   }
 
   build() {
-    this._buildParts();
-    return this._buildMeshGroup();
+    var shape = this._buildParts();
+    return this._buildMeshGroup(shape);
   }
 
   dodecahedronVerts(shape = {}, radius = 1) {
@@ -89,70 +89,88 @@ export default class Ob1 {
     }
   }
 
-  pentCenters(shape) {
-    shape.pentCenters = shape.pents.map(pent => {
-      const center = pent.reduce((acc, vertIndex) => {
-        const vert = shape.verts[vertIndex];
-        acc[0] += vert[0];
-        acc[1] += vert[1];
-        acc[2] += vert[2];
-        return acc;
-      }, [0, 0, 0]);
-      const length = Math.sqrt(center[0] ** 2 + center[1] ** 2 + center[2] ** 2);
-      return center.map(v => v * (shape.radius / length));
-    });
+  addTris(shape = {}, poly) {
+    if (!shape.tris) shape.tris = [];
+    const center = poly[0];
+    for (let i = 1; i < poly.length - 1; i++) {
+      shape.tris.push([center, poly[i + 1], poly[i]]);
+    }
   }
 
   _buildParts() {
     const radius = 3;
     var shape = this.dodecahedronVerts(undefined, radius);
-
-
     this.dodecahedronPents(shape);
-    const faces = shape.pents;
-
     this.separatePents(shape);
-
-    let ci = shape.verts.length;
-
-    this.pentCenters(shape);
-
-    shape.verts = shape.verts.map(([x, y, z]) => {
-      const len = Math.sqrt(x * x + y * y + z * z);
-      const scale = 0.8 + Math.random() * 0.4;
-      return [x * scale, y * scale, z * scale];
-    });
-
-    if (shape.pentCenters) {
-      for (const center of shape.pentCenters) {
-        shape.verts.push(center);
-      }
+    for (const pent of shape.pents) {
+      this.addTris(shape, pent);
     }
+    for (const pent of shape.pents) {
+      this.scalePoly(shape, pent, 0.5);
+    }
+    return shape;
+  }
 
-    this.verts = shape.verts;
-    this.tris = [];
+  vectorAdd(a, b) {
+    a[0] += b[0];
+    a[1] += b[1];
+    a[2] += b[2];
+    return a;
+  }
 
-    for (let i = 0; i < faces.length; i++) {
-      const face = faces[i];
-      const centerIndex = ci + i;
-      for (let j = 0; j < face.length; j++) {
-        const v1 = face[j];
-        const v0 = face[(j + 1) % face.length];
-        this.tris.push([v0, v1, centerIndex]);
-      }
+  vectorScale(a, scale) {
+    a[0] *= scale;
+    a[1] *= scale;
+    a[2] *= scale;
+    return a;
+  }
+
+  vectorDistance(a, b) {
+    return this.vectorLength([
+      a[0] - b[0],
+      a[1] - b[1],
+      a[2] - b[2]
+    ]);
+  }
+
+  vectorLength(a) {
+    return Math.sqrt(a[0] ** 2 + a[1] ** 2 + a[2] ** 2);
+  }
+
+  scalePoly(shape, poly, scale = 1) {
+    // Find center of poly
+    const center = poly.reduce(
+      (acc, idx) => {
+        const v = shape.verts[idx];
+        return this.vectorAdd(acc, v);
+      },
+      [0, 0, 0]
+    );
+    this.vectorScale(center, 1 / poly.length);
+
+    // For each vert, scale its vector from center
+    for (const idx of poly) {
+      const v = shape.verts[idx];
+      const dir = [
+        v[0] - center[0],
+        v[1] - center[1],
+        v[2] - center[2]
+      ];
+      this.vectorScale(dir, scale);  // Just scale, don't normalize first
+      shape.verts[idx] = this.vectorAdd([...center], dir);
     }
   }
 
-  _buildMeshGroup() {
+  _buildMeshGroup(shape) {
     const group = new Dax.THREE.Group();
 
-    this.vertices = new Float32Array(this.tris.length * 9);
-    this.indices = new Uint16Array(this.tris.length * 3);
+    this.vertices = new Float32Array(shape.tris.length * 9);
+    this.indices = new Uint16Array(shape.tris.length * 3);
 
-    for (let i = 0; i < this.tris.length; i++) {
-      const tri = this.tris[i];
+    for (let i = 0; i < shape.tris.length; i++) {
+      const tri = shape.tris[i];
       for (let j = 0; j < 3; j++) {
-        const vert = this.verts[tri[j]];
+        const vert = shape.verts[tri[j]];
         this.vertices[i * 9 + j * 3 + 0] = vert[0];
         this.vertices[i * 9 + j * 3 + 1] = vert[1];
         this.vertices[i * 9 + j * 3 + 2] = vert[2];
@@ -166,11 +184,11 @@ export default class Ob1 {
     geometry.computeVertexNormals();
     geometry.computeBoundingSphere();
 
-    const frontMaterial = new Dax.THREE.MeshBasicMaterial({ color: 0x00ff00, side: Dax.THREE.FrontSide });
+    const frontMaterial = new Dax.THREE.MeshLambertMaterial({ color: 0x00ff00, side: Dax.THREE.FrontSide });
     const frontMesh = new Dax.THREE.Mesh(geometry, frontMaterial);
     group.add(frontMesh);
 
-    const backMaterial = new Dax.THREE.MeshBasicMaterial({ color: 0x444444, side: Dax.THREE.BackSide });
+    const backMaterial = new Dax.THREE.MeshLambertMaterial({ color: 0x444444, side: Dax.THREE.BackSide });
     const backMesh = new Dax.THREE.Mesh(geometry, backMaterial);
     group.add(backMesh);
 

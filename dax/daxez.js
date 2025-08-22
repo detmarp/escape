@@ -66,7 +66,7 @@ export default class DaxEz {
     const ambientLight = new THREE.AmbientLight(0x4488dd, 0.3);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0x00ffa0, 2);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(5, 5, 5);
     scene.add(directionalLight);
 
