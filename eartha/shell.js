@@ -13,6 +13,8 @@ export default class Shell {
     for (const poly of this.shape.pents) {
       this.scalePoly(this.shape, poly, 0.5);
     }
+
+    this.pentInfo = Shape.getPentInfo(this.shape);
   }
 
   getPolyCenter(poly) {

@@ -49,9 +49,10 @@ export default class Program {
 
     var shell = new Shell(this.dax);
 
-    var group = new Ob1().build();
-    this.dax.scene.add(group);
+    //var group = new Ob1().build();
+    //this.dax.scene.add(group);
 
-    shell.drawShell.make3d();
+    var obj = shell.drawShell.make3d();
+    this.dax.scene.add(obj);
   }
 }

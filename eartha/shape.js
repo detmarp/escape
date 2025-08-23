@@ -25,10 +25,10 @@ export default class Shape {
 
     const pent = [
       [ 1,  0 ],
-      [  x1,  z1 ],
-      [  x2,  z2 ],
-      [  x2, -z2 ],
       [  x1, -z1 ],
+      [  x2, -z2 ],
+      [  x2,  z2 ],
+      [  x1,  z1 ],
     ];
 
     shape.verts = [];
@@ -53,35 +53,52 @@ export default class Shape {
 
   static _addDodecahedronPents(shape) {
     shape.pents = [
-      [0, 1, 2, 3, 4], // top
-      [1, 0, 5, 12, 6], // upper ring
+      // top, 0
+      [0, 1, 2, 3, 4],
+      // upper ring, 1-5
+      [1, 0, 5, 12, 6],
       [2, 1, 6, 11, 7],
       [3, 2, 7, 10, 8],
       [4, 3, 8, 14, 9],
       [0, 4, 9, 13, 5],
-      [17, 16, 11, 6, 12], // lower ring
-      [16, 15, 10, 7, 11],
-      [15, 19, 14, 8, 10],
-      [19, 18, 13, 9, 14],
-      [18, 17, 12, 5, 13],
-      [15, 16, 17, 18, 19], // bottom
+      // lower ring, 6-10
+      [6, 12, 17, 16, 11],
+      [7, 11, 16, 15, 10],
+      [8, 10, 15, 19, 14],
+      [9, 14, 19, 18, 13],
+      [5, 13, 18, 17, 12],
+      // bottom, 11
+      [15, 16, 17, 18, 19],
     ];
   }
 
   static getPentInfo(shape) {
     return [
-      { neighbors: [1, 5, 4, 3, 2] },
-      { neighbors: [0, 2, 7, 11, 6] },
-      { neighbors: [0, 3, 8, 10, 7] },
-      { neighbors: [0, 4, 9, 14, 8] },
-      { neighbors: [0, 5, 12, 13, 9] },
-      { neighbors: [0, 1, 6, 17, 18] },
-      { neighbors: [1, 7, 10, 15, 17] },
-      { neighbors: [2, 8, 14, 19, 10] },
-      { neighbors: [3, 9, 13, 18, 14] },
-      { neighbors: [4, 12, 11, 16, 13] },
-      { neighbors: [2, 7, 19, 15, 11] },
-      { neighbors: [1, 6, 17, 16, 12] },
+      // top, 0
+      { neighbors: [1, 2, 3, 4, 5] },
+      // top ring, 1-5
+      { neighbors: [0, 5, 10, 6, 2] },
+      { neighbors: [0, 1, 6, 7, 3] },
+      { neighbors: [0, 2, 7, 8, 4] },
+      { neighbors: [0, 3, 8, 9, 5] },
+      { neighbors: [0, 4, 9, 10, 1] },
+      // bottom ring, 6-10
+      { neighbors: [1, 10, 11, 7, 2] },
+      { neighbors: [2, 6, 11, 8, 3] },
+      { neighbors: [3, 7, 11, 9, 4] },
+      { neighbors: [4, 8, 11, 10, 5] },
+      { neighbors: [5, 9, 11, 6, 1] },
+      // bottom, 11
+      { neighbors: [7, 6, 10, 9, 8] },
     ];
   }
+
+  addTris(shape = {}, poly) {
+    if (!shape.tris) shape.tris = [];
+    const center = poly[0];
+    for (let i = 1; i < poly.length - 1; i++) {
+      shape.tris.push([center, poly[i + 1], poly[i]]);
+    }
+  }
+
 }

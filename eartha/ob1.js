@@ -163,7 +163,7 @@ export default class Ob1 {
 
   _buildMeshGroup(shape) {
     const group = new Dax.THREE.Group();
-
+return group;
     this.vertices = new Float32Array(shape.tris.length * 9);
     this.indices = new Uint16Array(shape.tris.length * 3);
 
