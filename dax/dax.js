@@ -98,7 +98,7 @@ export default class Dax {
     this.camera.position.z = 10;
     this.camera.lookAt(0, 1, 0);
 
-    const ambientLight = new this.constructor.THREE.AmbientLight(0x404040, 1);
+    const ambientLight = new this.constructor.THREE.AmbientLight(0x8888aa, 1);
     this.scene.add(ambientLight);
 
     const directionalLight = new this.constructor.THREE.DirectionalLight(0xffffff, 1);

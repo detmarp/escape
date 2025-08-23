@@ -68,4 +68,20 @@ export default class Shape {
     ];
   }
 
+  static getPentInfo(shape) {
+    return [
+      { neighbors: [1, 5, 4, 3, 2] },
+      { neighbors: [0, 2, 7, 11, 6] },
+      { neighbors: [0, 3, 8, 10, 7] },
+      { neighbors: [0, 4, 9, 14, 8] },
+      { neighbors: [0, 5, 12, 13, 9] },
+      { neighbors: [0, 1, 6, 17, 18] },
+      { neighbors: [1, 7, 10, 15, 17] },
+      { neighbors: [2, 8, 14, 19, 10] },
+      { neighbors: [3, 9, 13, 18, 14] },
+      { neighbors: [4, 12, 11, 16, 13] },
+      { neighbors: [2, 7, 19, 15, 11] },
+      { neighbors: [1, 6, 17, 16, 12] },
+    ];
+  }
 }

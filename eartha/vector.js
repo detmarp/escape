@@ -1,4 +1,4 @@
-export class Vector {
+export default class Vector {
   static addTo(a, b) {
     a[0] += b[0];
     a[1] += b[1];

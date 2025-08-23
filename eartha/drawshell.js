@@ -1,3 +1,6 @@
+import Shape from "./shape.js";
+import Vector from "./vector.js";
+
 // Helper class to help render the shell
 export default class DrawShell {
   constructor(shell, dax) {
@@ -27,14 +30,31 @@ export default class DrawShell {
   }
 
   make3d() {
-    for (let i = 0; i < 1000; i++) {
+    this.shell.shape.pents.forEach((pent, i) => {
+      // Mark pentagon centers
       const color = this._pentColor(i);
       this.dax.ez.nextColor(color);
+      this.dax.ez.nextSize(0.25);
       this.dax.ez.add("ball");
-      const x = Math.random() * 20 - 10;
-      const y = Math.random() * 20 - 10;
-      const z = Math.random() * 20 - 10;
+      const [x, y, z] = this.shell.getPolyCenter(pent);
       this.dax.ez.position(x, y, z);
-    };
+    });
+
+    this.shell.shape.pents.forEach((pent, i) => {
+      var info = Shape.getPentInfo(pent);
+      for (let j = 0; j < pent.length; j++) {
+        const edgeCenter = this._getEdgeCenter(pent, j);
+        this.dax.ez.nextColor(this._pentColor(i));
+        this.dax.ez.nextSize(0.15);
+        this.dax.ez.add("ball");
+        this.dax.ez.position(...edgeCenter);
+      }
+    });
+  }
+
+  _getEdgeCenter(pent, i) {
+    const v1 = this.shell.shape.verts[pent[i]];
+    const v2 = this.shell.shape.verts[pent[(i + 1) % pent.length]];
+    return Vector.add(v1, v2).map(coord => coord / 2);
   }
 }

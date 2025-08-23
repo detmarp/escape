@@ -45,20 +45,6 @@ export default class Program {
   }
 
   setupScene() {
-    this.dax.ez.nextColor(0xffffff);
-    this.dax.ez.add("ball");
-
-    // // crude axes
-    // this.dax.ez.nextColor(0xff0000);
-    // this.dax.ez.add("ball");
-    // this.dax.ez.position(4, 0, 0);
-    // this.dax.ez.nextColor(0x00ff00);
-    // this.dax.ez.add("ball");
-    // this.dax.ez.position(0, 4, 0);
-    // this.dax.ez.nextColor(0x0000ff);
-    // this.dax.ez.add("ball");
-    // this.dax.ez.position(0, 0, 4);
-
     this.dax.ez.add("groundgrid");
 
     var shell = new Shell(this.dax);
@@ -67,16 +53,5 @@ export default class Program {
     this.dax.scene.add(group);
 
     shell.drawShell.make3d();
-
-    this._addMarkers(shell);
-  }
-
-  _addMarkers(shell) {
-    for (const vert of shell.shape.verts) {
-      this.dax.ez.nextColor(0xffff00);
-      this.dax.ez.nextSize(0.1);
-      this.dax.ez.add("ball");
-      this.dax.ez.position(...vert);
-    }
   }
 }
