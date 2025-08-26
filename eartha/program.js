@@ -1,6 +1,7 @@
 import Dax from '../dax/dax.js';
-import Ob1 from './ob1.js';
+import DrawShell from './drawshell.js';
 import Shell from './shell.js';
+import Shape12 from './shape12.js';
 
 export default class Program {
   constructor(parent) {
@@ -9,7 +10,16 @@ export default class Program {
 
   run() {
     this.makePage();
+    this.makeOverlay();
+    this.start();
   }
+
+  start() {
+  this.dax = new Dax(this.canvas1);
+  this.setupScene();
+  this.dax.start();
+  this.dax.startOrbitControls();
+}
 
   makePage() {
     const container = document.createElement('div');
@@ -38,21 +48,74 @@ export default class Program {
 
     this.parent.appendChild(container);
 
-    this.dax = new Dax(this.canvas1);
-    this.setupScene();
-    this.dax.start();
-    this.dax.startOrbitControls();
+    this.overlay = document.createElement('div');
+    this.overlay.style.position = 'absolute';
+    this.overlay.style.top = '0';
+    this.overlay.style.left = '0';
+    this.overlay.style.zIndex = '10';
+    this.overlay.style.pointerEvents = 'auto';
+    this.overlay.style.padding = '12px';
+    this.overlay.style.background = 'rgba(255,255,255,0.0)';
+    container.appendChild(this.overlay);
+  }
+
+  makeOverlay() {
+    this.overlay.innerHTML = '';
+
+    const stepBtn = document.createElement('button');
+    stepBtn.textContent = 'Step';
+    stepBtn.style.fontSize = '18px';
+    stepBtn.style.padding = '12px 24px';
+    stepBtn.style.minHeight = '48px';
+    stepBtn.style.minWidth = '80px';
+    stepBtn.style.border = '2px solid #333';
+    stepBtn.style.borderRadius = '8px';
+    stepBtn.style.backgroundColor = '#f0f0f0';
+    stepBtn.style.cursor = 'pointer';
+    stepBtn.style.touchAction = 'manipulation';
+    stepBtn.style.transition = 'all 0.1s ease';  // Add smooth transitions
+
+    // Add hover/active effects manually
+    stepBtn.onmouseenter = () => {
+      stepBtn.style.backgroundColor = '#e0e0e0';
+      stepBtn.style.transform = 'scale(1.05)';
+    };
+    stepBtn.onmouseleave = () => {
+      stepBtn.style.backgroundColor = '#f0f0f0';
+      stepBtn.style.transform = 'scale(1)';
+    };
+    stepBtn.onmousedown = () => {
+      stepBtn.style.backgroundColor = '#d0d0d0';
+      stepBtn.style.transform = 'scale(0.95)';
+    };
+    stepBtn.onmouseup = () => {
+      stepBtn.style.backgroundColor = '#e0e0e0';
+      stepBtn.style.transform = 'scale(1.05)';
+    };
+
+    stepBtn.onclick = () => {
+      this.shell.normalize(10);
+      this.draw.updateGeometry();
+    };
+
+    this.overlay.appendChild(stepBtn);
   }
 
   setupScene() {
+    this.radius = 3;
+    this.shape = new Shape12(this.radius);
+    this.shell = new Shell(this.shape);
+    this.shell.subdivide();
+    this.shell.normalize(30);
+
+    ///
     this.dax.ez.add("groundgrid");
 
-    var shell = new Shell(this.dax);
+    this.draw = new DrawShell(this.shell, this.dax);
 
-    //var group = new Ob1().build();
-    //this.dax.scene.add(group);
-
-    var obj = shell.drawShell.make3d();
+    let obj = this.draw.makeObject();
     this.dax.scene.add(obj);
+
+    this.draw.addMarkers();
   }
 }

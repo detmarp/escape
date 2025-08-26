@@ -101,4 +101,52 @@ export default class Shape {
     }
   }
 
+  static hackHexes(shape) {
+    shape.hexes = shape.hexes || [];
+
+    var pi = [[0, 5, 1], [0, 1, 2],];
+    var newVerts = [];
+    var baseIndex = shape.verts.length;
+
+    for (const group of pi) {
+      const centers = group.map(pentId => {
+        const verts = shape.pents[pentId];
+        const center = verts.reduce(
+          (acc, vid) => {
+            const v = shape.verts[vid];
+            return [acc[0] + v[0], acc[1] + v[1], acc[2] + v[2]];
+          },
+          [0, 0, 0]
+        ).map(coord => coord / verts.length);
+        return center;
+      });
+      console.log(JSON.stringify(centers));
+      const avgCenter = centers.reduce(
+        (acc, c) => [acc[0] + c[0], acc[1] + c[1], acc[2] + c[2]],
+        [0, 0, 0]
+      ).map(coord => coord / centers.length);
+      const length = Math.sqrt(avgCenter[0] ** 2 + avgCenter[1] ** 2 + avgCenter[2] ** 2);
+      const scale = shape.radius / length;
+      avgCenter[0] *= scale;
+      avgCenter[1] *= scale;
+      avgCenter[2] *= scale;
+      newVerts.push(avgCenter);
+      shape.verts.push(avgCenter);
+    }
+    console.log(JSON.stringify(newVerts));
+    newVerts.forEach(v => shape.verts.push(v));
+
+    var edge1a = Shape.getEdge(shape.pents[0], 0, true);
+    var edge1b = Shape.getEdge(shape.pents[1], 0, true);
+    var hex1 = [...edge1a, baseIndex + 0, ...edge1b, baseIndex + 1];
+    shape.hexes.push(hex1);
+  }
+
+  static getEdge(poly, edgeIndex, flip) {
+    // return edge verts for a given edge
+    const v1 = poly[edgeIndex];
+    const v2 = poly[(edgeIndex + 1) % poly.length];
+    return flip ? [v2, v1] : [v1, v2];
+  }
+
 }

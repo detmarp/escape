@@ -61,4 +61,18 @@ export default class Vector {
     if (len === 0) return [0, 0, 0];
     return [a[0] / len, a[1] / len, a[2] / len];
   }
+
+  static perpendicular(v) {
+    // Find a vector that is not parallel to v
+    let other;
+    if (Math.abs(v[0]) < 0.9) {
+      other = [1, 0, 0];
+    } else if (Math.abs(v[1]) < 0.9) {
+      other = [0, 1, 0];
+    } else {
+      other = [0, 0, 1];
+    }
+    // Cross product to get a perpendicular vector
+    return Vector.normalize(Vector.cross(v, other));
+  }
 }

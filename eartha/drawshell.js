@@ -26,18 +26,117 @@ export default class DrawShell {
     };
   }
 
+  // Make the threejs scene object
+  makeObject() {
+    const group = new Dax.THREE.Group();
+    this.group = group;
+
+    this._triangulate();
+    this._make3d();
+
+    return group;
+  }
+
+  // Add markers
+  addMarkers() {
+    for (let i = 0; i < this.shell.shape.verts.length; i++) {
+      const vert = this.shell.shape.verts[i];
+      this.dax.ez.nextColor(this._pentColor(i));
+      this.dax.ez.nextSize(0.2);
+      this.dax.ez.add("ball");
+      this.dax.ez.position(...vert);
+    }
+  }
+
   _pentColor(i) {
     return this.colors.pent[i % this.colors.pent.length];
   }
 
   _triangulate() {
-    this.shell.shape.tris = [];
+    this.pentTris = [];
+    this.hexTris = [];
 
+    // Pentagon triangles
     for (const pent of this.shell.shape.pents) {
+      const pentIndex = this.shell.shape.pents.indexOf(pent);
       for (let i = 1; i < pent.length - 1; i++) {
-        this.shell.shape.tris.push([pent[0], pent[i], pent[i + 1]]);
+        this.pentTris.push([pent[0], pent[i], pent[i + 1], pentIndex]);
       }
     }
+
+    // Hexagon triangles
+    if (this.shell.shape.hexes) {
+      for (const hex of this.shell.shape.hexes) {
+        const hexIndex = this.shell.shape.hexes.indexOf(hex);
+        for (let i = 1; i < hex.length - 1; i++) {
+          this.hexTris.push([hex[0], hex[i], hex[i + 1], hexIndex]);
+        }
+      }
+    }
+  }
+
+  _make3d() {
+    // Create pentagon geometry
+    this._createPentGeometry();
+
+    // Create hex geometry if hexes exist
+    if (this.hexTris.length > 0) {
+      this._createHexGeometry();
+    }
+  }
+
+  _createPentGeometry() {
+    const vertices = new Float32Array(this.pentTris.length * 9);
+    const indices = new Uint16Array(this.pentTris.length * 3);
+
+    for (let i = 0; i < this.pentTris.length; i++) {
+      const tri = this.pentTris[i];
+      const pentIndex = tri[3]; // 4th element is pentagon index
+
+      for (let j = 0; j < 3; j++) {
+        const vert = this.shell.shape.verts[tri[j]];
+        vertices[i * 9 + j * 3 + 0] = vert[0];
+        vertices[i * 9 + j * 3 + 1] = vert[1];
+        vertices[i * 9 + j * 3 + 2] = vert[2];
+        indices[i * 3 + j] = i * 3 + j;
+      }
+    }
+
+    const geometry = new Dax.THREE.BufferGeometry();
+    geometry.setAttribute('position', new Dax.THREE.BufferAttribute(vertices, 3));
+    geometry.setIndex(new Dax.THREE.BufferAttribute(indices, 1));
+    geometry.computeVertexNormals();
+
+    const material = new Dax.THREE.MeshLambertMaterial({ color: 0x00ff00 });
+    const mesh = new Dax.THREE.Mesh(geometry, material);
+    this.group.add(mesh);
+  }
+
+  _createHexGeometry() {
+    const vertices = new Float32Array(this.hexTris.length * 9);
+    const indices = new Uint16Array(this.hexTris.length * 3);
+
+    for (let i = 0; i < this.hexTris.length; i++) {
+      const tri = this.hexTris[i];
+      const hexIndex = tri[3]; // 4th element is hex index
+
+      for (let j = 0; j < 3; j++) {
+        const vert = this.shell.shape.verts[tri[j]];
+        vertices[i * 9 + j * 3 + 0] = vert[0];
+        vertices[i * 9 + j * 3 + 1] = vert[1];
+        vertices[i * 9 + j * 3 + 2] = vert[2];
+        indices[i * 3 + j] = i * 3 + j;
+      }
+    }
+
+    const geometry = new Dax.THREE.BufferGeometry();
+    geometry.setAttribute('position', new Dax.THREE.BufferAttribute(vertices, 3));
+    geometry.setIndex(new Dax.THREE.BufferAttribute(indices, 1));
+    geometry.computeVertexNormals();
+
+    const material = new Dax.THREE.MeshLambertMaterial({ color: 0x0088ff }); // Different color
+    const mesh = new Dax.THREE.Mesh(geometry, material);
+    this.group.add(mesh);
   }
 
   make3d() {
@@ -105,7 +204,15 @@ export default class DrawShell {
     });
     const wireframeMesh = new Dax.THREE.Mesh(geometry, wireframeMaterial);
     group.add(wireframeMesh);
-
+    // Draw a white ball at the last two vertex positions
+    this.dax.ez.nextColor(0xffffff);
+    this.dax.ez.nextSize(0.3);
+    this.dax.ez.add("ball");
+    this.dax.ez.position(...this.shell.shape.verts[this.shell.shape.verts.length - 1]);
+    this.dax.ez.nextColor(0xffffff);
+    this.dax.ez.nextSize(0.3);
+    this.dax.ez.add("ball");
+    this.dax.ez.position(...this.shell.shape.verts[this.shell.shape.verts.length - 2]);
     return group;
   }
 
@@ -113,5 +220,24 @@ export default class DrawShell {
     const v1 = this.shell.shape.verts[pent[i]];
     const v2 = this.shell.shape.verts[pent[(i + 1) % pent.length]];
     return Vector.add(v1, v2).map(coord => coord / 2);
+  }
+
+  updateGeometry() {
+    // Update the vertices array with new vertex positions
+    for (let i = 0; i < this.tris.length; i++) {
+      const tri = this.tris[i];
+      for (let j = 0; j < 3; j++) {
+        const vert = this.shell.shape.verts[tri[j]];
+        this.vertices[i * 9 + j * 3 + 0] = vert[0];
+        this.vertices[i * 9 + j * 3 + 1] = vert[1];
+        this.vertices[i * 9 + j * 3 + 2] = vert[2];
+      }
+    }
+
+    // Tell THREE.js the geometry has changed
+    const geometry = this.group.children[0].geometry; // Get geometry from first mesh
+    geometry.attributes.position.needsUpdate = true;
+    geometry.computeVertexNormals(); // Recalculate lighting
+    geometry.computeBoundingSphere(); // Recalculate bounds
   }
 }
