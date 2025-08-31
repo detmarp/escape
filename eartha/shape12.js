@@ -1,13 +1,13 @@
 // Construct a dodecahedron shape
 //   verts, as [x, y, z]
-//   pents, [[vert_indexes, ], ]
-//   neighbors, [[pent_indexes, ], ]
+//   polys, [[vert_indexes, ], ]
+//   neighbors, [[poly_indexes, ], ]
 export default class Shape12 {
   constructor(radius = 1) {
     this.radius = radius;
     this.verts = [];     // [[x, y, z], ]
-    this.pents = [];     // [[vert_indexes, ], ]
-    this.info = []; // [[pent_indexes, ], ]
+    this.polys = [];     // [[vert_indexes, ], ]
+    this.info = []; // [[poly_indexes, ], ]
 
     this._make();
   }
@@ -17,14 +17,14 @@ export default class Shape12 {
     this.verts = this.verts.map(([x, y, z]) =>
       [x * this.radius, y * this.radius, z * this.radius]
     );
-    this.pents = this._makePents();
+    this.polys = this._makePents();
     this.info = this._makeNeighbors();
   }
 
   _makeVerts() {
     const phi = (1 + Math.sqrt(5)) / 2;
     const a = 0.80065080835204; // vertical offset for top/bottom
-    const r_top = Math.sqrt(1 * 1 - a * a); // horizontal distance for top pentagon
+    const r_top = Math.sqrt(1 * 1 - a * a); // horizontal distance for top polyagon
     const y_upper = 1 * 0.16245985;
     //const y_upper = 1 * 0.01
     const r_upper = Math.sqrt(1 * 1 - y_upper * y_upper); // horizontal distance for upper ring
@@ -34,7 +34,7 @@ export default class Shape12 {
     const x2 = 1 * -(1 + Math.sqrt(5)) / 4;
     const z2 = 1 * (Math.sqrt(10 - 2*Math.sqrt(5))) / 4;
 
-    const pent = [
+    const poly = [
       [ 1,  0 ],
       [  x1, -z1 ],
       [  x2, -z2 ],
@@ -46,8 +46,8 @@ export default class Shape12 {
 
     const addPentagon = (s, y, flip = false) => {
       for (let i = 0; i < 5; i++) {
-        const x = flip ? -pent[i][0] * s : pent[i][0] * s;
-        verts.push([x, y, pent[i][1] * s]);
+        const x = flip ? -poly[i][0] * s : poly[i][0] * s;
+        verts.push([x, y, poly[i][1] * s]);
       }
     };
 

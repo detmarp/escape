@@ -10,7 +10,7 @@ export default class Shell {
   // Split dodecahedron into 12 pents, 20 hexes
   subdivide32() {
     this.separatePents(this.shape);
-    for (const poly of this.shape.pents) {
+    for (const poly of this.shape.polys) {
       this.scalePoly(this.shape, poly, 0.4);
     }
 
@@ -20,25 +20,25 @@ export default class Shell {
     const hexBands = [
       // Top face
       {
-        pentIndexes: [0],
+        polyIndexes: [0],
         neighborOffsets: [ [0,1], [1,2], [2,3], [3,4], [4,0] ],
         vertexPattern: (p0, p1, p2, i, i2) => [p0[i], p1[1], p1[0], p2[2], p2[1], p0[i2]]
       },
       // Bottom face
       {
-        pentIndexes: [11],
+        polyIndexes: [11],
         neighborOffsets: [ [0,1], [1,2], [2,3], [3,4], [4,0] ],
         vertexPattern: (p11, p1, p2, i, i2) => [p11[i], p1[3], p1[2], p2[4], p2[3], p11[i2]]
       },
       // Top band
       {
-        pentIndexes: [1,2,3,4,5],
+        polyIndexes: [1,2,3,4,5],
         neighborOffsets: [ [4,3] ],
         vertexPattern: (pA, pB, pC) => [pA[4], pC[1], pC[0], pB[3], pB[2], pA[0]]
       },
       // Bottom band
       {
-        pentIndexes: [6,7,8,9,10],
+        polyIndexes: [6,7,8,9,10],
         neighborOffsets: [ [4,3] ],
         vertexPattern: (pA, pB, pC) => [pA[4], pC[2], pC[1], pB[4], pB[3], pA[0]]
       }
@@ -46,20 +46,20 @@ export default class Shell {
 
     // Then, loop over hexBands and generate hexes:
     for (const band of hexBands) {
-      for (const pi of band.pentIndexes) {
-        const pent = this.shape.pents[pi];
+      for (const pi of band.polyIndexes) {
+        const pent = this.shape.polys[pi];
         for (let i = 0; i < pent.length; i++) {
           var hex;
           // For top/bottom, need to get two neighbors for each edge
           if (band.neighborOffsets.length > 1) {
-            const p1 = this.shape.pents[this.shape.info[pi].neighbors[i]];
-            const p2 = this.shape.pents[this.shape.info[pi].neighbors[(i + 1) % pent.length]];
+            const p1 = this.shape.polys[this.shape.info[pi].neighbors[i]];
+            const p2 = this.shape.polys[this.shape.info[pi].neighbors[(i + 1) % pent.length]];
             let i2 = (i + 1) % pent.length;
             hex = band.vertexPattern(pent, p1, p2, i, i2);
           } else {
             // For bands, just use fixed neighbor offsets
-            const pB = this.shape.pents[this.shape.info[pi].neighbors[band.neighborOffsets[0][0]]];
-            const pC = this.shape.pents[this.shape.info[pi].neighbors[band.neighborOffsets[0][1]]];
+            const pB = this.shape.polys[this.shape.info[pi].neighbors[band.neighborOffsets[0][0]]];
+            const pC = this.shape.polys[this.shape.info[pi].neighbors[band.neighborOffsets[0][1]]];
             hex = band.vertexPattern(pent, pB, pC);
           }
           this.shape.hexes.push(hex);
@@ -71,7 +71,7 @@ export default class Shell {
   subdivide() {
     // 1. Separate pent vertices and shrink
     this.separatePents(this.shape);
-    for (const poly of this.shape.pents) {
+    for (const poly of this.shape.polys) {
       this.scalePoly(this.shape, poly, 0.4);
     }
     // For temp, let's just make quads between all the pents.
@@ -80,81 +80,175 @@ export default class Shell {
     if (!this.shape.hexes) {
       this.shape.hexes = [];
     }
+
+    // Create 5 new verts at midpoints between pent 0 and its neighbors
+    var topRingVert = this.shape.verts.length;
+    const pent0Center = this.getPolyCenter(this.shape.polys[0]);
+    for (let i = 0; i < 5; i++) {
+      const neighborAIdx = this.shape.info[0].neighbors[i];
+      const neighborBIdx = this.shape.info[0].neighbors[(i + 1) % 5];
+      const neighborACenter = this.getPolyCenter(this.shape.polys[neighborAIdx]);
+      const neighborBCenter = this.getPolyCenter(this.shape.polys[neighborBIdx]);
+      // Midpoint between pent0Center, neighborACenter, neighborBCenter
+      const midpoint = [
+        (pent0Center[0] + neighborACenter[0] + neighborBCenter[0]) / 3,
+        (pent0Center[1] + neighborACenter[1] + neighborBCenter[1]) / 3,
+        (pent0Center[2] + neighborACenter[2] + neighborBCenter[2]) / 3
+      ];
+      this.shape.verts.push(midpoint);
+    }
+
     // For pent 0, create quads between each edge and its adjacent pent in the first ring
     // the pent 0 edge is [i, i+1], and its i neighbor uses edge [0, 1]
-    const pent0 = this.shape.pents[0];
+    const pent0 = this.shape.polys[0];
     for (let i = 0; i < pent0.length; i++) {
       const neighborIdx = this.shape.info[0].neighbors[i];
-      const neighborPent = this.shape.pents[neighborIdx];
+      const neighborPent = this.shape.polys[neighborIdx];
       // pent0 edge: [i, (i+1)%5]
       // neighbor edge: [0,1]
       const quad = [
       pent0[(i + 1) % pent0.length],
       pent0[i],
+      topRingVert + (i - 1 + 5) % 5,
       neighborPent[1],
-      neighborPent[0]
+      neighborPent[0],
+      topRingVert + ((i + 0) % 5)
       ];
       this.shape.hexes.push(quad);
     }
+
+    var midUpperRingVert = this.shape.verts.length;
+    const upperBandCenters = [];
+    for (let i = 1; i <= 5; i++) {
+      const pentAIdx = i;
+      const pentBIdx = (i % 5) + 1;
+      // Find the shared lower pent between pentA and pentB
+      const neighborsA = this.shape.info[pentAIdx].neighbors;
+      const neighborsB = this.shape.info[pentBIdx].neighbors;
+      // Lower band pents are 6-10
+      const sharedLower = neighborsA.find(n => neighborsB.includes(n) && n >= 6 && n <= 10);
+      if (sharedLower !== undefined) {
+        const centerA = this.getPolyCenter(this.shape.polys[pentAIdx]);
+        const centerB = this.getPolyCenter(this.shape.polys[pentBIdx]);
+        const centerLower = this.getPolyCenter(this.shape.polys[sharedLower]);
+        const midpoint = [
+          (centerA[0] + centerB[0] + centerLower[0]) / 3,
+          (centerA[1] + centerB[1] + centerLower[1]) / 3,
+          (centerA[2] + centerB[2] + centerLower[2]) / 3
+        ];
+        this.shape.verts.push(midpoint);
+        upperBandCenters.push(this.shape.verts.length - 1);
+      }
+    }
+
+    var midLowerRingVert = this.shape.verts.length;
+    const lowerBandCenters = [];
+    for (let i = 6; i <= 10; i++) {
+      const pentAIdx = i;
+      const pentBIdx = (i % 5) + 6;
+      // Find the shared upper pent between pentA and pentB
+      const neighborsA = this.shape.info[pentAIdx].neighbors;
+      const neighborsB = this.shape.info[pentBIdx].neighbors;
+      // Upper band pents are 1-5
+      const sharedUpper = neighborsA.find(n => neighborsB.includes(n) && n >= 1 && n <= 5);
+      if (sharedUpper !== undefined) {
+        const centerA = this.getPolyCenter(this.shape.polys[pentAIdx]);
+        const centerB = this.getPolyCenter(this.shape.polys[pentBIdx]);
+        const centerUpper = this.getPolyCenter(this.shape.polys[sharedUpper]);
+        const midpoint = [
+          (centerA[0] + centerB[0] + centerUpper[0]) / 3,
+          (centerA[1] + centerB[1] + centerUpper[1]) / 3,
+          (centerA[2] + centerB[2] + centerUpper[2]) / 3
+        ];
+        this.shape.verts.push(midpoint);
+        lowerBandCenters.push(this.shape.verts.length - 1);
+      }
+    }
+
     // For first ring (pents 1-5), create quads between edge 4 and neighbor 4's edge 1
     for (let pi = 1; pi <= 5; pi++) {
-      const pent = this.shape.pents[pi];
+      const pent = this.shape.polys[pi];
       const neighborIdx = this.shape.info[pi].neighbors[4];
-      const neighborPent = this.shape.pents[neighborIdx];
+      const neighborPent = this.shape.polys[neighborIdx];
       // pent edge: [4,0], neighbor edge: [1,2]
       const quad = [
       pent[0],
       pent[4],
+      midUpperRingVert + (pi - 1 + 5) % 5,
       neighborPent[2],
-      neighborPent[1]
+      neighborPent[1],
+      topRingVert + ((pi + 4) % 5)
       ];
       this.shape.hexes.push(quad);
     }
     // Mid-band: connect upper ring (pents 1-5) to lower ring (pents 6-10)
     // Each pent in upper ring (1-5) has a neighbor in lower ring at neighbor index 2
     for (let pi = 1; pi <= 5; pi++) {
-      const pentUpper = this.shape.pents[pi];
+      const pentUpper = this.shape.polys[pi];
       const lowerIdx = this.shape.info[pi].neighbors[2];
-      const pentLower = this.shape.pents[lowerIdx];
+      const pentLower = this.shape.polys[lowerIdx];
       // pentUpper edge: [2,3], pentLower edge: [0,1]
       const quad = [
       pentUpper[3],
       pentUpper[2],
+      midUpperRingVert + (pi + 3 + 5) % 5,
       pentLower[0],
-      pentLower[4]
+      pentLower[4],
+      midLowerRingVert + (pi - 2 + 5) % 5,
       ];
       this.shape.hexes.push(quad);
       // For each pent in upper ring (1-5), create quads with neighbor at index 3 using the right edge
       const rightIdx = this.shape.info[pi].neighbors[3];
-      const pentRight = this.shape.pents[rightIdx];
+      const pentRight = this.shape.polys[rightIdx];
       // pentUpper edge: [3,4], pentRight edge: [0,1]
       const quadRight = [
         pentUpper[4],
         pentUpper[3],
+        midLowerRingVert + (pi - 2 + 5) % 5,
         pentRight[1],
-        pentRight[0]
+        pentRight[0],
+        midUpperRingVert + (pi + 4 + 5) % 5,
       ];
       this.shape.hexes.push(quadRight);
     }
+
+    var bottomRingVert = this.shape.verts.length;
+    // Create 5 new verts at midpoints between pent 11 and its neighbors
+    const pent11Center = this.getPolyCenter(this.shape.polys[11]);
+    for (let i = 0; i < 5; i++) {
+      const neighborAIdx = this.shape.info[11].neighbors[i];
+      const neighborBIdx = this.shape.info[11].neighbors[(i + 1) % 5];
+      const neighborACenter = this.getPolyCenter(this.shape.polys[neighborAIdx]);
+      const neighborBCenter = this.getPolyCenter(this.shape.polys[neighborBIdx]);
+      // Midpoint between pent11Center, neighborACenter, neighborBCenter
+      const midpoint = [
+      (pent11Center[0] + neighborACenter[0] + neighborBCenter[0]) / 3,
+      (pent11Center[1] + neighborACenter[1] + neighborBCenter[1]) / 3,
+      (pent11Center[2] + neighborACenter[2] + neighborBCenter[2]) / 3
+      ];
+      this.shape.verts.push(midpoint);
+    }
     // Interconnect bottom band pents (pents 6-10)
     for (let pi = 6; pi <= 10; pi++) {
-      const pent = this.shape.pents[pi];
+      const pent = this.shape.polys[pi];
       // Each pent in bottom band has neighbor at index 1 (next in band)
       const neighborIdx = this.shape.info[pi].neighbors[1];
-      const neighborPent = this.shape.pents[neighborIdx];
+      const neighborPent = this.shape.polys[neighborIdx];
       // pent edge: [1,2], neighbor edge: [3,4]
       const quad = [
         pent[2],
         pent[1],
+        midLowerRingVert + (pi + 3) % 5,
         neighborPent[4],
-        neighborPent[3]
+        neighborPent[3],
+        bottomRingVert + (7 - pi + 10) % 5
       ];
       this.shape.hexes.push(quad);
     }
     // Connect bottom band (pents 6-10) to bottom pent (pent 11)
-    const pent11 = this.shape.pents[11];
+    const pent11 = this.shape.polys[11];
     for (let i = 6; i <= 10; i++) {
-      const pent = this.shape.pents[i];
+      const pent = this.shape.polys[i];
       // Each pent in bottom band has neighbor at index 4 (which is pent 11)
       // pent edge: [4,0], pent11 edge: [i-6, (i-5)%5]
       const idxInPent11 = (12 - i) % 5;
@@ -162,8 +256,10 @@ export default class Shell {
       const quad = [
       pent[3],
       pent[2],
+      bottomRingVert + (12 - i) % 5,
       pent11[nextIdxInPent11],
-      pent11[idxInPent11]
+      pent11[idxInPent11],
+      bottomRingVert + (16 - i) % 5
       ];
       this.shape.hexes.push(quad);
     }
@@ -177,7 +273,7 @@ export default class Shell {
 
   normalizeStep() {
     // make edges
-    const polys = [...this.shape.pents, ...(this.shape.hexes || [])];
+    const polys = [...this.shape.polys, ...(this.shape.hexes || [])];
     const edgeMap = new Map();
     for (let polyIdx = 0; polyIdx < polys.length; polyIdx++) {
       const poly = polys[polyIdx];
@@ -265,8 +361,8 @@ export default class Shell {
   separatePents(shape) {
     const used = new Set();
 
-    for (let i = 0; i < shape.pents.length; i++) {
-      const pent = shape.pents[i];
+    for (let i = 0; i < shape.polys.length; i++) {
+      const pent = shape.polys[i];
 
       for (let j = 0; j < pent.length; j++) {
         const vertIndex = pent[j];
@@ -275,7 +371,7 @@ export default class Shell {
           // Vertex already used, create a copy
           const newIndex = shape.verts.length;
           shape.verts.push([...shape.verts[vertIndex]]);
-          shape.pents[i][j] = newIndex;
+          shape.polys[i][j] = newIndex;
         } else {
           // First time using this vertex
           used.add(vertIndex);

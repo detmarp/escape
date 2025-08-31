@@ -95,7 +95,7 @@ export default class Program {
     };
 
     stepBtn.onclick = function() {
-      this.shell.normalize(5);
+      this.shell.normalize(1);
       this.draw.updateGeometry();
     }.bind(this);
 
@@ -108,7 +108,7 @@ export default class Program {
     this.shell = new Shell(this.shape);
     //this.shell.subdivide32();
     this.shell.subdivide();
-    this.shell.normalize(20);
+    this.shell.normalize(10);
 
     //this.dax.ez.add("groundgrid");
 

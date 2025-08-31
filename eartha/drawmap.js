@@ -61,7 +61,7 @@ export default class DrawMap {
       this._addPoly(pos, 0.1);
     }
     // Draw green markers for each pentagon center
-    for (const pent of shell.shape.pents) {
+    for (const pent of shell.shape.polys) {
       const center = shell.getPolyCenter(pent);
       this._addPoly(center, 1.8, 0x00ff00);
     }
@@ -112,14 +112,14 @@ _toLatLong(position) {
   }
 
   _triangulate() {
-    this.pentTris = [];
+    this.polyTris = [];
     this.hexTris = [];
 
     // Pentagon triangles
-    for (const pent of this.shell.shape.pents) {
-      const pentIndex = this.shell.shape.pents.indexOf(pent);
+    for (const pent of this.shell.shape.polys) {
+      const pentIndex = this.shell.shape.polys.indexOf(pent);
       for (let i = 1; i < pent.length - 1; i++) {
-        this.pentTris.push([pent[0], pent[i], pent[i + 1], pentIndex]);
+        this.polyTris.push([pent[0], pent[i], pent[i + 1], pentIndex]);
       }
     }
 
@@ -145,11 +145,11 @@ _toLatLong(position) {
   }
 
   _createPentGeometry() {
-    const vertices = new Float32Array(this.pentTris.length * 9);
-    const indices = new Uint16Array(this.pentTris.length * 3);
+    const vertices = new Float32Array(this.polyTris.length * 9);
+    const indices = new Uint16Array(this.polyTris.length * 3);
 
-    for (let i = 0; i < this.pentTris.length; i++) {
-      const tri = this.pentTris[i];
+    for (let i = 0; i < this.polyTris.length; i++) {
+      const tri = this.polyTris[i];
       const pentIndex = tri[3]; // 4th element is pentagon index
 
       for (let j = 0; j < 3; j++) {
@@ -201,7 +201,7 @@ _toLatLong(position) {
   make3d() {
     this._triangulate();
 
-    this.shell.shape.pents.forEach((pent, i) => {
+    this.shell.shape.polys.forEach((pent, i) => {
       // Mark pentagon center
       const color = this._pentColor(i);
       this.dax.ez.nextColor(color);
@@ -211,11 +211,11 @@ _toLatLong(position) {
       this.dax.ez.position(x, y, z);
     });
 
-    this.shell.shape.pents.forEach((pent, i) => {
+    this.shell.shape.polys.forEach((pent, i) => {
       var info = Shape.getPentInfo(pent);
       for (let j = 0; j < pent.length; j++) {
         // Mark poly edge with neighbor
-        let neighbor = this.shell.pentInfo[i].neighbors[j];
+        let neighbor = this.shell.polyInfo[i].neighbors[j];
         const edgeCenter = this._getEdgeCenter(pent, j);
         this.dax.ez.nextColor(this._pentColor(neighbor));
         this.dax.ez.nextSize(0.15);

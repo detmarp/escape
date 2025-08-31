@@ -9,7 +9,7 @@ export default class DrawShell {
     this.dax = dax;
 
     this.colors = {
-      pent: [
+      poly: [
         0xf078a0, // rgb(240,120,160) - Pink
         0xe63c3c, // rgb(230,60,60) - Soft Red
         0xe66e28, // rgb(230,110,40) - Warm Orange
@@ -47,8 +47,8 @@ export default class DrawShell {
       this.dax.ez.position(...vert);
     }
 
-    for (let i = 0; i < this.shell.shape.pents.length; i++) {
-      const pent = this.shell.shape.pents[i];
+    for (let i = 0; i < this.shell.shape.polys.length; i++) {
+      const pent = this.shell.shape.polys[i];
       const center = this.shell.getPolyCenter(pent);
       this.dax.ez.nextColor(this._pentColor(i));
       this.dax.ez.nextSize(0.35); // Larger ball
@@ -58,19 +58,19 @@ export default class DrawShell {
   }
 
   _pentColor(i) {
-    return this.colors.pent[i % this.colors.pent.length];
+    return this.colors.poly[i % this.colors.poly.length];
   }
 
   _triangulate() {
-    this.pentTris = [];
+    this.polyTris = [];
     this.hexTris = [];
-    console.log("aaa Pentagons count:", this.shell.shape.pents.length);
+    console.log("aaa Pentagons count:", this.shell.shape.polys.length);
     console.log("bbb Hexagons count:", this.shell.shape.hexes ? this.shell.shape.hexes.length : 0);
     // Pentagon triangles
-    for (const pent of this.shell.shape.pents) {
-      const pentIndex = this.shell.shape.pents.indexOf(pent);
+    for (const pent of this.shell.shape.polys) {
+      const pentIndex = this.shell.shape.polys.indexOf(pent);
       for (let i = 1; i < pent.length - 1; i++) {
-        this.pentTris.push([pent[0], pent[i], pent[i + 1], pentIndex]);
+        this.polyTris.push([pent[0], pent[i], pent[i + 1], pentIndex]);
       }
     }
 
@@ -102,10 +102,10 @@ export default class DrawShell {
     // Use the master vertex array
     const vertices = this.vertices;
     // Build the index array from pentTris
-    const indices = new Uint16Array(this.pentTris.length * 3);
+    const indices = new Uint16Array(this.polyTris.length * 3);
 
-    for (let i = 0; i < this.pentTris.length; i++) {
-      const tri = this.pentTris[i];
+    for (let i = 0; i < this.polyTris.length; i++) {
+      const tri = this.polyTris[i];
       for (let j = 0; j < 3; j++) {
         indices[i * 3 + j] = tri[j];
       }
