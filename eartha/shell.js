@@ -1,4 +1,4 @@
-import Shape from "./shape.js";
+//import Shape from "./shape.js";
 import Vector from "./vector.js";
 
 // Class for taking a shell shape and transforming it, adding hexes, etc.
@@ -7,7 +7,8 @@ export default class Shell {
     this.shape = shape;
   }
 
-  subdivide() {
+  // Split dodecahedron into 12 pents, 20 hexes
+  subdivide32() {
     this.separatePents(this.shape);
     for (const poly of this.shape.pents) {
       this.scalePoly(this.shape, poly, 0.4);
@@ -16,76 +17,156 @@ export default class Shell {
     if (!this.shape.hexes) {
       this.shape.hexes = [];
     }
-    // For the 5 vertex indexes on pent[0], create a hex centered at each edge midpoint
-    const p0 = this.shape.pents[0];
-    for (let i = 0; i < p0.length; i++) {
-      const p1 = this.shape.pents[this.shape.info[0].neighbors[i]];
-      const p2 = this.shape.pents[this.shape.info[0].neighbors[(i + 1) % p0.length]];
-      let i2 = (i + 1) % p0.length;
-      var hex = [
-        p0[i],
-        p1[1],
-        p1[0],
-        p2[2],
-        p2[1],
-        p0[i2],
-      ];
-      console.log("hex:", JSON.stringify(hex));
-      this.shape.hexes.push(hex);
-    }
+    const hexBands = [
+      // Top face
+      {
+        pentIndexes: [0],
+        neighborOffsets: [ [0,1], [1,2], [2,3], [3,4], [4,0] ],
+        vertexPattern: (p0, p1, p2, i, i2) => [p0[i], p1[1], p1[0], p2[2], p2[1], p0[i2]]
+      },
+      // Bottom face
+      {
+        pentIndexes: [11],
+        neighborOffsets: [ [0,1], [1,2], [2,3], [3,4], [4,0] ],
+        vertexPattern: (p11, p1, p2, i, i2) => [p11[i], p1[3], p1[2], p2[4], p2[3], p11[i2]]
+      },
+      // Top band
+      {
+        pentIndexes: [1,2,3,4,5],
+        neighborOffsets: [ [4,3] ],
+        vertexPattern: (pA, pB, pC) => [pA[4], pC[1], pC[0], pB[3], pB[2], pA[0]]
+      },
+      // Bottom band
+      {
+        pentIndexes: [6,7,8,9,10],
+        neighborOffsets: [ [4,3] ],
+        vertexPattern: (pA, pB, pC) => [pA[4], pC[2], pC[1], pB[4], pB[3], pA[0]]
+      }
+    ];
 
-    // Make the bottom-face hexes
-    const p11 = this.shape.pents[11];
-    for (let i = 0; i < p11.length; i++) {
-      const p1 = this.shape.pents[this.shape.info[11].neighbors[i]];
-      const p2 = this.shape.pents[this.shape.info[11].neighbors[(i + 1) % p11.length]];
-      let i2 = (i + 1) % p11.length;
-      var hex = [
-        p11[i],
-        p1[3],
-        p1[2],
-        p2[4],
-        p2[3],
-        p11[i2],
-      ];
-      console.log("hex:", JSON.stringify(hex));
-      this.shape.hexes.push(hex);
+    // Then, loop over hexBands and generate hexes:
+    for (const band of hexBands) {
+      for (const pi of band.pentIndexes) {
+        const pent = this.shape.pents[pi];
+        for (let i = 0; i < pent.length; i++) {
+          var hex;
+          // For top/bottom, need to get two neighbors for each edge
+          if (band.neighborOffsets.length > 1) {
+            const p1 = this.shape.pents[this.shape.info[pi].neighbors[i]];
+            const p2 = this.shape.pents[this.shape.info[pi].neighbors[(i + 1) % pent.length]];
+            let i2 = (i + 1) % pent.length;
+            hex = band.vertexPattern(pent, p1, p2, i, i2);
+          } else {
+            // For bands, just use fixed neighbor offsets
+            const pB = this.shape.pents[this.shape.info[pi].neighbors[band.neighborOffsets[0][0]]];
+            const pC = this.shape.pents[this.shape.info[pi].neighbors[band.neighborOffsets[0][1]]];
+            hex = band.vertexPattern(pent, pB, pC);
+          }
+          this.shape.hexes.push(hex);
+        }
+      }
     }
+  }
 
-    // make the top-band hexes
-    for (let i = 0; i < 5; i++) {
-      const pA = this.shape.pents[i + 1];
-      const pB = this.shape.pents[this.shape.info[i + 1].neighbors[4]];
-      const pC = this.shape.pents[this.shape.info[i + 1].neighbors[3]];
-      var hex = [
-        pA[4],
-        pC[1],
-        pC[0],
-        pB[3],
-        pB[2],
-        pA[0],
-      ];
-      console.log("hex:", JSON.stringify(hex));
-      this.shape.hexes.push(hex);
+  subdivide() {
+    // 1. Separate pent vertices and shrink
+    this.separatePents(this.shape);
+    for (const poly of this.shape.pents) {
+      this.scalePoly(this.shape, poly, 0.4);
     }
-
-    // make bottom band hexes
-    for (let i = 0; i < 5; i++) {
-      const pA = this.shape.pents[i + 6];
-      const pB = this.shape.pents[this.shape.info[i + 6].neighbors[4]];
-      const pC = this.shape.pents[this.shape.info[i + 6].neighbors[3]];
-      var hex = [
-        pA[4],
-        pC[2],
-        pC[1],
-        pB[4],
-        pB[3],
-        pA[0],
-      ];
-      console.log("hex:", JSON.stringify(hex));
-      this.shape.hexes.push(hex);
+    // For temp, let's just make quads between all the pents.
+    // and store them in hexes
+    // So to start, pent 0's edges will make quads with the 5 adjacent pents
+    if (!this.shape.hexes) {
+      this.shape.hexes = [];
     }
-
+    // For pent 0, create quads between each edge and its adjacent pent in the first ring
+    // the pent 0 edge is [i, i+1], and its i neighbor uses edge [0, 1]
+    const pent0 = this.shape.pents[0];
+    for (let i = 0; i < pent0.length; i++) {
+      const neighborIdx = this.shape.info[0].neighbors[i];
+      const neighborPent = this.shape.pents[neighborIdx];
+      // pent0 edge: [i, (i+1)%5]
+      // neighbor edge: [0,1]
+      const quad = [
+      pent0[(i + 1) % pent0.length],
+      pent0[i],
+      neighborPent[1],
+      neighborPent[0]
+      ];
+      this.shape.hexes.push(quad);
+    }
+    // For first ring (pents 1-5), create quads between edge 4 and neighbor 4's edge 1
+    for (let pi = 1; pi <= 5; pi++) {
+      const pent = this.shape.pents[pi];
+      const neighborIdx = this.shape.info[pi].neighbors[4];
+      const neighborPent = this.shape.pents[neighborIdx];
+      // pent edge: [4,0], neighbor edge: [1,2]
+      const quad = [
+      pent[0],
+      pent[4],
+      neighborPent[2],
+      neighborPent[1]
+      ];
+      this.shape.hexes.push(quad);
+    }
+    // Mid-band: connect upper ring (pents 1-5) to lower ring (pents 6-10)
+    // Each pent in upper ring (1-5) has a neighbor in lower ring at neighbor index 2
+    for (let pi = 1; pi <= 5; pi++) {
+      const pentUpper = this.shape.pents[pi];
+      const lowerIdx = this.shape.info[pi].neighbors[2];
+      const pentLower = this.shape.pents[lowerIdx];
+      // pentUpper edge: [2,3], pentLower edge: [0,1]
+      const quad = [
+      pentUpper[3],
+      pentUpper[2],
+      pentLower[0],
+      pentLower[4]
+      ];
+      this.shape.hexes.push(quad);
+      // For each pent in upper ring (1-5), create quads with neighbor at index 3 using the right edge
+      const rightIdx = this.shape.info[pi].neighbors[3];
+      const pentRight = this.shape.pents[rightIdx];
+      // pentUpper edge: [3,4], pentRight edge: [0,1]
+      const quadRight = [
+        pentUpper[4],
+        pentUpper[3],
+        pentRight[1],
+        pentRight[0]
+      ];
+      this.shape.hexes.push(quadRight);
+    }
+    // Interconnect bottom band pents (pents 6-10)
+    for (let pi = 6; pi <= 10; pi++) {
+      const pent = this.shape.pents[pi];
+      // Each pent in bottom band has neighbor at index 1 (next in band)
+      const neighborIdx = this.shape.info[pi].neighbors[1];
+      const neighborPent = this.shape.pents[neighborIdx];
+      // pent edge: [1,2], neighbor edge: [3,4]
+      const quad = [
+        pent[2],
+        pent[1],
+        neighborPent[4],
+        neighborPent[3]
+      ];
+      this.shape.hexes.push(quad);
+    }
+    // Connect bottom band (pents 6-10) to bottom pent (pent 11)
+    const pent11 = this.shape.pents[11];
+    for (let i = 6; i <= 10; i++) {
+      const pent = this.shape.pents[i];
+      // Each pent in bottom band has neighbor at index 4 (which is pent 11)
+      // pent edge: [4,0], pent11 edge: [i-6, (i-5)%5]
+      const idxInPent11 = (12 - i) % 5;
+      const nextIdxInPent11 = (idxInPent11 + 1) % pent11.length;
+      const quad = [
+      pent[3],
+      pent[2],
+      pent11[nextIdxInPent11],
+      pent11[idxInPent11]
+      ];
+      this.shape.hexes.push(quad);
+    }
   }
 
   normalize(count) {
@@ -119,7 +200,6 @@ export default class Shell {
       edgeCount++;
     }
     const avgEdgeLength = edgeCount > 0 ? totalLength / edgeCount : 0;
-    console.log("Average edge length:", avgEdgeLength);
 
     var t = 0.6;
     var lengthTarget = avgEdgeLength * 0.9;

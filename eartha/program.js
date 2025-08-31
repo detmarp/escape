@@ -2,6 +2,7 @@ import Dax from '../dax/dax.js';
 import DrawShell from './drawshell.js';
 import Shell from './shell.js';
 import Shape12 from './shape12.js';
+import DrawMap from './drawmap.js';
 
 export default class Program {
   constructor(parent) {
@@ -93,10 +94,10 @@ export default class Program {
       stepBtn.style.transform = 'scale(1.05)';
     };
 
-    stepBtn.onclick = () => {
-      this.shell.normalize(10);
+    stepBtn.onclick = function() {
+      this.shell.normalize(5);
       this.draw.updateGeometry();
-    };
+    }.bind(this);
 
     this.overlay.appendChild(stepBtn);
   }
@@ -105,11 +106,11 @@ export default class Program {
     this.radius = 3;
     this.shape = new Shape12(this.radius);
     this.shell = new Shell(this.shape);
+    //this.shell.subdivide32();
     this.shell.subdivide();
-    this.shell.normalize(30);
+    this.shell.normalize(20);
 
-    ///
-    this.dax.ez.add("groundgrid");
+    //this.dax.ez.add("groundgrid");
 
     this.draw = new DrawShell(this.shell, this.dax);
 
@@ -117,5 +118,9 @@ export default class Program {
     this.dax.scene.add(obj);
 
     this.draw.addMarkers();
+
+    const map = new DrawMap(this.dax);
+    obj = map.makeObject(this.shell);
+    this.dax.scene.add(obj);
   }
 }

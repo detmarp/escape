@@ -1,4 +1,4 @@
-import Shape from "./shape.js";
+//import Shape from "./shape.js";
 import Vector from "./vector.js";
 import Dax from "../dax/dax.js";
 
@@ -46,6 +46,15 @@ export default class DrawShell {
       this.dax.ez.add("ball");
       this.dax.ez.position(...vert);
     }
+
+    for (let i = 0; i < this.shell.shape.pents.length; i++) {
+      const pent = this.shell.shape.pents[i];
+      const center = this.shell.getPolyCenter(pent);
+      this.dax.ez.nextColor(this._pentColor(i));
+      this.dax.ez.nextSize(0.35); // Larger ball
+      this.dax.ez.add("ball");
+      this.dax.ez.position(...center);
+    }
   }
 
   _pentColor(i) {
@@ -55,7 +64,8 @@ export default class DrawShell {
   _triangulate() {
     this.pentTris = [];
     this.hexTris = [];
-
+    console.log("aaa Pentagons count:", this.shell.shape.pents.length);
+    console.log("bbb Hexagons count:", this.shell.shape.hexes ? this.shell.shape.hexes.length : 0);
     // Pentagon triangles
     for (const pent of this.shell.shape.pents) {
       const pentIndex = this.shell.shape.pents.indexOf(pent);
@@ -76,6 +86,9 @@ export default class DrawShell {
   }
 
   _make3d() {
+    // Sync vertices before creating geometry
+    this.syncVertices();
+
     // Create pentagon geometry
     this._createPentGeometry();
 
@@ -86,19 +99,15 @@ export default class DrawShell {
   }
 
   _createPentGeometry() {
-    const vertices = new Float32Array(this.pentTris.length * 9);
+    // Use the master vertex array
+    const vertices = this.vertices;
+    // Build the index array from pentTris
     const indices = new Uint16Array(this.pentTris.length * 3);
 
     for (let i = 0; i < this.pentTris.length; i++) {
       const tri = this.pentTris[i];
-      const pentIndex = tri[3]; // 4th element is pentagon index
-
       for (let j = 0; j < 3; j++) {
-        const vert = this.shell.shape.verts[tri[j]];
-        vertices[i * 9 + j * 3 + 0] = vert[0];
-        vertices[i * 9 + j * 3 + 1] = vert[1];
-        vertices[i * 9 + j * 3 + 2] = vert[2];
-        indices[i * 3 + j] = i * 3 + j;
+        indices[i * 3 + j] = tri[j];
       }
     }
 
@@ -107,25 +116,27 @@ export default class DrawShell {
     geometry.setIndex(new Dax.THREE.BufferAttribute(indices, 1));
     geometry.computeVertexNormals();
 
-    const material = new Dax.THREE.MeshLambertMaterial({ color: 0x00ff00 });
-    const mesh = new Dax.THREE.Mesh(geometry, material);
-    this.group.add(mesh);
+    // Front face (green)
+    const frontMaterial = new Dax.THREE.MeshLambertMaterial({ color: 0x00ff00, side: Dax.THREE.FrontSide });
+    const frontMesh = new Dax.THREE.Mesh(geometry, frontMaterial);
+    this.group.add(frontMesh);
+
+    // Back face (white)
+    const backMaterial = new Dax.THREE.MeshLambertMaterial({ color: 0xffffff, side: Dax.THREE.BackSide });
+    const backMesh = new Dax.THREE.Mesh(geometry, backMaterial);
+    this.group.add(backMesh);
   }
 
   _createHexGeometry() {
-    const vertices = new Float32Array(this.hexTris.length * 9);
+    // Use the master vertex array
+    const vertices = this.vertices;
+    // Build the index array from hexTris
     const indices = new Uint16Array(this.hexTris.length * 3);
 
     for (let i = 0; i < this.hexTris.length; i++) {
       const tri = this.hexTris[i];
-      const hexIndex = tri[3]; // 4th element is hex index
-
       for (let j = 0; j < 3; j++) {
-        const vert = this.shell.shape.verts[tri[j]];
-        vertices[i * 9 + j * 3 + 0] = vert[0];
-        vertices[i * 9 + j * 3 + 1] = vert[1];
-        vertices[i * 9 + j * 3 + 2] = vert[2];
-        indices[i * 3 + j] = i * 3 + j;
+        indices[i * 3 + j] = tri[j];
       }
     }
 
@@ -137,83 +148,10 @@ export default class DrawShell {
     const material = new Dax.THREE.MeshLambertMaterial({ color: 0x0088ff }); // Different color
     const mesh = new Dax.THREE.Mesh(geometry, material);
     this.group.add(mesh);
-  }
 
-  make3d() {
-    this._triangulate();
-
-    this.shell.shape.pents.forEach((pent, i) => {
-      // Mark pentagon center
-      const color = this._pentColor(i);
-      this.dax.ez.nextColor(color);
-      this.dax.ez.nextSize(0.25);
-      this.dax.ez.add("ball");
-      const [x, y, z] = this.shell.getPolyCenter(pent);
-      this.dax.ez.position(x, y, z);
-    });
-
-    this.shell.shape.pents.forEach((pent, i) => {
-      var info = Shape.getPentInfo(pent);
-      for (let j = 0; j < pent.length; j++) {
-        // Mark poly edge with neighbor
-        let neighbor = this.shell.pentInfo[i].neighbors[j];
-        const edgeCenter = this._getEdgeCenter(pent, j);
-        this.dax.ez.nextColor(this._pentColor(neighbor));
-        this.dax.ez.nextSize(0.15);
-        this.dax.ez.add("ball");
-        this.dax.ez.position(...edgeCenter);
-      }
-    });
-
-    const group = new Dax.THREE.Group();
-    this.group = group;
-
-    this.vertices = new Float32Array(this.shell.shape.tris.length * 9);
-    this.indices = new Uint16Array(this.shell.shape.tris.length * 3);
-
-    for (let i = 0; i < this.shell.shape.tris.length; i++) {
-      const tri = this.shell.shape.tris[i];
-      for (let j = 0; j < 3; j++) {
-        const vert = this.shell.shape.verts[tri[j]];
-        this.vertices[i * 9 + j * 3 + 0] = vert[0];
-        this.vertices[i * 9 + j * 3 + 1] = vert[1];
-        this.vertices[i * 9 + j * 3 + 2] = vert[2];
-        this.indices[i * 3 + j] = i * 3 + j;
-      }
-    }
-
-    const geometry = new Dax.THREE.BufferGeometry();
-    geometry.setAttribute('position', new Dax.THREE.BufferAttribute(this.vertices, 3));
-    geometry.setIndex(new Dax.THREE.BufferAttribute(this.indices, 1));
-    geometry.computeVertexNormals();
-    geometry.computeBoundingSphere();
-
-    const frontMaterial = new Dax.THREE.MeshLambertMaterial({ color: 0x00ff00, side: Dax.THREE.FrontSide });
-    const frontMesh = new Dax.THREE.Mesh(geometry, frontMaterial);
-    group.add(frontMesh);
-
-    const backMaterial = new Dax.THREE.MeshLambertMaterial({ color: 0x444444, side: Dax.THREE.BackSide });
+    const backMaterial = new Dax.THREE.MeshLambertMaterial({ color: 0xffffff, side: Dax.THREE.BackSide });
     const backMesh = new Dax.THREE.Mesh(geometry, backMaterial);
-    group.add(backMesh);
-
-    const wireframeMaterial = new Dax.THREE.MeshBasicMaterial({
-      color: 0x000000,
-      wireframe: true,
-      polygonOffsetFactor: -1,
-      polygonOffsetUnits: -1
-    });
-    const wireframeMesh = new Dax.THREE.Mesh(geometry, wireframeMaterial);
-    group.add(wireframeMesh);
-    // Draw a white ball at the last two vertex positions
-    this.dax.ez.nextColor(0xffffff);
-    this.dax.ez.nextSize(0.3);
-    this.dax.ez.add("ball");
-    this.dax.ez.position(...this.shell.shape.verts[this.shell.shape.verts.length - 1]);
-    this.dax.ez.nextColor(0xffffff);
-    this.dax.ez.nextSize(0.3);
-    this.dax.ez.add("ball");
-    this.dax.ez.position(...this.shell.shape.verts[this.shell.shape.verts.length - 2]);
-    return group;
+    this.group.add(backMesh);
   }
 
   _getEdgeCenter(pent, i) {
@@ -223,21 +161,44 @@ export default class DrawShell {
   }
 
   updateGeometry() {
-    // Update the vertices array with new vertex positions
-    for (let i = 0; i < this.tris.length; i++) {
-      const tri = this.tris[i];
-      for (let j = 0; j < 3; j++) {
-        const vert = this.shell.shape.verts[tri[j]];
-        this.vertices[i * 9 + j * 3 + 0] = vert[0];
-        this.vertices[i * 9 + j * 3 + 1] = vert[1];
-        this.vertices[i * 9 + j * 3 + 2] = vert[2];
-      }
-    }
+    // Sync vertices to latest positions
+    this.syncVertices();
 
-    // Tell THREE.js the geometry has changed
-    const geometry = this.group.children[0].geometry; // Get geometry from first mesh
-    geometry.attributes.position.needsUpdate = true;
-    geometry.computeVertexNormals(); // Recalculate lighting
-    geometry.computeBoundingSphere(); // Recalculate bounds
+    // Update pent geometry
+    const pentFrontGeometry = this.group.children[0].geometry;
+    const pentBackGeometry = this.group.children[1].geometry;
+    pentFrontGeometry.attributes.position.array.set(this.vertices);
+    pentBackGeometry.attributes.position.array.set(this.vertices);
+    pentFrontGeometry.attributes.position.needsUpdate = true;
+    pentBackGeometry.attributes.position.needsUpdate = true;
+    pentFrontGeometry.computeVertexNormals();
+    pentBackGeometry.computeVertexNormals();
+    pentFrontGeometry.computeBoundingSphere();
+    pentBackGeometry.computeBoundingSphere();
+
+    // If hex geometry exists, update it too
+    if (this.group.children.length > 3) {
+      const hexFrontGeometry = this.group.children[2].geometry;
+      const hexBackGeometry = this.group.children[3].geometry;
+      hexFrontGeometry.attributes.position.array.set(this.vertices);
+      hexBackGeometry.attributes.position.array.set(this.vertices);
+      hexFrontGeometry.attributes.position.needsUpdate = true;
+      hexBackGeometry.attributes.position.needsUpdate = true;
+      hexFrontGeometry.computeVertexNormals();
+      hexBackGeometry.computeVertexNormals();
+      hexFrontGeometry.computeBoundingSphere();
+      hexBackGeometry.computeBoundingSphere();
+    }
+  }
+
+  syncVertices() {
+    // Create a flat Float32Array of all vertex positions
+    this.vertices = new Float32Array(this.shell.shape.verts.length * 3);
+    for (let i = 0; i < this.shell.shape.verts.length; i++) {
+      const vert = this.shell.shape.verts[i];
+      this.vertices[i * 3 + 0] = vert[0];
+      this.vertices[i * 3 + 1] = vert[1];
+      this.vertices[i * 3 + 2] = vert[2];
+    }
   }
 }
