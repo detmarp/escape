@@ -62,7 +62,7 @@ export default class Shell {
             const pC = this.shape.polys[this.shape.info[pi].neighbors[band.neighborOffsets[0][1]]];
             hex = band.vertexPattern(pent, pB, pC);
           }
-          this.shape.hexes.push(hex);
+          this._addPoly(hex, 'hex');
         }
       }
     }
@@ -114,7 +114,7 @@ export default class Shell {
       neighborPent[0],
       topRingVert + ((i + 0) % 5)
       ];
-      this.shape.hexes.push(quad);
+      this._addPoly(quad, 'top');
     }
 
     var midUpperRingVert = this.shape.verts.length;
@@ -179,7 +179,7 @@ export default class Shell {
       neighborPent[1],
       topRingVert + ((pi + 4) % 5)
       ];
-      this.shape.hexes.push(quad);
+      this._addPoly(quad, 'upper');
     }
     // Mid-band: connect upper ring (pents 1-5) to lower ring (pents 6-10)
     // Each pent in upper ring (1-5) has a neighbor in lower ring at neighbor index 2
@@ -196,7 +196,7 @@ export default class Shell {
       pentLower[4],
       midLowerRingVert + (pi - 2 + 5) % 5,
       ];
-      this.shape.hexes.push(quad);
+      this._addPoly(quad, 'mid');
       // For each pent in upper ring (1-5), create quads with neighbor at index 3 using the right edge
       const rightIdx = this.shape.info[pi].neighbors[3];
       const pentRight = this.shape.polys[rightIdx];
@@ -209,7 +209,7 @@ export default class Shell {
         pentRight[0],
         midUpperRingVert + (pi + 4 + 5) % 5,
       ];
-      this.shape.hexes.push(quadRight);
+      this._addPoly(quadRight, 'lower');
     }
 
     var bottomRingVert = this.shape.verts.length;
@@ -243,7 +243,7 @@ export default class Shell {
         neighborPent[3],
         bottomRingVert + (7 - pi + 10) % 5
       ];
-      this.shape.hexes.push(quad);
+      this._addPoly(quad, 'bottom');
     }
     // Connect bottom band (pents 6-10) to bottom pent (pent 11)
     const pent11 = this.shape.polys[11];
@@ -261,8 +261,44 @@ export default class Shell {
       pent11[idxInPent11],
       bottomRingVert + (16 - i) % 5
       ];
-      this.shape.hexes.push(quad);
+      this._addPoly(quad, 'quad');
     }
+
+      // let's make a summary object and print it
+      var shell = {
+      }
+      shell.verts = this.shape.verts.slice(0, 60);
+      shell.pents = this.shape.polys.slice(0, 12).map(poly => poly.slice(0, 5));
+      shell.centers = this.shape.polys.slice(0, 12).map(poly => this.getPolyCenter(poly));
+      shell.neighbors = this.shape.info.slice(0, 12).map(info => info.neighbors.slice(0, 5));
+      shell.quads = [];
+      for (let i = 12; i < this.shape.polys.length; i++) {
+        const poly = this.shape.polys[i];
+        const quad = poly.filter(idx => idx < 60);
+        if (quad.length > 0) {
+          shell.quads.push(quad);
+        }
+      }
+      shell.vertMap = Array(60).fill(null);
+      for (let pi = 0; pi < 12; pi++) {
+        const poly = shell.pents[pi];
+        for (let vi = 0; vi < poly.length; vi++) {
+          const vertIdx = poly[vi];
+          shell.vertMap[vertIdx] = [pi, vi];
+        }
+      }
+      console.log("sss");
+      console.log(JSON.stringify(shell));
+
+  }
+
+  _addPoly(indexes, id) {
+    var index = this.shape.polys.length;
+    this.shape.polys.push(indexes);
+    if (!this.shape.info[index]) {
+      this.shape.info[index] = {};
+    }
+    this.shape.info[index].id = id;
   }
 
   normalize(count) {

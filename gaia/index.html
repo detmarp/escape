@@ -1,0 +1,44 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gaia</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      margin: 24px;
+      font-family: sans-serif;
+      font-size: 1.1rem;
+    }
+    .tab-bar {
+      display: flex;
+      margin-bottom: 12px;
+    }
+    .tab-bar button {
+      padding: 4px 12px;
+      font-size: 1.1rem;
+      font-family: inherit;
+      background: #eee;
+      border: 1px solid #999;
+      border-right: none;
+      cursor: pointer;
+    }
+    .tab-bar button:last-child {
+      border-right: 1px solid #999;
+    }
+    .tab-bar button.active {
+      background: #fff;
+      border-left: 1px solid #999;
+      border-top: 1px solid #999;
+      border-right: 1px solid #999;
+      border-bottom: none;
+      position: relative;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <script src="./main.js"></script>
+</body>
+</html>

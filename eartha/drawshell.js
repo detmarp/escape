@@ -64,8 +64,6 @@ export default class DrawShell {
   _triangulate() {
     this.polyTris = [];
     this.hexTris = [];
-    console.log("aaa Pentagons count:", this.shell.shape.polys.length);
-    console.log("bbb Hexagons count:", this.shell.shape.hexes ? this.shell.shape.hexes.length : 0);
     // Pentagon triangles
     for (const pent of this.shell.shape.polys) {
       const pentIndex = this.shell.shape.polys.indexOf(pent);
@@ -89,12 +87,55 @@ export default class DrawShell {
     // Sync vertices before creating geometry
     this.syncVertices();
 
-    // Create pentagon geometry
-    this._createPentGeometry();
+    // Build a map: id -> array of poly indexes
+    const idMap = new Map();
+    for (let i = 0; i < this.shell.shape.polys.length; i++) {
+      const info = this.shell.shape.info[i];
+      const id = (info && info.id !== undefined) ? info.id : 0;
+      if (!idMap.has(id)) idMap.set(id, []);
+      idMap.get(id).push(i);
+    }
 
-    // Create hex geometry if hexes exist
-    if (this.hexTris.length > 0) {
-      this._createHexGeometry();
+    // For each id, build a mesh
+    let colorCount = this.colors.poly.length;
+    let meshIdx = 0;
+    for (const [id, polyIndexes] of idMap.entries()) {
+      // Triangulate all polys with this id
+      let tris = [];
+      for (const polyIdx of polyIndexes) {
+        const poly = this.shell.shape.polys[polyIdx];
+        for (let i = 1; i < poly.length - 1; i++) {
+          tris.push([poly[0], poly[i], poly[i + 1]]);
+        }
+      }
+      // Build index array
+      const indices = new Uint16Array(tris.length * 3);
+      for (let i = 0; i < tris.length; i++) {
+        indices[i * 3 + 0] = tris[i][0];
+        indices[i * 3 + 1] = tris[i][1];
+        indices[i * 3 + 2] = tris[i][2];
+      }
+      // Geometry
+      const geometry = new Dax.THREE.BufferGeometry();
+      geometry.setAttribute('position', new Dax.THREE.BufferAttribute(this.vertices, 3));
+      geometry.setIndex(new Dax.THREE.BufferAttribute(indices, 1));
+      geometry.computeVertexNormals();
+
+      // Color: hash id to pick from colors.poly
+      let hash = typeof id === "string" ? [...id].reduce((a, c) => a + c.charCodeAt(0), 0) : id;
+      let color = this.colors.poly[Math.abs(hash) % colorCount];
+
+      // Front face
+      const frontMaterial = new Dax.THREE.MeshLambertMaterial({ color, side: Dax.THREE.FrontSide });
+      const frontMesh = new Dax.THREE.Mesh(geometry, frontMaterial);
+      this.group.add(frontMesh);
+
+      // Back face (white)
+      const backMaterial = new Dax.THREE.MeshLambertMaterial({ color: 0xffffff, side: Dax.THREE.BackSide });
+      const backMesh = new Dax.THREE.Mesh(geometry, backMaterial);
+      this.group.add(backMesh);
+
+      meshIdx += 2;
     }
   }
 

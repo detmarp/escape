@@ -103,7 +103,7 @@ export default class Program {
   }
 
   setupScene() {
-    this.radius = 3;
+    this.radius = 1;
     this.shape = new Shape12(this.radius);
     this.shell = new Shell(this.shape);
     //this.shell.subdivide32();
