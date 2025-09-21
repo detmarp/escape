@@ -4,6 +4,7 @@
     { "name": "basic", "source": "./clockbasic.js" },
     { "name": "week", "source": "./clockweek.js" },
     { "name": "sunmap", "source": "./clocksunmap.js" },
+    { "name": "planets", "source": "./clockplanets.js" },
     {}
   ]
 }

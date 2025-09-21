@@ -65,12 +65,10 @@ export default class ClockRadio {
     this.drawColon(colonX, colonY, now);
 
     // Draw PM indicator if needed
-    if (isPM) {
-      this.ctx.fillStyle = this.colors.segmentOn;
-      this.ctx.font = '16px Arial';
-      this.ctx.textAlign = 'right';
-      this.ctx.fillText('PM', 380, startY + digitHeight + 30);
-    }
+    this.setBlur(isPM);
+    this.ctx.font = '16px Arial';
+    this.ctx.textAlign = 'right';
+    this.ctx.fillText('PM', 380, startY + digitHeight + 30);
   }
 
   fillPoints(points, on) {
@@ -85,7 +83,7 @@ export default class ClockRadio {
     this.endPath();
   }
 
-  startPath(on) {
+  setBlur(on) {
     if (on) {
       this.ctx.shadowColor = this.colors.glow;
       this.ctx.shadowBlur = 5;
@@ -94,6 +92,10 @@ export default class ClockRadio {
       this.ctx.shadowBlur = 0;
       this.ctx.fillStyle = this.colors.segmentOff;
     }
+  }
+
+  startPath(on) {
+    this.setBlur(on);
     this.ctx.beginPath();
   }
 

@@ -1,9 +1,12 @@
+import Mode from './mode.js';
+
 export default class Program {
   constructor(parent) {
     this.parent = parent;
     this.config = null;
     this.startTimestamp = Date.now(); // Capture start time
     this.speedUp = 0; // Speed multiplier (0 = normal time)
+    this.mode = new Mode(this);
   }
 
   async setup() {
@@ -56,7 +59,7 @@ export default class Program {
       // Initialize the canvas with the appropriate drawer
       this.makeCanvas(canvas, drawer.source);
       this.onClick(canvas, () => {
-        this.doSingleLayout(index);
+        this.gotoMode(index);
       });
     });
 
@@ -70,6 +73,7 @@ export default class Program {
     this.resizeCallback();
 
     this.persistClear();
+    this.current = 'menu';
   }
 
   onClick(canvas, callback) {
@@ -108,7 +112,7 @@ export default class Program {
     this.makeCanvas(canvas, drawer.source);
 
     this.onClick(canvas, () => {
-      this.doMenuLayout();
+      this.gotoMode('menu');
     });
 
     this.resizeCallback = () => {
@@ -117,6 +121,7 @@ export default class Program {
     this.resizeCallback();
 
     this.persistSave(selectedIndex);
+    this.current = drawer.name;
   }
 
   setSizeCentered(element) {
@@ -169,12 +174,28 @@ export default class Program {
   async run() {
     await this.setup();
 
+    let mode = this.mode.checkUrl();
     let selected = this.persistGet();
-    if (selected === null || selected < 0 || selected >= this.drawers.length) {
+    this.gotoMode(mode ? mode : selected);
+  }
+
+  getCurrentMode() {
+    return this.current;
+  }
+
+  gotoMode(mode) {
+    let index = -1;
+    if (typeof mode === 'string') {
+      index = this.drawers.findIndex(drawer => drawer.name === mode);
+    } else if (typeof mode === 'number' && mode >= 0 && mode < this.drawers.length) {
+      index = mode;
+    }
+    if (index >= 0) {
+      this.doSingleLayout(index);
+    } else {
       this.doMenuLayout();
     }
-    else {
-      this.doSingleLayout(selected);
-    }
+
+    this.mode.set(this.current);
   }
 }
