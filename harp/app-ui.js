@@ -41,8 +41,10 @@ export default class AppUI {
         cursor: "pointer",
         outline: "none",
         display: "block",
+        userSelect: "none",
+        WebkitUserSelect: "none",
       });
-      btn.addEventListener("touchstart", e => { e.stopPropagation(); onClick && onClick(e); });
+      // Only use click, prevent double increment on touch devices
       btn.addEventListener("click", e => { e.stopPropagation(); onClick && onClick(e); });
       return btn;
     };
