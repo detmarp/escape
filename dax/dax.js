@@ -4,6 +4,7 @@ import DaxJunk from './daxjunk.js';
 import DaxEz from './daxez.js';
 import DaxEngine from './daxengine.js';
 
+/// Dax is a easy three.js wrapper, that you init with a canvas
 export default class Dax {
   static THREE = three;
 

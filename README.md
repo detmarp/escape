@@ -12,3 +12,5 @@
 - [Dax](dax/)
 - [Eartha](eartha/)
 - [Faye](faye/)
+- [Gaia](gaia/)
+- [Harp](harp/)
