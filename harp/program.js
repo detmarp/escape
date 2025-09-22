@@ -1,16 +1,13 @@
-import Dax from '../dax/dax.js';
 import AppCanvas from './app-canvas.js';
 import AppScene from './app-scene.js';
-import AppControls from './app-controls.js';
 import AppUI from './app-ui.js';
 import AppContainer from './app-container.js';
+import HarpScene from './harp-scene.js';
+import HarpUI from './harp-ui.js';
 
 export default class Program {
   constructor(parent) {
     this.parent = parent;
-    //this.scene = new AppScene(this.canvas, this);
-    //this.controls = new AppControls(this.canvas, this);
-    //this.dax = new Dax(this.canvas.canvas);
   }
 
   run() {
@@ -23,8 +20,14 @@ export default class Program {
     this.ui = new AppUI(this.container.div, this);
     this.ui.run();
 
-    this.info = this.ui.text();
-    this._updateInfo();
+    this.scene = new AppScene(this.canvas.canvas, this);
+    this.scene.run();
+
+    this.harpScene = new HarpScene(this.scene, this);
+    this.harpScene.run();
+
+    this.harpUI = new HarpUI(this.ui, this);
+    this.harpUI.run();
 
     this._onResize();
   }
@@ -32,25 +35,9 @@ export default class Program {
   _onResize() {
     if (this.canvas) {
       this.canvas.resize();
-      this._updateInfo();
-    }
-
-    console.log('Window dimensions:', window.innerWidth, window.innerHeight);
-    if (this.canvas && this.canvas.canvas) {
-      console.log('Canvas dimensions:', this.canvas.canvas.width, this.canvas.canvas.height);
-    }
-  }
-
-  _updateInfo() {
-    if (this.info) {
-      const winW = window.innerWidth;
-      const winH = window.innerHeight;
-      const canvasW = this.canvas?.canvas?.width ?? 0;
-      const canvasH = this.canvas?.canvas?.height ?? 0;
-      this.info.textContent =
-        `Window:\n  ${winW} x ${winH}\n` +
-        `Canvas:\n  ${canvasW} x ${canvasH}`;
-      this.info.style.whiteSpace = 'pre'; // Preserve newlines
+      if (this.harpUI && typeof this.harpUI.updateInfo === 'function') {
+        this.harpUI.updateInfo();
+      }
     }
   }
 }
