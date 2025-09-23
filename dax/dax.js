@@ -9,6 +9,7 @@ export default class Dax {
   static THREE = three;
 
   constructor(canvas) {
+    this.THREE = this.constructor.THREE; // Instance property
     this.canvas = canvas;
     this.initThree();
 
