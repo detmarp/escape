@@ -22,22 +22,28 @@ export default class Program {
 
     this.scene = new AppScene(this.canvas.canvas, this);
     this.scene.run();
+    this.scene.dax.onWork = this._onWork.bind(this);
+    this.scene.dax.onDraw = this._onDraw.bind(this);
 
-    this.harpScene = new HarpScene(this.scene, this);
+    this.harpScene = new HarpScene(this);
     this.harpScene.run();
 
-    this.harpUI = new HarpUI(this.ui, this);
+    this.harpUI = new HarpUI(this);
     this.harpUI.run();
 
     this._onResize();
   }
 
+  _onWork() {
+    this.harpUI.draw();
+  }
+
+  _onDraw() {
+  }
+
   _onResize() {
     if (this.canvas) {
       this.canvas.resize();
-      if (this.harpUI && typeof this.harpUI.updateInfo === 'function') {
-        this.harpUI.updateInfo();
-      }
     }
   }
 }

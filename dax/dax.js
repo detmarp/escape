@@ -15,6 +15,7 @@ export default class Dax {
     this.engine = new DaxEngine(this);
     this.ez = new DaxEz(this);
     this.junk = new DaxJunk();
+    this.frame = 0;
   }
 
   init(canvas) {
@@ -60,13 +61,23 @@ export default class Dax {
       this.time = newTime;
     }
 
+    if (this.onWork) {
+      this.onWork(this.dt, this.time, this.frame);
+    }
+
     if (this.controls) {
       this.controls.update();
     }
   }
 
   draw() {
+    this.frame++;
     this.resizeView();
+
+    if (this.onDraw) {
+      this.onDraw(this.dt, this.time, this.frame);
+    }
+
     this.renderer.render(this.scene, this.camera);
   }
 

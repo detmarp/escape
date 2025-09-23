@@ -1,8 +1,8 @@
 export default class HarpUI {
-  constructor(appUI, program) {
-    this.appUI = appUI;
+  constructor(program) {
     this.program = program;
     this.info = null;
+    this.appUI = this.program.ui
   }
 
   run() {
@@ -10,18 +10,24 @@ export default class HarpUI {
     this.updateInfo();
   }
 
+  draw() {
+    this.updateInfo();
+  }
+
   updateInfo() {
-    if (this.info && this.program && this.program.canvas) {
-      const winW = window.innerWidth;
-      const winH = window.innerHeight;
-      const canvasW = this.program.canvas?.canvas?.width ?? 0;
-      const canvasH = this.program.canvas?.canvas?.height ?? 0;
-      this.info.textContent =
-        `Window:\n  ${winW} x ${winH}\n` +
-        `Canvas:\n  ${canvasW} x ${canvasH}`;
-      this.info.style.whiteSpace = 'pre';
+    if (!this.info || !this.program || !this.program.canvas) {
+      return;
     }
-    console.log('Window dimensions:', window.innerWidth, window.innerHeight);
-    console.log('Canvas dimensions:', this.program.canvas?.canvas?.width, this.program.canvas?.canvas?.height);
+
+    const winW = window.innerWidth;
+    const winH = window.innerHeight;
+    const canvasW = this.program.canvas?.canvas?.width ?? 0;
+    const canvasH = this.program.canvas?.canvas?.height ?? 0;
+    const frame = this.program.scene.dax?.frame ?? 'N/A';
+    this.info.textContent =
+      `Window:  ${winW} x ${winH}\n` +
+      `Canvas:  ${canvasW} x ${canvasH}\n` +
+      `Frame #: ${frame}`;
+    this.info.style.whiteSpace = 'pre';
   }
 }
