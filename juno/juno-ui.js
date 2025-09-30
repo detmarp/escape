@@ -21,6 +21,7 @@ export default class JunoUi {
         left: 0,
         width: '100vw',
         minHeight: '100vh',
+        maxHeight: '100vh',
         fontFamily: 'sans-serif',
         fontSize: '1.25em',
         color: '#222',
@@ -29,9 +30,10 @@ export default class JunoUi {
         padding: '0',
         margin: '0',
         zIndex: 10,
-        overflow: 'hidden',
+        overflowY: 'auto',
         outline: 'none',
-        border: 'none'
+        border: 'none',
+        WebkitOverflowScrolling: 'touch'
       },
       'juno-top': {
         padding: '18px 0 0 18px',
@@ -80,7 +82,9 @@ export default class JunoUi {
     newGameBtn.style.cursor = 'pointer';
     newGameBtn.style.outline = 'none';
     newGameBtn.style.userSelect = 'none';
-    newGameBtn.addEventListener('click', () => this._onNewgame());
+    newGameBtn.style.touchAction = 'manipulation';
+    newGameBtn.addEventListener('click', e => { e.preventDefault(); this._onNewgame(); });
+    newGameBtn.addEventListener('touchstart', e => { e.preventDefault(); });
     topDiv.appendChild(newGameBtn);
 
     const hr = document.createElement('hr');
@@ -93,6 +97,24 @@ export default class JunoUi {
     Object.assign(this.bottomDiv.style, this.styles['juno-bottom']);
     this.container.appendChild(this.bottomDiv);
     this._makeBottom();
+
+    // Mouse drag scroll for desktop
+    let isDragging = false, startY = 0, scrollTop = 0;
+    this.container.addEventListener('mousedown', e => {
+      isDragging = true;
+      startY = e.clientY;
+      scrollTop = this.container.scrollTop;
+      this.container.style.cursor = 'grab';
+    });
+    window.addEventListener('mousemove', e => {
+      if (isDragging) {
+        this.container.scrollTop = scrollTop - (e.clientY - startY);
+      }
+    });
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+      this.container.style.cursor = '';
+    });
   }
 
   _makeBottom() {
@@ -154,11 +176,9 @@ export default class JunoUi {
       btn.style.background = '#f8f8f8';
       btn.style.cursor = 'pointer';
       btn.style.fontSize = '1em';
-      btn.addEventListener('click', () => {
-        if (!state.hold) return;
-        state.hold[i] = !state.hold[i];
-        this._makeBottom();
-      });
+      btn.style.touchAction = 'manipulation';
+      btn.addEventListener('click', e => { e.preventDefault(); this._onToggle(i); });
+      btn.addEventListener('touchstart', e => { e.preventDefault(); });
 
       cell.appendChild(valueDiv);
       cell.appendChild(btn);
@@ -190,7 +210,9 @@ export default class JunoUi {
     rollBtn.style.color = '#222';
     rollBtn.style.cursor = 'pointer';
     rollBtn.style.fontSize = '1em';
-    rollBtn.addEventListener('click', () => this._onRoll());
+    rollBtn.style.touchAction = 'manipulation';
+    rollBtn.addEventListener('click', e => { e.preventDefault(); this._onRoll(); });
+    rollBtn.addEventListener('touchstart', e => { e.preventDefault(); });
     row.appendChild(rollBtn);
 
     const acceptBtn = document.createElement('button');
@@ -202,7 +224,9 @@ export default class JunoUi {
     acceptBtn.style.color = '#222';
     acceptBtn.style.cursor = 'pointer';
     acceptBtn.style.fontSize = '1em';
-    acceptBtn.addEventListener('click', () => this._onAccept());
+    acceptBtn.style.touchAction = 'manipulation';
+    acceptBtn.addEventListener('click', e => { e.preventDefault(); this._onAccept(); });
+    acceptBtn.addEventListener('touchstart', e => { e.preventDefault(); });
     row.appendChild(acceptBtn);
 
     return row;
@@ -210,31 +234,30 @@ export default class JunoUi {
 
   _makeLines() {
     const state = this.program.fiver.state;
-    const categories = this.program.fiver.categories;
+    const categories = state.categories;
     const lines = document.createElement('div');
     lines.style.display = 'flex';
     lines.style.flexDirection = 'column';
     lines.style.gap = '8px';
+    const categoryKeys = categories ? Object.keys(categories) : [];
     for (let i = 0; i < state.lines.length; i++) {
       const row = document.createElement('div');
       row.style.display = 'flex';
       row.style.alignItems = 'center';
       row.style.gap = '16px';
-      // Category label
-      const label = document.createElement('div');
-      label.textContent = categories && categories[i] ? categories[i] : `Line ${i + 1}`;
-      label.style.width = '120px';
-      row.appendChild(label);
-      // Line value
+
+      // Value
       const value = document.createElement('div');
       value.textContent = '- ' + (state.lines[i] == null ? '' : state.lines[i]);
       value.style.width = '48px';
       row.appendChild(value);
-      // Preview value
+
+      // Preview
       const preview = document.createElement('div');
       preview.textContent = '- ' + (state.preview && state.preview[i] != null ? state.preview[i] : '');
       preview.style.width = '48px';
       row.appendChild(preview);
+
       // Select button
       const btn = document.createElement('button');
       btn.textContent = (i === state.selectedLine) ? 'Selected' : '-';
@@ -244,11 +267,27 @@ export default class JunoUi {
       btn.style.background = '#f8f8f8';
       btn.style.cursor = 'pointer';
       btn.style.fontSize = '1em';
-      btn.addEventListener('click', () => {
-        state.selectedLine = i;
+      btn.style.touchAction = 'manipulation';
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        if (i === state.selectedLine) {
+          state.selectedLine = null;
+        } else {
+          state.selectedLine = i;
+        }
         this._makeBottom();
       });
+      btn.addEventListener('touchstart', e => { e.preventDefault(); });
       row.appendChild(btn);
+
+      // Label (category key) at the end, left justified
+      const label = document.createElement('div');
+      label.textContent = categoryKeys[i] || `Line ${i + 1}`;
+      label.style.width = 'auto';
+      label.style.textAlign = 'left';
+      label.style.fontWeight = '500';
+      row.appendChild(label);
+
       lines.appendChild(row);
     }
     return lines;
@@ -286,6 +325,7 @@ export default class JunoUi {
 
   _onToggle(index) {
     const state = this.program.fiver.state;
+    if (state.dice[index] == null) return;
     if (!state.hold) return;
     state.hold[index] = !state.hold[index];
     this._makeBottom();
@@ -293,9 +333,13 @@ export default class JunoUi {
 
   _onRoll() {
     this.program.fiver.doRoll();
+    this.program.fiver.doPreviews();
+    this.program.fiver.doAutoSelect();
     this._makeBottom();
   }
 
   _onAccept() {
+    this.program.fiver.doAccept();
+    this._makeBottom();
   }
 }
