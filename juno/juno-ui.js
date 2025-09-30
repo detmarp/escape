@@ -270,12 +270,7 @@ export default class JunoUi {
       btn.style.touchAction = 'manipulation';
       btn.addEventListener('click', e => {
         e.preventDefault();
-        if (i === state.selectedLine) {
-          state.selectedLine = null;
-        } else {
-          state.selectedLine = i;
-        }
-        this._makeBottom();
+        this._onSelect(i);
       });
       btn.addEventListener('touchstart', e => { e.preventDefault(); });
       row.appendChild(btn);
@@ -340,6 +335,17 @@ export default class JunoUi {
 
   _onAccept() {
     this.program.fiver.doAccept();
+    this._makeBottom();
+  }
+
+  _onSelect(index) {
+    const state = this.program.fiver.state;
+    if (state.roll === 0 || state.gameOver) return;
+    if (index === state.selectedLine) {
+      state.selectedLine = null;
+    } else {
+      state.selectedLine = index;
+    }
     this._makeBottom();
   }
 }
