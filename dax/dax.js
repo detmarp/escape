@@ -28,12 +28,24 @@ export default class Dax {
     this._gameLoop();
   }
 
+  resetCamera() {
+    this.camera.position.set(0, 10, 10);
+    this.camera.lookAt(0, 5, 0);
+    if (this.controls) {
+      this.controls.target.set(0, 5, 0);
+      this.controls.update();
+      this.controls.enableDamping = false;
+      this.controls.enableDamping = true;
+      this.controls.dampingFactor = 0.05;
+      this.controls.velocity = new this.THREE.Vector3(0, 0, 0);
+      this.controls.angularVelocity = new this.THREE.Vector3(0, 0, 0);
+    }
+  }
+
   startOrbitControls() {
     try {
       this.controls = new OrbitControls(this.camera, this.canvas);
-      this.controls.enableDamping = true;
-      this.controls.dampingFactor = 0.05;
-      this.controls.target.set(0, 1, 0);
+      this.resetCamera();
     } catch (error) {
       console.error('OrbitControls error:', error);
       console.error('Stack trace:', error.stack);
@@ -106,16 +118,20 @@ export default class Dax {
 
     this.scene.background = new this.constructor.THREE.Color(0x404080);
 
-    this.camera.position.x = -2;
-    this.camera.position.y = 5;
-    this.camera.position.z = 10;
-    this.camera.lookAt(0, 1, 0);
+    this.resetCamera();
 
-    const ambientLight = new this.constructor.THREE.AmbientLight(0x8888aa, 1);
+    // Low ambient, medium blue
+    const ambientLight = new this.constructor.THREE.AmbientLight(0x667788, 1.0);
     this.scene.add(ambientLight);
 
-    const directionalLight = new this.constructor.THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(5, 15, 5);
-    this.scene.add(directionalLight);
+    // Overhead sky blue directional
+    const skyLight = new this.constructor.THREE.DirectionalLight(0xddeeff, 1.2);
+    skyLight.position.set(0, 20, 0);
+    this.scene.add(skyLight);
+
+    // Distant sun, white/yellow, for specular
+    const sunLight = new this.constructor.THREE.DirectionalLight(0xffeedd, 1.5);
+    sunLight.position.set(10, 20, 20);
+    this.scene.add(sunLight);
   }
 }

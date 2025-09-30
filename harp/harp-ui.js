@@ -7,6 +7,9 @@ export default class HarpUI {
 
   run() {
     this.info = this.appUI.addText();
+    this.appUI.addButton("Reset camera", () => {
+      this.program.scene.dax.resetCamera();
+    });
     this.updateInfo();
   }
 
