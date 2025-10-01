@@ -5,15 +5,21 @@ export default class Fiver {
     this.state = new FiverState();
   }
 
+  canRoll() {
+    return !this.state.gameOver && this.state.roll < 3;
+  }
+
   doRoll() {
-    if (this.state.roll < 3) {
-      for (let i = 0; i < 5; i++) {
-        if (!this.state.hold || !this.state.hold[i]) {
-          this.state.dice[i] = 1 + Math.floor(Math.random() * 6);
-        }
-      }
-      this.state.roll++;
+    if (!this.canRoll()) {
+      return;
     }
+    for (let i = 0; i < 5; i++) {
+      if (!this.state.hold || !this.state.hold[i]) {
+        this.state.dice[i] = 1 + Math.floor(Math.random() * 6);
+      }
+    }
+    this.state.roll++;
+    this.selectedLine = null;
   }
 
   doPreviews() {
@@ -69,7 +75,7 @@ export default class Fiver {
     this.state.roll = 0;
     this.state.dice = [null, null, null, null, null];
     this.state.turn++;
-    if (this.state.turn === 13) {
+    if (this.state.turn >= 3) {
       this.state.gameOver = true;
     }
 

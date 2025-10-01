@@ -71,20 +71,7 @@ export default class JunoUi {
 
     const newGameBtn = document.createElement('button');
     newGameBtn.textContent = 'New game';
-    newGameBtn.className = 'juno-newgame';
-    newGameBtn.style.fontSize = '1em';
-    newGameBtn.style.padding = '8px 18px';
-    newGameBtn.style.marginBottom = '8px';
-    newGameBtn.style.borderRadius = '4px';
-    newGameBtn.style.border = '1.5px solid #444';
-    newGameBtn.style.background = '#fff';
-    newGameBtn.style.color = '#222';
-    newGameBtn.style.cursor = 'pointer';
-    newGameBtn.style.outline = 'none';
-    newGameBtn.style.userSelect = 'none';
-    newGameBtn.style.touchAction = 'manipulation';
-    newGameBtn.addEventListener('click', e => { e.preventDefault(); this._onNewgame(); });
-    newGameBtn.addEventListener('touchstart', e => { e.preventDefault(); });
+    newGameBtn.onclick = () => this._onNewgame();
     topDiv.appendChild(newGameBtn);
 
     const hr = document.createElement('hr');
@@ -169,17 +156,7 @@ export default class JunoUi {
 
       const btn = document.createElement('button');
       btn.textContent = (state.hold && state.hold[i]) ? 'HOLD' : '-';
-      btn.style.marginTop = '6px';
-      btn.style.padding = '4px 10px';
-      btn.style.borderRadius = '4px';
-      btn.style.border = '1px solid #888';
-      btn.style.background = '#f8f8f8';
-      btn.style.cursor = 'pointer';
-      btn.style.fontSize = '1em';
-      btn.style.touchAction = 'manipulation';
-      btn.addEventListener('click', e => { e.preventDefault(); this._onToggle(i); });
-      btn.addEventListener('touchstart', e => { e.preventDefault(); });
-
+      btn.onclick = () => this._onToggle(i);
       cell.appendChild(valueDiv);
       cell.appendChild(btn);
       row.appendChild(cell);
@@ -196,38 +173,25 @@ export default class JunoUi {
     row.style.marginTop = '18px';
 
     const rollBtn = document.createElement('button');
-    if (this.program.fiver.state.roll === 3) {
-      rollBtn.textContent = 'Roll';
-      rollBtn.disabled = true;
-    } else {
+    if (this.program.fiver.canRoll()) {
       rollBtn.textContent = `Roll ${this.program.fiver.state.roll + 1} / 3`;
       rollBtn.disabled = false;
+    } else {
+      rollBtn.textContent = 'Roll';
+      rollBtn.disabled = true;
     }
-    rollBtn.style.padding = '8px 18px';
-    rollBtn.style.borderRadius = '4px';
-    rollBtn.style.border = '1.5px solid #444';
-    rollBtn.style.background = '#fff';
-    rollBtn.style.color = '#222';
-    rollBtn.style.cursor = 'pointer';
-    rollBtn.style.fontSize = '1em';
-    rollBtn.style.touchAction = 'manipulation';
-    rollBtn.addEventListener('click', e => { e.preventDefault(); this._onRoll(); });
-    rollBtn.addEventListener('touchstart', e => { e.preventDefault(); });
+
+    rollBtn.onclick = () => this._onRoll();
     row.appendChild(rollBtn);
 
     const acceptBtn = document.createElement('button');
     acceptBtn.textContent = 'Accept';
-    acceptBtn.style.padding = '8px 18px';
-    acceptBtn.style.borderRadius = '4px';
-    acceptBtn.style.border = '1.5px solid #444';
-    acceptBtn.style.background = '#fff';
-    acceptBtn.style.color = '#222';
-    acceptBtn.style.cursor = 'pointer';
-    acceptBtn.style.fontSize = '1em';
-    acceptBtn.style.touchAction = 'manipulation';
-    acceptBtn.addEventListener('click', e => { e.preventDefault(); this._onAccept(); });
-    acceptBtn.addEventListener('touchstart', e => { e.preventDefault(); });
     row.appendChild(acceptBtn);
+    if (this.program.fiver.state.selectedLine === null) {
+      acceptBtn.disabled = true;
+    } else {
+      acceptBtn.onclick = () => this._onAccept();
+    }
 
     return row;
   }
@@ -261,18 +225,7 @@ export default class JunoUi {
       // Select button
       const btn = document.createElement('button');
       btn.textContent = (i === state.selectedLine) ? 'Selected' : '-';
-      btn.style.padding = '4px 12px';
-      btn.style.borderRadius = '4px';
-      btn.style.border = '1px solid #888';
-      btn.style.background = '#f8f8f8';
-      btn.style.cursor = 'pointer';
-      btn.style.fontSize = '1em';
-      btn.style.touchAction = 'manipulation';
-      btn.addEventListener('click', e => {
-        e.preventDefault();
-        this._onSelect(i);
-      });
-      btn.addEventListener('touchstart', e => { e.preventDefault(); });
+      btn.onclick = () => this._onSelect(i);
       row.appendChild(btn);
 
       // Label (category key) at the end, left justified
@@ -340,12 +293,10 @@ export default class JunoUi {
 
   _onSelect(index) {
     const state = this.program.fiver.state;
-    if (state.roll === 0 || state.gameOver) return;
-    if (index === state.selectedLine) {
-      state.selectedLine = null;
-    } else {
-      state.selectedLine = index;
+    if (state.roll === 0 || state.gameOver || state.lines[index] != null) {
+      return;
     }
+    state.selectedLine = index;
     this._makeBottom();
   }
 }
