@@ -74,11 +74,10 @@ export default class Fiver {
 
     this.state.roll = 0;
     this.state.dice = [null, null, null, null, null];
-    this.state.turn++;
     if (this.state.turn === 13) {
       this.state.gameOver = true;
     }
-
+    this.state.turn++;
 
     this.state.selectedLine = null;
     this.state.preview = Array(Object.keys(this.state.categories).length).fill(null);
