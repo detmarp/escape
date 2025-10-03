@@ -75,10 +75,116 @@ export default class Board {
     this._setBoard();
     ///
     this.container.innerHTML = '';
-    this._addSlice(this.container, 2);
-    this._addSlice(this.container, 3);
-    this._addSlice(this.container, 12);
-    this._addSlice(this.container, 2);
+    this.top = this._addSlice(this.container, 2);
+    this.dice = this._addSlice(this.container, 3);
+    this.scores = this._addSlice(this.container, 12);
+    this.bottom = this._addSlice(this.container, 2);
+
+    [this.top.center, this.top.right] = this._topParts(this.top);
+
+    [this.dice.dice, this.dice.right] = this._diceParts(this.dice);
+
+    this.scores.cells = this._cells(this.scores)
+  }
+
+  _topParts(parent) {
+    parent.style.position = 'relative';
+    parent.style.overflow = 'hidden';
+
+    const center = document.createElement('div');
+    center.style.position = 'absolute';
+    center.style.left = '25%';
+    center.style.top = '0';
+    center.style.width = '50%';
+    center.style.height = '100%';
+    center.style.maxHeight = 'calc(100% - 2px)';
+    center.style.boxSizing = 'border-box';
+    parent.appendChild(center);
+
+    const right = document.createElement('div');
+    right.style.position = 'absolute';
+    right.style.right = '0';
+    right.style.top = '0';
+    right.style.width = '20%';
+    right.style.height = '100%';
+    right.style.maxHeight = 'calc(100% - 2px)';
+    right.style.boxSizing = 'border-box';
+    parent.appendChild(right);
+
+    this._applyStyles(center, ['clean', 'pastel', 'margin']);
+    this._applyStyles(right, ['clean', 'pastel', 'margin']);
+    return [center, right];
+  }
+
+  _diceParts(parent) {
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.width = '100%';
+    container.style.height = '100%';
+    container.style.boxSizing = 'border-box';
+    parent.appendChild(container);
+
+    const dice = [];
+    for (let i = 0; i < 5; i++) {
+      const die = document.createElement('div');
+      die.style.flex = '15';
+      die.style.height = 'calc(100% - 2px)';
+      die.style.boxSizing = 'border-box';
+      container.appendChild(die);
+      this._applyStyles(die, ['clean', 'pastel', 'margin']);
+      dice.push(die);
+    }
+
+    const spacer = document.createElement('div');
+    spacer.style.flex = '5';
+    spacer.style.height = '100%';
+    spacer.style.boxSizing = 'border-box';
+    container.appendChild(spacer);
+    this._applyStyles(spacer, ['margin']);
+
+    const right = document.createElement('div');
+    right.style.flex = '20';
+    right.style.height = 'calc(100% - 2px)';
+    right.style.boxSizing = 'border-box';
+    container.appendChild(right);
+    this._applyStyles(right, ['clean', 'pastel', 'margin']);
+
+    return [dice, right];
+  }
+
+  _cells(parent) {
+    const cells = [];
+    parent.style.display = 'grid';
+    parent.style.gridTemplateColumns = 'repeat(3, 1fr)';
+    parent.style.gridTemplateRows = 'repeat(6, 1fr)';
+    for (let i = 0; i < 18; i++) {
+      const cell = document.createElement('div');
+      parent.appendChild(cell);
+      this._applyStyles(cell, ['clean', 'pastel', 'margin']);
+      cells.push(cell);
+    }
+    return cells;
+  }
+
+  _rightContainer(parent) {
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.width = '100%';
+    container.style.height = '100%';
+    container.style.boxSizing = 'border-box';
+    parent.appendChild(container);
+    const left = document.createElement('div');
+    left.style.height = '100%';
+    container.appendChild(left);
+    const right = document.createElement('div');
+    right.style.height = 'calc(100% - 4px)';
+    container.appendChild(right);
+
+    left.style.flex = '6';
+    right.style.flex = '1';
+
+    this._applyStyles(right, ['clean', 'pastel', 'margin']);
+    return right;
   }
 
   setTop(text, label, onClick) {
@@ -263,6 +369,9 @@ export default class Board {
         break;
       case 'pastel':
         element.style.backgroundColor = `hsl(${Math.floor(Math.random() * 360)}, 70%, 85%)`;
+        break;
+      case 'margin':
+       element.style.margin = '1px';
         break;
       }
     });
