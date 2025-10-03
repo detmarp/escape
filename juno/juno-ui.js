@@ -1,3 +1,5 @@
+import Board from './board.js';
+
 export default class JunoUi {
   constructor(parent, program) {
     this.parent = parent;
@@ -5,12 +7,9 @@ export default class JunoUi {
   }
 
   run() {
-    this._style();
-    this.container = document.createElement('div');
-    this.container.className = 'juno-container';
-    Object.assign(this.container.style, this.styles['juno-container']);
-    this.parent.appendChild(this.container);
-    this.setup();
+    this.board = new Board(this.parent);
+
+    //this.setup();
   }
 
   _style() {
@@ -65,6 +64,7 @@ export default class JunoUi {
   }
 
   setup() {
+    // Top div with New Game button
     const topDiv = document.createElement('div');
     topDiv.className = 'juno-top';
     Object.assign(topDiv.style, this.styles['juno-top']);
