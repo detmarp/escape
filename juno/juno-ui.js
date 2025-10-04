@@ -8,59 +8,86 @@ export default class JunoUi {
 
   run() {
     this.board = new Board(this.parent);
-
+    this.program.newGame();
     //this.setup();
+    this._refresh();
   }
 
-  _style() {
-    this.styles = {
-      'juno-container': {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        minHeight: '100vh',
-        maxHeight: '100vh',
-        fontFamily: 'sans-serif',
-        fontSize: '1.25em',
-        color: '#222',
-        background: '#fff',
-        boxSizing: 'border-box',
-        padding: '0',
-        margin: '0',
-        zIndex: 10,
-        overflowY: 'auto',
-        outline: 'none',
-        border: 'none',
-        WebkitOverflowScrolling: 'touch'
-      },
-      'juno-top': {
-        padding: '18px 0 0 18px',
-        textAlign: 'left',
-        width: '100%'
-      },
-      'juno-hello': {
-        fontWeight: '500',
-        fontSize: '1.3em',
-        marginBottom: '8px'
-      },
-      'juno-hr': {
-        border: 'none',
-        borderTop: '1px solid #eee',
-        margin: '8px 0 12px 0',
-        height: '1px',
-        background: 'none'
-      },
-      'juno-bottom': {
-        padding: '0 0 0 18px',
-        textAlign: 'left',
-        width: '100%'
+  _refresh() {
+    this.board.setTop(
+      `${this.program.fiver.state.grandTotal}`,
+      'New game',
+      () => { this._onNewgame(); }
+    );
+    let rollText;
+    let rollClick;
+    if (this.program.fiver.canRoll()) {
+      rollText = `Roll ${this.program.fiver.state.roll + 1} / 3`;
+      rollClick = () => this._onRoll();
+    } else if (this.program.fiver.state.selectedLine !== null) {
+      rollText = 'Accept';
+      rollClick = () => this._onAccept();
+    }
+    this.board.setDice(
+      this.program.fiver.state.dice,
+      this.program.fiver.state.hold,
+      (index) => { this._onToggle(index); },
+      rollText,
+      rollClick
+    );
+    for (let i = 0; i < 18; i++) {
+      this._setCell(i);
+    }
+  }
+
+  _setCell(i) {
+    let text = '?';
+    let value = '?';
+    let style = 0;
+    let onClick = null;
+    if (i < 13) {
+      let line = this.program.fiver.state.lines[i];
+      let preview = this.program.fiver.state.preview ? this.program.fiver.state.preview[i] : null;
+      text = Object.keys(this.program.fiver.state.categories)[i];
+      value = line != null ? line : (preview != null ? preview : '');
+      if (this.program.fiver.state.selectedLine === i) {
+        style = 2;
+      } else if (line != null) {
+        style = 1;
       }
-    };
-    document.body.style.overflow = 'hidden';
-    document.body.style.margin = '0';
-    document.body.style.padding = '0';
-    document.body.style.background = '#fff';
+      onClick = () => { this._onSelect(i); };
+    }
+    else if (i === 13) {
+      text = 'Upper bonus';
+      value = this.program.fiver.state.upperBonus || 0;
+    }
+    else if (i === 14) {
+      text = 'Upper total';
+      value = this.program.fiver.state.upperTotal || 0;
+    }
+    else if (i === 15) {
+      text = 'FIVER bonus';
+      value = this.program.fiver.state.fiverBonus || 0;
+    }
+    else if (i === 16) {
+      text = 'Lower total';
+      value = this.program.fiver.state.lowerTotal || 0;
+    }
+    else if (i === 17) {
+      text = 'Upper trend';
+      console.log('Set text:', text);
+      const trend = this.program.fiver.state.trend;
+      console.log('Trend value:', trend);
+      if (trend == null) {
+        console.log('Trend is null, setting value to empty string');
+        value = '';
+      } else {
+        console.log('Trend is not null, formatting value:', trend > 0 ? '+' : '', trend);
+        value = (trend > 0 ? '+' : '') + trend;
+      }
+      console.log('Final value:', value);
+    }
+    this.board.setCell(i, text, value, onClick, style);
   }
 
   setup() {
@@ -121,7 +148,7 @@ export default class JunoUi {
 
   _onNewgame() {
     this.program.newGame();
-    this._makeBottom();
+    this._refresh();
   }
 
   _makeTotalRow() {
@@ -276,19 +303,19 @@ export default class JunoUi {
     if (state.dice[index] == null) return;
     if (!state.hold) return;
     state.hold[index] = !state.hold[index];
-    this._makeBottom();
+    this._refresh();
   }
 
   _onRoll() {
     this.program.fiver.doRoll();
     this.program.fiver.doPreviews();
     this.program.fiver.doAutoSelect();
-    this._makeBottom();
+    this._refresh();
   }
 
   _onAccept() {
     this.program.fiver.doAccept();
-    this._makeBottom();
+    this._refresh();
   }
 
   _onSelect(index) {
@@ -297,6 +324,6 @@ export default class JunoUi {
       return;
     }
     state.selectedLine = index;
-    this._makeBottom();
+    this._refresh();
   }
 }

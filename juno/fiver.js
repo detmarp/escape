@@ -28,6 +28,24 @@ export default class Fiver {
     }
   }
 
+  doTrend() {
+    // For the first 6 lines (dice value lines)
+    let allNull = true;
+    let sum = 0;
+    let trend = null;
+    for (let i = 0; i < 6; i++) {
+      const val = this.state.lines[i];
+      if (val != null) {
+        allNull = false;
+        sum += (val - (i + 1) * 3);
+      }
+    }
+    if (!allNull) {
+      trend = sum;
+    }
+    this.state.trend = trend;
+  }
+
   doAutoSelect() {
     let max = -Infinity;
     let selected = null;
@@ -83,6 +101,9 @@ export default class Fiver {
     this.state.preview = Array(Object.keys(this.state.categories).length).fill(null);
     this.state.hold = [false, false, false, false, false];
     this.state.dice = [null, null, null, null, null];
+
+    this.doTrend();
+
   }
 
   _previewLine(line, dice) {
