@@ -41,41 +41,57 @@ export default class JunoUi {
   }
 
   _setCell(i) {
-    let text = '?';
+    let text = [
+      'ONEs',
+      'TWOs',
+      'THREEs',
+      'FOURs',
+      'FIVEs',
+      'SIXes',
+      'Three of a kind',
+      'Four of a kind',
+      'Full House',
+      'Small Straight',
+      'Large Straight',
+      'FIVER',
+      'CHANCE',
+      'Upper bonus',
+      'Upper total',
+      'FIVER bonus',
+      'Lower total',
+      'Upper trend',
+    ][i] || '?';
     let value = '?';
-    let style = 0;
+    let style = 4;
     let onClick = null;
     if (i < 13) {
       let line = this.program.fiver.state.lines[i];
       let preview = this.program.fiver.state.preview ? this.program.fiver.state.preview[i] : null;
-      text = Object.keys(this.program.fiver.state.categories)[i];
       value = line != null ? line : (preview != null ? preview : '');
+      style = 1;
       if (this.program.fiver.state.selectedLine === i) {
         style = 2;
       } else if (line != null) {
-        style = 1;
+        style = 3;
+      }
+      else if (this.program.fiver.state.selectedLine === null) {
+        style = 0;
       }
       onClick = () => { this._onSelect(i); };
     }
     else if (i === 13) {
-      text = 'Upper bonus';
       value = this.program.fiver.state.upperBonus || 0;
     }
     else if (i === 14) {
-      text = 'Upper total';
       value = this.program.fiver.state.upperTotal || 0;
     }
     else if (i === 15) {
-      text = 'FIVER bonus';
       value = this.program.fiver.state.fiverBonus || 0;
     }
     else if (i === 16) {
-      text = 'Lower total';
       value = this.program.fiver.state.lowerTotal || 0;
     }
     else if (i === 17) {
-      text = 'Upper trend';
-      console.log('Set text:', text);
       const trend = this.program.fiver.state.trend;
       console.log('Trend value:', trend);
       if (trend == null) {

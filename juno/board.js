@@ -35,8 +35,29 @@ export default class Board {
   setCell(i, text, value, onClick, style) {
     if (this.scores && this.scores.cells && this.scores.cells[i]) {
       const cell = this.scores.cells[i];
-      cell.textContent = `${text}: ${value}, ${style}`;
+      if (cell.left && cell.right) {
+        cell.left.textContent = `${text}`;
+        cell.right.textContent = value;
+      } else {
+        cell.textContent = `${text}: ${value}, ${style}`;
+      }
       cell.onclick = onClick || null;
+      let cellStyle = ['cell']; // used, 3
+      if (style == 4) {
+        cellStyle = 'cellinfo';
+      }
+      else if (style == 2) {
+        cellStyle = 'cellselected';
+      }
+      else if (style == 1) {
+        cellStyle = 'cellavailable';
+      }
+      else if (style == 0) {
+        cellStyle = 'cellnone';
+      }
+      this._applyStyles(cell, cellStyle);
+      this._applyStyles(cell.left, ['cellleft']);
+      this._applyStyles(cell.right, ['cellright']);
     }
   }
 
@@ -54,7 +75,7 @@ export default class Board {
     slice.style.width = '100%';
     slice.style.flex = flex;
     parent.appendChild(slice);
-    this._applyStyles(slice, ['clean', 'pastel']);
+    //this._applyStyles(slice, ['clean', 'pastel']);
     return slice;
   }
 
@@ -154,10 +175,31 @@ export default class Board {
     parent.style.display = 'grid';
     parent.style.gridTemplateColumns = 'repeat(3, 1fr)';
     parent.style.gridTemplateRows = 'repeat(6, 1fr)';
+    //parent.style.gap = '2px'; // 2px spacing between cells
     for (let i = 0; i < 18; i++) {
       const cell = document.createElement('div');
+      cell.style.display = 'flex';
+      cell.style.flexDirection = 'row';
+      cell.style.width = 'calc(100% - 4px)';
+      cell.style.height = 'calc(100% - 4px)';
+      cell.style.boxSizing = 'border-box' ;
+
+      let parts = [];
+      for (let j = 0; j < 2; j++) {
+        const part = document.createElement('div');
+        part.style.flex = j ? 2 : 3;
+        part.style.height = 'calc(100% - 2px)';
+        part.style.pointerEvents = 'none'; // Prevent part from accepting pointer events
+        cell.appendChild(part);
+        parts.push(part);
+        //this._applyStyles(part, ['clean', 'pastel', 'margin']);
+      }
+
+      cell.left = parts[0];
+      cell.right = parts[1];
+
       parent.appendChild(cell);
-      this._applyStyles(cell, ['clean', 'pastel', 'margin']);
+      //this._applyStyles(cell, ['clean', 'pastel', 'margin']);
       cells.push(cell);
     }
     return cells;
@@ -198,7 +240,66 @@ export default class Board {
         element.style.backgroundColor = `hsl(${Math.floor(Math.random() * 360)}, 70%, 85%)`;
         break;
       case 'margin':
-       element.style.margin = '1px';
+        element.style.margin = '1px';
+        break;
+      case 'cellleft':
+        element.style.fontSize = 'calc(var(--board-size) * 0.03)';
+        element.style.overflow = 'hidden';
+        element.style.whiteSpace = 'pre-line'; // allow wrapping and linebreaks
+        element.style.wordBreak = 'break-word';
+        element.style.height = '100%';
+        element.style.maxHeight = '100%';
+        element.style.display = 'flex';
+        element.style.alignItems = 'center';
+        element.style.justifyContent = 'flex-start';
+        element.style.padding = '4px';
+        break;
+      case 'cellright':
+        element.style.fontSize = 'calc(var(--board-size) * 0.06)';
+        element.style.overflow = 'hidden';
+        element.style.whiteSpace = 'normal'; // allow wrapping
+        element.style.wordBreak = 'break-word';
+        element.style.height = '100%';
+        element.style.maxHeight = '100%';
+        element.style.display = 'flex';
+        element.style.alignItems = 'center';
+        element.style.justifyContent = 'flex-end';
+        element.style.marginRight = '4px';
+        break;
+      case 'cellnone':
+        element.style.border = '2px solid #333';
+        element.style.borderRadius = '4px';
+        element.style.backgroundColor = '#eee';
+        element.style.color = '#222';
+        element.style.margin = '2px';
+        break;
+      case 'cellavailable':
+        element.style.border = '2px solid #333';
+        element.style.borderRadius = '4px';
+        element.style.backgroundColor = '#bef';
+        element.style.color = '#222';
+        element.style.margin = '2px';
+        break;
+      case 'cellselected':
+        element.style.border = '2px solid #333';
+        element.style.borderRadius = '4px';
+        element.style.backgroundColor = '#2d2';
+        element.style.color = '#131';
+        element.style.margin = '2px';
+        break;
+      case 'cell':
+        element.style.border = '2px solid #333';
+        element.style.borderRadius = '4px';
+        element.style.backgroundColor = '#fff';
+        element.style.color = '#111';
+        element.style.margin = '2px';
+        break;
+      case 'cellinfo':
+        element.style.border = '2px solid #333';
+        element.style.borderRadius = '4px';
+        element.style.backgroundColor = '#222';
+        element.style.color = '#eee';
+        element.style.margin = '2px';
         break;
       }
     });
