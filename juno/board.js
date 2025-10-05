@@ -22,9 +22,14 @@ export default class Board {
   setDice(values, holds, onToggle, label, onClick) {
     if (this.dice && this.dice.dice) {
       for (let i = 0; i < 5; i++) {
-        this.dice.dice[i].textContent = `value:${values[i]}, hold:${holds[i]}`;
+        //this.dice.dice[i].textContent = `value:${values[i]}, hold:${holds[i]}`;
+        const faces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+        let value = values[i] !== undefined ? faces[values[i] - 1] : '';
+        let hold = holds[i];
+        this.dice.dice[i].textContent = value
         this.dice.dice[i].onclick = onToggle ? () => onToggle(i) : null;
         this.dice.dice[i].style.cursor = 'pointer';
+        this._applyStyles(this.dice.dice[i], hold ? 'diehold' : 'die');
       }
       this.dice.right.textContent = label;
       this.dice.right.onclick = onClick || null;
@@ -42,22 +47,25 @@ export default class Board {
         cell.textContent = `${text}: ${value}, ${style}`;
       }
       cell.onclick = onClick || null;
+      let rightStyle = ['cellright'];
       let cellStyle = ['cell']; // used, 3
       if (style == 4) {
         cellStyle = 'cellinfo';
+        rightStyle.push('infotext');
       }
       else if (style == 2) {
         cellStyle = 'cellselected';
       }
       else if (style == 1) {
         cellStyle = 'cellavailable';
+        rightStyle.push('option');
       }
       else if (style == 0) {
         cellStyle = 'cellnone';
       }
       this._applyStyles(cell, cellStyle);
       this._applyStyles(cell.left, ['cellleft']);
-      this._applyStyles(cell.right, ['cellright']);
+      this._applyStyles(cell.right, rightStyle);
     }
   }
 
@@ -127,7 +135,7 @@ export default class Board {
     right.style.boxSizing = 'border-box';
     parent.appendChild(right);
 
-    this._applyStyles(center, ['clean', 'pastel', 'margin']);
+    this._applyStyles(center, 'topscore');
     this._applyStyles(right, ['clean', 'pastel', 'margin']);
 
     return [center, right];
@@ -149,7 +157,7 @@ export default class Board {
       die.style.boxSizing = 'border-box';
       // Placeholder for text and onclick, to be set later
       container.appendChild(die);
-      this._applyStyles(die, ['clean', 'pastel', 'margin']);
+      //this._applyStyles(die, ['clean', 'pastel', 'margin']);
       dice.push(die);
     }
 
@@ -265,6 +273,7 @@ export default class Board {
         element.style.alignItems = 'center';
         element.style.justifyContent = 'flex-end';
         element.style.marginRight = '4px';
+        element.style.color = '#111';
         break;
       case 'cellnone':
         element.style.border = '2px solid #333';
@@ -276,7 +285,7 @@ export default class Board {
       case 'cellavailable':
         element.style.border = '2px solid #333';
         element.style.borderRadius = '4px';
-        element.style.backgroundColor = '#bef';
+        element.style.backgroundColor = '#efe';
         element.style.color = '#222';
         element.style.margin = '2px';
         break;
@@ -300,6 +309,37 @@ export default class Board {
         element.style.backgroundColor = '#222';
         element.style.color = '#eee';
         element.style.margin = '2px';
+        break;
+      case 'option':
+        element.style.color = '#0b0';
+        break;
+      case 'infotext':
+        element.style.color = '#eee';
+        break;
+      case 'topscore':
+        element.style.color = '#222';
+        element.style.fontSize = 'calc(var(--board-size) * 0.1)';
+        element.style.display = 'flex';
+        element.style.alignItems = 'center';
+        element.style.justifyContent = 'center';
+        break;
+      case 'die':
+        element.style.color = '#222';
+        element.style.fontSize = 'calc(var(--board-size) * 0.12)';
+        element.style.display = 'flex';
+        element.style.alignItems = 'center';
+        element.style.justifyContent = 'center';
+        element.style.backgroundColor = '#fff';
+        element.style.borderRadius = 0;
+        break;
+      case 'diehold':
+        element.style.color = '#222';
+        element.style.fontSize = 'calc(var(--board-size) * 0.12)';
+        element.style.display = 'flex';
+        element.style.alignItems = 'center';
+        element.style.justifyContent = 'center';
+        element.style.backgroundColor = '#2b2';
+        element.style.borderRadius = '50% / 38%';
         break;
       }
     });
