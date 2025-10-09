@@ -6,13 +6,14 @@ export default class Fiver {
   }
 
   canRoll() {
-    return !this.state.gameOver && this.state.roll < 3;
+    return !this.state.isGameOver() && this.state.roll < 3;
   }
 
   doRoll() {
     if (!this.canRoll()) {
       return;
     }
+    this.state.mode = this.state.modes.READY;
     for (let i = 0; i < 5; i++) {
       if (!this.state.hold || !this.state.hold[i]) {
         this.state.dice[i] = 1 + Math.floor(Math.random() * 6);
@@ -93,7 +94,7 @@ export default class Fiver {
     this.state.roll = 0;
     this.state.dice = [null, null, null, null, null];
     if (this.state.turn === 13) {
-      this.state.gameOver = true;
+      this.state.isGameOver() = true;
     }
     this.state.turn++;
 

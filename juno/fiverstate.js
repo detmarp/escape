@@ -21,14 +21,25 @@ export default class FiverState {
       FIVER: 11,
       CHANCE: 12,
     };
+    this.modes = {
+      PRE_GAME: 0,
+      PRE_TURN: 1,
+      TRANSITION: 2,
+      READY: 3,
+      GAME_OVER: 4,
+    };
     this.lines = Array(Object.keys(this.categories).length).fill(null);
     this.preview = Array(Object.keys(this.categories).length).fill(null);
     this.selectedLine = null;
-    this.gameOver = false;
+    this.mode = this.modes.PRE_GAME;
     this.upperBonus = 0;
     this.upperTotal = 0;
     this.fiverBonus = 0;
     this.lowerTotal = 0;
     this.grandTotal = 0;
+  }
+
+  isGameOver() {
+    return this.mode === this.modes.GAME_OVER;
   }
 }

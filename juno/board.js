@@ -48,21 +48,38 @@ export default class Board {
       }
       cell.onclick = onClick || null;
       let rightStyle = ['cellright'];
-      let cellStyle = ['cell']; // used, 3
+      let cellStyle = ['cellused']; // used, 3
       if (style == 4) {
-        cellStyle = 'cellinfo';
+        cellStyle = ['cellinfo', 'cell'];
         rightStyle.push('infotext');
       }
       else if (style == 2) {
         cellStyle = 'cellselected';
       }
-      else if (style == 1) {
-        cellStyle = 'cellavailable';
+      else if (style == 'unused') {
+        cellStyle = ['cellavailable', 'cell'];
         rightStyle.push('option');
+      }
+      else if (style == 'preroll-available') {
+        cellStyle = 'white';
       }
       else if (style == 0) {
         cellStyle = 'cellnone';
       }
+      else if (style == 'selected') {
+        cellStyle = ['cell-selected', 'cell-round'];
+      }
+      else if (style == 'start') {
+        cellStyle = ['cell-white', 'cell-square'];
+      }
+      else if (style == 'info') {
+        cellStyle = ['cell-info', 'cell-square'];
+        rightStyle.push('infotext');
+      }
+      else if (style == 'used') {
+        cellStyle = ['cell-used', 'cell-square'];
+      }
+
       this._applyStyles(cell, cellStyle);
       this._applyStyles(cell.left, ['cellleft']);
       this._applyStyles(cell.right, rightStyle);
@@ -297,13 +314,40 @@ export default class Board {
         element.style.margin = '2px';
         break;
       case 'cell':
+        element.style.borderRadius = '15% / 50%';
+        element.style.padding = 'calc(var(--board-size) * 0.01)';
+        break;
+      case 'cell-white':
         element.style.border = '2px solid #333';
         element.style.borderRadius = '4px';
         element.style.backgroundColor = '#fff';
         element.style.color = '#111';
         element.style.margin = '2px';
         break;
-      case 'cellinfo':
+      case 'cell-selected':
+        element.style.border = '2px solid #333';
+        element.style.borderRadius = '4px';
+        element.style.backgroundColor = '#7bd';
+        element.style.color = '#003';
+        element.style.margin = '2px';
+        break;
+      case 'cell-round':
+        element.style.borderRadius = '15% / 50%';
+        element.style.padding = 'calc(var(--board-size) * 0.01)';
+        break;
+      case 'cell-square':
+        element.style.borderRadius = '4% / 12%';
+        element.style.padding = 'calc(var(--board-size) * 0.01)';
+        break;
+      case 'cell-used':
+        element.style.border = '2px solid #333';
+        element.style.borderRadius = '4px';
+        element.style.backgroundColor = '#ddd';
+        element.style.color = '#111';
+        element.style.margin = '2px';
+        element.style.borderRadius = '15%';
+        break;
+      case 'cell-info':
         element.style.border = '2px solid #333';
         element.style.borderRadius = '4px';
         element.style.backgroundColor = '#222';

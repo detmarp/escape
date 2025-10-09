@@ -62,30 +62,32 @@ export default class JunoUi {
       'Upper trend',
     ][i] || '?';
     let value = '?';
-    let style = 4;
+    let style = 'info';
     let onClick = null;
     if (i < 13) {
       let line = this.program.fiver.state.lines[i];
       let preview = this.program.fiver.state.preview ? this.program.fiver.state.preview[i] : null;
       value = line != null ? line : (preview != null ? preview : '');
-      style = 1;
-      if (this.program.fiver.state.selectedLine === i) {
-        style = 2;
+      style = 'unused';
+      if (this.program.fiver.state.mode == this.program.fiver.state.modes.PRE_GAME) {
+        style = 'start';
+      } else if (this.program.fiver.state.selectedLine === i) {
+        style = 'selected';
       } else if (line != null) {
-        style = 3;
+        style = 'used';
       }
       else if (this.program.fiver.state.selectedLine === null) {
-        style = 0;
+        style = 'start';
       }
       onClick = () => { this._onSelect(i); };
     }
     else if (i === 13) {
       value = this.program.fiver.state.upperBonus || 0;
     }
-    else if (i === 14) {
+    else if (i === 15) {
       value = this.program.fiver.state.upperTotal || 0;
     }
-    else if (i === 15) {
+    else if (i === 14) {
       value = this.program.fiver.state.fiverBonus || 0;
     }
     else if (i === 16) {
@@ -93,16 +95,13 @@ export default class JunoUi {
     }
     else if (i === 17) {
       const trend = this.program.fiver.state.trend;
-      console.log('Trend value:', trend);
       if (trend == null) {
-        console.log('Trend is null, setting value to empty string');
         value = '';
       } else {
-        console.log('Trend is not null, formatting value:', trend > 0 ? '+' : '', trend);
         value = (trend > 0 ? '+' : '') + trend;
       }
-      console.log('Final value:', value);
     }
+    console.log(`ddd setCell: i=${i}, text=${text}, value=${value}, style=${style}, onClick=${!!onClick}`);
     this.board.setCell(i, text, value, onClick, style);
   }
 
@@ -170,7 +169,7 @@ export default class JunoUi {
   _makeTotalRow() {
     const state = this.program.fiver.state;
     const row = document.createElement('div');
-    let status = state.gameOver ? 'Game over' : `Turn #${state.turn}`;
+    let status = state.isGameOver() ? 'Game over' : `Turn #${state.turn}`;
     row.textContent = `Total: ${state.grandTotal}, ${status}`;
     return row;
   }
@@ -336,10 +335,11 @@ export default class JunoUi {
 
   _onSelect(index) {
     const state = this.program.fiver.state;
-    if (state.roll === 0 || state.gameOver || state.lines[index] != null) {
+    if (state.roll === 0 || state.isGameOver() || state.lines[index] != null) {
       return;
     }
     state.selectedLine = index;
+    console.log('sss', state, index);
     this._refresh();
   }
 }
