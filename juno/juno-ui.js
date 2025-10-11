@@ -68,17 +68,31 @@ export default class JunoUi {
       let line = this.program.fiver.state.lines[i];
       let preview = this.program.fiver.state.preview ? this.program.fiver.state.preview[i] : null;
       value = line != null ? line : (preview != null ? preview : '');
-      style = 'unused';
-      if (this.program.fiver.state.mode == this.program.fiver.state.modes.PRE_GAME) {
-        style = 'start';
-      } else if (this.program.fiver.state.selectedLine === i) {
+
+      if (this.program.fiver.state.selectedLine === i) {
         style = 'selected';
       } else if (line != null) {
         style = 'used';
+      } else if (this.program.fiver.state.isCanSelect()) {
+        style = 'unused';
       }
-      else if (this.program.fiver.state.selectedLine === null) {
+      else {
         style = 'start';
       }
+      // if (this.program.fiver.state.mode == this.program.fiver.state.modes.PRE_GAME) {
+      //   style = 'start';
+      // } else if (this.program.fiver.state.selectedLine === i) {
+      //   style = 'selected';
+      // } else if (line != null) {
+      //   style = 'used';
+      // }
+      // else if (this.program.fiver.state.selectedLine === null) {
+      //   style = 'start';
+      // }
+      // unused - "can select"
+      // start - not "can select"
+      // selected - is selected
+      // used - line has points
       onClick = () => { this._onSelect(i); };
     }
     else if (i === 13) {
@@ -101,7 +115,6 @@ export default class JunoUi {
         value = (trend > 0 ? '+' : '') + trend;
       }
     }
-    console.log(`ddd setCell: i=${i}, text=${text}, value=${value}, style=${style}, onClick=${!!onClick}`);
     this.board.setCell(i, text, value, onClick, style);
   }
 
@@ -324,7 +337,7 @@ export default class JunoUi {
   _onRoll() {
     this.program.fiver.doRoll();
     this.program.fiver.doPreviews();
-    this.program.fiver.doAutoSelect();
+    //this.program.fiver.doAutoSelect();
     this._refresh();
   }
 
@@ -338,8 +351,7 @@ export default class JunoUi {
     if (state.roll === 0 || state.isGameOver() || state.lines[index] != null) {
       return;
     }
-    state.selectedLine = index;
-    console.log('sss', state, index);
+    this.program.fiver.doSelect(index);
     this._refresh();
   }
 }

@@ -3,6 +3,7 @@ import FiverState from './fiverstate.js';
 export default class Fiver {
   constructor() {
     this.state = new FiverState();
+    this.state.mode = this.state.modes.PRE_ROLL
   }
 
   canRoll() {
@@ -13,20 +14,28 @@ export default class Fiver {
     if (!this.canRoll()) {
       return;
     }
-    this.state.mode = this.state.modes.READY;
+    this.state.mode = this.state.modes.TRANSITION;
     for (let i = 0; i < 5; i++) {
       if (!this.state.hold || !this.state.hold[i]) {
         this.state.dice[i] = 1 + Math.floor(Math.random() * 6);
       }
     }
-    this.state.roll++;
-    this.selectedLine = null;
+    this._finishRoll();
   }
 
   doPreviews() {
     for (let i = 0; i < this.state.lines.length; i++) {
       this.state.preview[i] = this._previewLine(i, this.state.dice);
     }
+  }
+
+  doSelect(line) {
+    if (this.state.isCanSelect()) {
+      this.state.selectedLine = line;
+    }
+  }
+
+  doHolds(holds) {
   }
 
   doTrend() {
@@ -65,6 +74,8 @@ export default class Fiver {
     if (selected === null || this.state.lines[selected] !== null) {
       return;
     }
+
+    this.state.mode = this.state.modes.TRANSITION;
     this.state.lines[selected] = this.state.preview[selected];
     // Yahtzee bonus
     // Only add 100 if slot 11 (Yahtzee) is already filled and this is a new Yahtzee going to another slot
@@ -91,20 +102,31 @@ export default class Fiver {
       this.state.lowerTotal +
       (this.state.fiverBonus || 0);
 
+    // reset for next roll
     this.state.roll = 0;
-    this.state.dice = [null, null, null, null, null];
-    if (this.state.turn === 13) {
-      this.state.isGameOver() = true;
-    }
-    this.state.turn++;
-
     this.state.selectedLine = null;
     this.state.preview = Array(Object.keys(this.state.categories).length).fill(null);
     this.state.hold = [false, false, false, false, false];
     this.state.dice = [null, null, null, null, null];
+    this.state.turn++;
 
-    this.doTrend();
+    // game over, or next roll
+    if (this.state.turn < 13) {
+      this.doTrend();
+      this.state.mode = this.state.modes.PRE_ROLL
+    }
+    else {
+      this.state.mode = this.state.modes.GAME_OVER;
+    }
+  }
 
+  _finishRoll() {
+    this.state.roll++;
+    if (this.state.roll >= 3) {
+      this.state.mode = this.state.modes.TAKE_POINTS;
+    } else {
+      this.state.mode = this.state.modes.ROLL_READY;
+    }
   }
 
   _previewLine(line, dice) {
