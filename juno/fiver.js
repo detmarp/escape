@@ -4,9 +4,11 @@ export default class Fiver {
   constructor() {
     this.state = new FiverState();
     this.state.mode = this.state.modes.PRE_ROLL
+
     this.debug = {
-      mostlySixes: true,
-      shortGame: 3,
+      // Debug stuff
+      //mostlySixes: true,
+      //shortGame: 3,
     };
   }
 

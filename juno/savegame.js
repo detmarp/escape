@@ -60,7 +60,6 @@ export default class SaveGame {
 
   _save() {
     localStorage.setItem('savegame', JSON.stringify(this.data));
-    console.log('mmm', JSON.stringify(this.data));
   }
 
   _load() {
