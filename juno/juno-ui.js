@@ -1,4 +1,5 @@
 import Board from './board.js';
+import SaveGame from './savegame.js';
 
 export default class JunoUi {
   constructor(parent, program) {
@@ -7,6 +8,9 @@ export default class JunoUi {
   }
 
   run() {
+    this.saveGame = new SaveGame();
+    this._tryPenaltyAtStart();
+
     this.board = new Board(this.parent);
     this.program.newGame();
     // Set clean behavior at the top board level for mobile and text selection
@@ -43,15 +47,48 @@ export default class JunoUi {
       this._setCell(i);
     }
 
-    this.board.setStats('<200    5.0% streak 2', 0);
-    this.board.setStats('200+    5.0% streak 2', 1);
-    this.board.setStats('250+    5.0% streak 2', 2);
-    this.board.setStats('300+    5.0% streak 2', 3);
-    this.board.setStats('400+    5.0% streak 2', 4);
-    this.board.setStats('upper  40.0% streak 12', 5);
-    this.board.setStats('fiver  20.0% streak 2', 6);
-    this.board.setStats('5bonus 10.0% streak 1', 7);
-    this.board.setStats('games  123', 8);
+    // stats
+    const table = [
+      { label: '<200', field: "under200" },
+      { label: '200+', field: "plus200" },
+      { label: '250+', field: "plus250" },
+      { label: '300+', field: "plus300" },
+      { label: '400+', field: "plus400" },
+      { label: 'upper', field: "upper" },
+      { label: 'fiver', field: "fiver" },
+      { label: '5bonus', field: "fiverbonus" },
+    ];
+    for (let i = 0; i < table.length; i++) {
+      const line = table[i];
+      const stats = this.saveGame.data.hist && this.saveGame.data.hist[line.field];
+      var label = line.label.padEnd(6, ' ');
+      var percent = '';
+      var streak = '';
+      if (stats) {
+        const totalGames = this.saveGame.data.count || 0;
+        const statCount = stats.count || 0;
+        let pct = totalGames > 0 ? (statCount / totalGames) * 100 : 0;
+        pct = Math.max(0, Math.min(100, pct));
+        percent = `${pct.toFixed(1)}%`.padStart(6, ' ');
+        streak = (typeof stats.streak === 'number' && stats.streak >= 1) ? `streak ${stats.streak}` : '';
+      } else {
+      }
+      var text = `${label}${percent} ${streak}`;
+      this.board.setStats(text, i);
+    }
+    // this.board.setStats('<200    5.0% streak 2', 0);
+    // this.board.setStats('200+    5.0% streak 2', 1);
+    // this.board.setStats('250+    5.0% streak 2', 2);
+    // this.board.setStats('300+    5.0% streak 2', 3);
+    // this.board.setStats('400+    5.0% streak 2', 4);
+    // this.board.setStats('upper  40.0% streak 12', 5);
+    // this.board.setStats('fiver  20.0% streak 2', 6);
+    // this.board.setStats('5bonus 10.0% streak 1', 7);
+    this.board.setStats(`games  ${this.saveGame.data.count || 0}`, 8);
+
+    if (!this.program.fiver.state.isGameOver()) {
+      this.saveGame.setCurrentGame(this.program.fiver.toObject());
+    }
   }
 
   _setCell(i) {
@@ -122,11 +159,12 @@ export default class JunoUi {
 
   _onNewgame() {
     const state = this.program.fiver.state;
-    if (!state.isGameOver()) {
-      const result = window.confirm('Quit current game?\n\nPress OK to quit, or Cancel to continue playing.');
+    if (!state.isGameOver() && (state.turn > 1 || state.roll > 0)) {
+      const result = window.confirm('OK to quit?');
       if (!result) {
         return;
       }
+      this.saveGame.quitCurrentGame();
     }
     this.program.newGame();
     this._refresh();
@@ -282,14 +320,24 @@ export default class JunoUi {
   }
 
   _onRoll() {
+    if (
+      this.program.fiver.canRoll() &&
+      this.program.fiver.state.roll === 0 &&
+      this.program.fiver.state.turn === 1
+    ) {
+      this.saveGame.startGame();
+    }
+
     this.program.fiver.doRoll();
     this.program.fiver.doPreviews();
-    //this.program.fiver.doAutoSelect();
     this._refresh();
   }
 
   _onAccept() {
     this.program.fiver.doAccept();
+    if (this.program.fiver.state.isGameOver()) {
+      this.saveGame.gameover(this.program.fiver.state);
+    }
     this._refresh();
   }
 
@@ -301,4 +349,17 @@ export default class JunoUi {
     this.program.fiver.doSelect(index);
     this._refresh();
   }
+
+  _tryPenaltyAtStart() {
+    if (
+      this.saveGame.data &&
+      this.saveGame.data.current &&
+      (this.saveGame.data.current.turn > 1 ||
+        this.saveGame.data.current.roll > 0
+      )
+    ) {
+      this.saveGame.quitCurrentGame();
+    }
+  }
+
 }

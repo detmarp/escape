@@ -392,6 +392,7 @@ export default class Board {
         element.style.display = 'flex';
         element.style.alignItems = 'center';
         element.style.justifyContent = 'center';
+        element.style.transform = 'scaleX(1.4)';
         break;
       case 'die':
         element.style.color = '#222';

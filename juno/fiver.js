@@ -4,6 +4,10 @@ export default class Fiver {
   constructor() {
     this.state = new FiverState();
     this.state.mode = this.state.modes.PRE_ROLL
+    this.debug = {
+      mostlySixes: true,
+      shortGame: 3,
+    };
   }
 
   canRoll() {
@@ -27,6 +31,15 @@ export default class Fiver {
     return false;
   }
 
+  _getDie() {
+    // roll one die
+    if (this.debug.mostlySixes && Math.random() < 0.5) {
+      return 6;
+    }
+
+    return 1 + Math.floor(Math.random() * 6);
+  }
+
   doRoll() {
     if (!this.canRoll()) {
       return;
@@ -34,7 +47,7 @@ export default class Fiver {
     this.state.mode = this.state.modes.TRANSITION;
     for (let i = 0; i < 5; i++) {
       if (!this.state.hold || !this.state.hold[i]) {
-        this.state.dice[i] = 1 + Math.floor(Math.random() * 6);
+        this.state.dice[i] = this._getDie();
       }
     }
     this._finishRoll();
@@ -132,7 +145,8 @@ export default class Fiver {
     this.state.turn++;
 
     // game over, or next roll
-    if (this.state.turn <= 13) {
+    let maxTurns = this.debug.shortGame || 13;
+    if (this.state.turn <= maxTurns) {
       this.doTrend();
       this.state.mode = this.state.modes.PRE_ROLL;
     }
@@ -246,7 +260,6 @@ export default class Fiver {
       this.state.mode = this.state.modes.ROLL_READY;
     }
     const straightInfo = this._findStraight(this.state.dice);
-    console.log(`qqq straightInfo: ${JSON.stringify(straightInfo)}`);
   }
 
   _previewLine(line, dice) {
@@ -321,5 +334,16 @@ export default class Fiver {
       }
     });
     return [bestLength, bestStart];
+  }
+
+  toObject() {
+    return {
+      turn: this.state.turn,
+      roll: this.state.roll,
+      dice: this.state.dice,
+      lines: this.state.lines,
+      grandTotal: this.state.grandTotal,
+      isGameOver: this.state.isGameOver(),
+    };
   }
 }
