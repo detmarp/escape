@@ -32,10 +32,14 @@ export default class Fiver {
   doSelect(line) {
     if (this.state.isCanSelect()) {
       this.state.selectedLine = line;
+      this._chooseHolds(false);
     }
   }
 
   doHolds(holds) {
+    for (let i = 0; i < 5; i++) {
+      this.state.hold[i] = !!holds[i];
+    }
   }
 
   doTrend() {
@@ -120,13 +124,112 @@ export default class Fiver {
     }
   }
 
+  _chooseHolds(refresh) {
+    // set which dice to hold, based on the selection.
+    // refresh: recalculate assuming a new roll just happened
+    if (this.state.selectedLine === null) {
+      return;
+    }
+
+    if (this.state.selectedLine <= 5) {
+      // Upper section: hold dice matching the number
+      const val = this.state.selectedLine + 1;
+      for (let i = 0; i < 5; i++) {
+        this.state.hold[i] = (this.state.dice[i] === val);
+      }
+    }
+    else if (
+      this.state.selectedLine === this.state.categories.THREE_OF_A_KIND ||
+      this.state.selectedLine === this.state.categories.FOUR_OF_A_KIND ||
+      this.state.selectedLine === this.state.categories.FIVER
+    ) {
+      // Many of a kind
+      // Hold the value that has the most counts
+      const counts = Array(7).fill(0);
+      for (let i = 0; i < 5; i++) {
+        const val = this.state.dice[i];
+        if (val !== null && val !== undefined) {
+          counts[val]++;
+        }
+      }
+      // Find the value with the highest count, prefer higher value in case of tie
+      let maxCount = 0;
+      let bestValue = 0;
+      for (let v = 1; v <= 6; v++) {
+        if (counts[v] > maxCount || (counts[v] === maxCount && v > bestValue)) {
+          maxCount = counts[v];
+          bestValue = v;
+        }
+      }
+      for (let i = 0; i < 5; i++) {
+        this.state.hold[i] = (this.state.dice[i] === bestValue);
+      }
+    }
+    else if (this.state.selectedLine === this.state.categories.FULL_HOUSE) {
+      // Full house: find all pairs, triples, etc.
+      const counts = Array(7).fill(0);
+      for (let i = 0; i < 5; i++) {
+        const val = this.state.dice[i];
+        if (val !== null && val !== undefined) {
+          counts[val]++;
+        }
+      }
+      const pairs = [];
+      for (let v = 1; v <= 6; v++) {
+        if (counts[v] >= 2) {
+          // Collect indexes of dice with this value
+          const idxs = [];
+          for (let i = 0; i < 5; i++) {
+            if (this.state.dice[i] === v) {
+              idxs.push(i);
+            }
+          }
+          idxs.length = Math.min(idxs.length, 3);
+          pairs.push(idxs);
+        }
+      }
+      // pairs is now an array of arrays of dice indexes for each pair/triple/etc.
+      for (let i = 0; i < 5; i++) {
+        this.state.hold[i] = pairs.some(pair => pair.includes(i));
+      }
+    }
+    else if (this.state.selectedLine === this.state.categories.SMALL_STRAIGHT ||
+             this.state.selectedLine === this.state.categories.LARGE_STRAIGHT) {
+      // Straight
+      let straight = this._findStraight(this.state.dice);
+      const hold = [false, false, false, false, false];
+      if (straight[0] >= 2) {
+        // Hold the dice that are part of the max straight
+        // Not an optimal selection, but good enough for now
+        let map = this._diceMap(this.state.dice);
+        for (let offset = 0; offset < straight[0]; offset++) {
+          const pip = straight[1] + offset;
+          if (map[pip] !== undefined) {
+            hold[map[pip]] = true;
+          }
+        }
+      }
+      this.doHolds(hold);
+    }
+    else if (this.state.selectedLine === this.state.categories.CHANCE) {
+      // Chance
+      for (let i = 0; i < 5; i++) {
+        this.state.hold[i] = (this.state.dice[i] >= 5);
+      }
+    }
+  }
+
+
   _finishRoll() {
     this.state.roll++;
+    this._chooseHolds(true);
     if (this.state.roll >= 3) {
       this.state.mode = this.state.modes.TAKE_POINTS;
     } else {
       this.state.mode = this.state.modes.ROLL_READY;
     }
+    const straightInfo = this._findStraight(this.state.dice);
+    console.log(`qqq straightInfo: ${JSON.stringify(straightInfo)}`);
   }
 
   _previewLine(line, dice) {
@@ -157,18 +260,11 @@ export default class Fiver {
         if (counts.includes(3) && counts.includes(2)) return 25;
         return 0;
       case 9: // Small straight (sequence of 4)
-        if (
-          (dice.includes(1) && dice.includes(2) && dice.includes(3) && dice.includes(4)) ||
-          (dice.includes(2) && dice.includes(3) && dice.includes(4) && dice.includes(5)) ||
-          (dice.includes(3) && dice.includes(4) && dice.includes(5) && dice.includes(6))
-        ) return 30;
-        return 0;
+        let straight4 = this._findStraight(dice);
+        return (straight4[0] >= 4) ? 30 : 0;
       case 10: // Large straight (sequence of 5)
-        if (
-          dice.slice().sort().join(',') === '1,2,3,4,5' ||
-          dice.slice().sort().join(',') === '2,3,4,5,6'
-        ) return 40;
-        return 0;
+        let straight5 = this._findStraight(dice);
+        return (straight5[0] >= 5) ? 40 : 0;
       case 11: // Yahtzee (five of a kind)
         if (dice.every(d => d === dice[0])) return 50;
         return 0;
@@ -177,5 +273,36 @@ export default class Fiver {
       default:
         return null;
     }
+  }
+
+  _diceMap(dice) {
+    // return a map [pip: index]
+    // where for each pip in dice[], the index is the first index where that pip occurs
+    const map = [];
+    dice.forEach((pip, index) => {
+      if (!(pip in map)) {
+        map[pip] = index;
+      }
+    });
+    return map;
+  }
+
+  _findStraight(dice) {
+    // returns [length, startValue]
+    // where dice is array of dice values (integers, but in our case, always 5 values from 1 to 6)
+    let map = this._diceMap(dice);
+    let bestLength = 0;
+    let bestStart = null;
+    map.forEach((index, pip) => {
+      let length = 1;
+      for (let next = pip + 1; next in map; next++) {
+        length++;
+      }
+      if (length > bestLength) {
+        bestLength = length;
+        bestStart = pip;
+      }
+    });
+    return [bestLength, bestStart];
   }
 }

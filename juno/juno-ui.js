@@ -97,12 +97,14 @@ export default class JunoUi {
     }
     else if (i === 13) {
       value = this.program.fiver.state.upperBonus || 0;
-    }
-    else if (i === 15) {
-      value = this.program.fiver.state.upperTotal || 0;
+      style = 'used';
     }
     else if (i === 14) {
+      value = this.program.fiver.state.upperTotal || 0;
+    }
+    else if (i === 15) {
       value = this.program.fiver.state.fiverBonus || 0;
+      style = 'used';
     }
     else if (i === 16) {
       value = this.program.fiver.state.lowerTotal || 0;
