@@ -7,7 +7,24 @@ export default class Fiver {
   }
 
   canRoll() {
-    return !this.state.isGameOver() && this.state.roll < 3;
+    return !this.canAccept() && !this.state.isGameOver() && this.state.roll < 3;
+  }
+
+  canAccept() {
+    // Accept is allowed if:
+    // - Game is underway (not over)
+    // - Either mode is TAKE_POINTS
+    // - Or mode is ROLL_READY and all dice are held
+    if (this.state.mode === this.state.modes.TAKE_POINTS) return true;
+    if (
+      this.state.mode === this.state.modes.ROLL_READY &&
+      Array.isArray(this.state.hold) &&
+      this.state.hold.length === 5 &&
+      this.state.hold.every(h => h === true)
+    ) {
+      return true;
+    }
+    return false;
   }
 
   doRoll() {

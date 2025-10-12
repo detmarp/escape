@@ -177,6 +177,13 @@ export default class JunoUi {
   }
 
   _onNewgame() {
+    const state = this.program.fiver.state;
+    if (!state.isGameOver()) {
+      const result = window.confirm('Quit current game?\n\nPress OK to quit, or Cancel to continue playing.');
+      if (!result) {
+        return;
+      }
+    }
     this.program.newGame();
     this._refresh();
   }
@@ -229,27 +236,21 @@ export default class JunoUi {
     row.style.gap = '12px';
     row.style.marginTop = '18px';
 
-    const rollBtn = document.createElement('button');
+    const actionBtn = document.createElement('button');
     if (this.program.fiver.canRoll()) {
-      rollBtn.textContent = `Roll ${this.program.fiver.state.roll + 1} / 3`;
-      rollBtn.disabled = false;
+      actionBtn.textContent = `Roll ${this.program.fiver.state.roll + 1} / 3`;
+      actionBtn.disabled = false;
+      actionBtn.onclick = () => this._onRoll();
+    } else if (this.program.fiver.canAccept()) {
+      actionBtn.textContent = 'Accept';
+      actionBtn.disabled = false;
+      actionBtn.onclick = () => this._onAccept();
     } else {
-      rollBtn.textContent = 'Roll';
-      rollBtn.disabled = true;
+      actionBtn.textContent = '';
+      actionBtn.disabled = true;
+      actionBtn.onclick = null;
     }
-
-    rollBtn.onclick = () => this._onRoll();
-    row.appendChild(rollBtn);
-
-    const acceptBtn = document.createElement('button');
-    acceptBtn.textContent = 'Accept';
-    row.appendChild(acceptBtn);
-    if (this.program.fiver.state.selectedLine === null) {
-      acceptBtn.disabled = true;
-    } else {
-      acceptBtn.onclick = () => this._onAccept();
-    }
-
+    row.appendChild(actionBtn);
     return row;
   }
 
