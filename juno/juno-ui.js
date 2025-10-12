@@ -14,7 +14,6 @@ export default class JunoUi {
       this.board.container.style.userSelect = 'none';
       this.board.container.style.touchAction = 'manipulation';
     }
-    //this.setup();
     this._refresh();
   }
 
@@ -43,6 +42,16 @@ export default class JunoUi {
     for (let i = 0; i < 18; i++) {
       this._setCell(i);
     }
+
+    this.board.setStats('<200    5.0% streak 2', 0);
+    this.board.setStats('200+    5.0% streak 2', 1);
+    this.board.setStats('250+    5.0% streak 2', 2);
+    this.board.setStats('300+    5.0% streak 2', 3);
+    this.board.setStats('400+    5.0% streak 2', 4);
+    this.board.setStats('upper  40.0% streak 12', 5);
+    this.board.setStats('fiver  20.0% streak 2', 6);
+    this.board.setStats('5bonus 10.0% streak 1', 7);
+    this.board.setStats('games  123', 8);
   }
 
   _setCell(i) {
@@ -84,20 +93,6 @@ export default class JunoUi {
       else {
         style = 'start';
       }
-      // if (this.program.fiver.state.mode == this.program.fiver.state.modes.PRE_GAME) {
-      //   style = 'start';
-      // } else if (this.program.fiver.state.selectedLine === i) {
-      //   style = 'selected';
-      // } else if (line != null) {
-      //   style = 'used';
-      // }
-      // else if (this.program.fiver.state.selectedLine === null) {
-      //   style = 'start';
-      // }
-      // unused - "can select"
-      // start - not "can select"
-      // selected - is selected
-      // used - line has points
       onClick = () => { this._onSelect(i); };
     }
     else if (i === 13) {
@@ -123,62 +118,6 @@ export default class JunoUi {
       }
     }
     this.board.setCell(i, text, value, onClick, style);
-  }
-
-  setup() {
-    // Top div with New Game button
-    const topDiv = document.createElement('div');
-    topDiv.className = 'juno-top';
-    Object.assign(topDiv.style, this.styles['juno-top']);
-
-    const newGameBtn = document.createElement('button');
-    newGameBtn.textContent = 'New game';
-    newGameBtn.onclick = () => this._onNewgame();
-    topDiv.appendChild(newGameBtn);
-
-    const hr = document.createElement('hr');
-    hr.className = 'juno-hr';
-    Object.assign(hr.style, this.styles['juno-hr']);
-    topDiv.appendChild(hr);
-    this.container.appendChild(topDiv);
-    this.bottomDiv = document.createElement('div');
-    this.bottomDiv.className = 'juno-bottom';
-    Object.assign(this.bottomDiv.style, this.styles['juno-bottom']);
-    this.container.appendChild(this.bottomDiv);
-    this._makeBottom();
-
-    // Mouse drag scroll for desktop
-    let isDragging = false, startY = 0, scrollTop = 0;
-    this.container.addEventListener('mousedown', e => {
-      isDragging = true;
-      startY = e.clientY;
-      scrollTop = this.container.scrollTop;
-      this.container.style.cursor = 'grab';
-    });
-    window.addEventListener('mousemove', e => {
-      if (isDragging) {
-        this.container.scrollTop = scrollTop - (e.clientY - startY);
-      }
-    });
-    window.addEventListener('mouseup', () => {
-      isDragging = false;
-      this.container.style.cursor = '';
-    });
-  }
-
-  _makeBottom() {
-    this.bottomDiv.innerHTML = '';
-    if (!this.program.fiver) {
-      return;
-    }
-    const txt = document.createElement('div');
-    let totalRow = this._makeTotalRow();
-    this.bottomDiv.appendChild(totalRow);
-    let diceRow = this._makeDiceRow();
-    this.bottomDiv.appendChild(diceRow);
-    this.bottomDiv.appendChild(this._makeRollRow());
-    this.bottomDiv.appendChild(this._makeLines());
-    this.bottomDiv.appendChild(this._makeTotals());
   }
 
   _onNewgame() {

@@ -29,7 +29,9 @@ export default class Board {
         this.dice.dice[i].textContent = value
         this.dice.dice[i].onclick = onToggle ? () => onToggle(i) : null;
         this.dice.dice[i].style.cursor = 'pointer';
-        this._applyStyles(this.dice.dice[i], hold ? 'diehold' : 'die');
+        var style = [hold ? 'diehold' : 'die'];
+        //style.push('nogrow');
+        this._applyStyles(this.dice.dice[i], style);
       }
       this.dice.right.textContent = label;
       this.dice.right.onclick = onClick || null;
@@ -93,6 +95,7 @@ export default class Board {
     this.container.style.width = size + 'px';
     this.container.style.height = size + 'px';
     this.container.style.setProperty('--board-size', size + 'px');
+    this.container.style.setProperty('--size120', size/120 + 'px');
   }
 
   _addSlice(parent, flex) {
@@ -125,6 +128,29 @@ export default class Board {
     [this.dice.dice, this.dice.right] = this._diceParts(this.dice);
 
     this.scores.cells = this._cells(this.scores)
+
+    this.bottom.textContent = '';
+    // Set up grid for 3 columns, 4 rows
+    this.bottom.style.display = 'grid';
+    this.bottom.style.gridTemplateColumns = 'repeat(3, 1fr)';
+    this.bottom.style.gridTemplateRows = 'repeat(3, 1fr)';
+    // Add 12 elements, sample text, column-major order, explicit placement
+    for (let i = 0; i < 9; i++) {
+      const col = Math.floor(i / 3) + 1;
+      const row = (i % 3) + 1;
+      const line = document.createElement('div');
+      line.style.gridColumn = col;
+      line.style.gridRow = row;
+      this.bottom.appendChild(line);
+    }
+    this._applyStyles(this.bottom, ['clean', 'stats']);
+  }
+
+  setStats(text, index) {
+    const stat = this.bottom.children[index];
+    if (stat) {
+      stat.textContent = text;
+    }
   }
 
   _topParts(parent) {
@@ -369,21 +395,40 @@ export default class Board {
         break;
       case 'die':
         element.style.color = '#222';
-        element.style.fontSize = 'calc(var(--board-size) * 0.12)';
+        element.style.fontSize = 'calc(var(--size120) * 15)';
         element.style.display = 'flex';
         element.style.alignItems = 'center';
         element.style.justifyContent = 'center';
         element.style.backgroundColor = '#fff';
         element.style.borderRadius = 0;
+        element.style.padding = '14px';
         break;
       case 'diehold':
         element.style.color = '#222';
-        element.style.fontSize = 'calc(var(--board-size) * 0.12)';
+        element.style.fontSize = 'calc(var(--size120) * 15)';
         element.style.display = 'flex';
         element.style.alignItems = 'center';
         element.style.justifyContent = 'center';
         element.style.backgroundColor = '#2b2';
-        element.style.borderRadius = '50% / 38%';
+        element.style.borderRadius = '50% / 60%';
+        break;
+      case 'stats':
+        element.style.color = '#222';
+        element.style.fontSize = 'calc(var(--board-size) * 0.02)';
+        element.style.fontFamily = 'monospace';
+        element.style.display = 'grid';
+        element.style.gridTemplateColumns = 'repeat(3, 1fr)';
+        element.style.gridAutoFlow = 'column';
+        element.style.alignItems = 'center';
+        element.style.justifyContent = 'center';
+        element.style.padding = 'calc(var(--board-size) * 0.01)';
+        element.style.whiteSpace = 'pre';
+        break;
+      case 'nogrow':
+        element.style.overflow = 'hidden';
+        element.style.width = element.style.width || '100%';
+        element.style.height = element.style.height || '100%';
+        element.style.boxSizing = 'border-box';
         break;
       }
     });
