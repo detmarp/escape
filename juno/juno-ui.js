@@ -9,6 +9,11 @@ export default class JunoUi {
   run() {
     this.board = new Board(this.parent);
     this.program.newGame();
+    // Set clean behavior at the top board level for mobile and text selection
+    if (this.board.container) {
+      this.board.container.style.userSelect = 'none';
+      this.board.container.style.touchAction = 'manipulation';
+    }
     //this.setup();
     this._refresh();
   }

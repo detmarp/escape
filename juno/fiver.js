@@ -132,9 +132,9 @@ export default class Fiver {
     this.state.turn++;
 
     // game over, or next roll
-    if (this.state.turn < 13) {
+    if (this.state.turn <= 13) {
       this.doTrend();
-      this.state.mode = this.state.modes.PRE_ROLL
+      this.state.mode = this.state.modes.PRE_ROLL;
     }
     else {
       this.state.mode = this.state.modes.GAME_OVER;
