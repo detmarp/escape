@@ -24,24 +24,30 @@ export default class JunoUi {
   _refresh() {
     this.board.setTop(
       `${this.program.fiver.state.grandTotal}`,
-      'New game',
+      this._gameUnderway() ? 'Quit' : 'New game',
       () => { this._onNewgame(); }
     );
     let rollText;
     let rollClick;
+    let style = [];
     if (this.program.fiver.canRoll()) {
-      rollText = `Roll ${this.program.fiver.state.roll + 1} / 3`;
+      rollText = this.program.fiver.state.roll < 1
+        ? 'Roll'
+        : `Roll #${this.program.fiver.state.roll + 1}`;
       rollClick = () => this._onRoll();
+      style = ['roll-button'];
     } else if (this.program.fiver.state.selectedLine !== null) {
       rollText = 'Accept';
       rollClick = () => this._onAccept();
+      style = ['accept-button'];
     }
     this.board.setDice(
       this.program.fiver.state.dice,
       this.program.fiver.state.hold,
       (index) => { this._onToggle(index); },
       rollText,
-      rollClick
+      rollClick,
+      style
     );
     for (let i = 0; i < 18; i++) {
       this._setCell(i);
@@ -157,9 +163,14 @@ export default class JunoUi {
     this.board.setCell(i, text, value, onClick, style);
   }
 
+  _gameUnderway() {
+    const state = this.program.fiver.state;
+    return !state.isGameOver() && (state.turn > 1 || state.roll > 0);
+  }
+
   _onNewgame() {
     const state = this.program.fiver.state;
-    if (!state.isGameOver() && (state.turn > 1 || state.roll > 0)) {
+    if (this._gameUnderway()) {
       const result = window.confirm('OK to quit?');
       if (!result) {
         return;

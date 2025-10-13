@@ -16,27 +16,27 @@ export default class Board {
       this.top.right.textContent = label;
       this.top.right.onclick = onClick || null;
       this.top.right.style.cursor = onClick ? 'pointer' : 'default';
+      this._applyStyles(this.top.right, ['new-button']);
     }
   }
 
-  setDice(values, holds, onToggle, label, onClick) {
-    if (this.dice && this.dice.dice) {
-      for (let i = 0; i < 5; i++) {
-        //this.dice.dice[i].textContent = `value:${values[i]}, hold:${holds[i]}`;
-        const faces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-        let value = values[i] !== undefined ? faces[values[i] - 1] : '';
-        let hold = holds[i];
-        this.dice.dice[i].textContent = value
-        this.dice.dice[i].onclick = onToggle ? () => onToggle(i) : null;
-        this.dice.dice[i].style.cursor = 'pointer';
-        var style = [hold ? 'diehold' : 'die'];
-        //style.push('nogrow');
-        this._applyStyles(this.dice.dice[i], style);
-      }
-      this.dice.right.textContent = label;
-      this.dice.right.onclick = onClick || null;
-      this.dice.right.style.cursor = onClick ? 'pointer' : 'default';
+  setDice(values, holds, onToggle, label, onClick, buttonstyle) {
+    for (let i = 0; i < 5; i++) {
+      //this.dice.dice[i].textContent = `value:${values[i]}, hold:${holds[i]}`;
+      const faces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+      let value = values[i] !== undefined ? faces[values[i] - 1] : '';
+      let hold = holds[i];
+      this.dice.dice[i].textContent = value
+      this.dice.dice[i].onclick = onToggle ? () => onToggle(i) : null;
+      this.dice.dice[i].style.cursor = 'pointer';
+      var style = [hold ? 'diehold' : 'die'];
+      //style.push('nogrow');
+      this._applyStyles(this.dice.dice[i], style);
     }
+    this.dice.right.textContent = label;
+    this.dice.right.onclick = onClick || null;
+    this.dice.right.style.cursor = onClick ? 'pointer' : 'default';
+    this._applyStyles(this.dice.right, buttonstyle);
   }
 
   setCell(i, text, value, onClick, style) {
@@ -103,7 +103,7 @@ export default class Board {
     slice.style.width = '100%';
     slice.style.flex = flex;
     parent.appendChild(slice);
-    //this._applyStyles(slice, ['clean', 'pastel']);
+    this._applyStyles(slice, ['nogrow']);
     return slice;
   }
 
@@ -166,6 +166,7 @@ export default class Board {
     center.style.maxHeight = 'calc(100% - 2px)';
     center.style.boxSizing = 'border-box';
     center.textContent = '000';
+    this._applyStyles(center, ['nogrow']);
     parent.appendChild(center);
 
     const right = document.createElement('button');
@@ -179,7 +180,7 @@ export default class Board {
     parent.appendChild(right);
 
     this._applyStyles(center, 'topscore');
-    this._applyStyles(right, ['clean', 'pastel', 'margin']);
+    this._applyStyles(right, ['nogrow']);
 
     return [center, right];
   }
@@ -243,14 +244,14 @@ export default class Board {
         part.style.pointerEvents = 'none'; // Prevent part from accepting pointer events
         cell.appendChild(part);
         parts.push(part);
-        //this._applyStyles(part, ['clean', 'pastel', 'margin']);
+        this._applyStyles(part, ['nogrow']);
       }
 
       cell.left = parts[0];
       cell.right = parts[1];
 
       parent.appendChild(cell);
-      //this._applyStyles(cell, ['clean', 'pastel', 'margin']);
+      this._applyStyles(cell, ['nogrow']);
       cells.push(cell);
     }
     return cells;
@@ -396,22 +397,25 @@ export default class Board {
         break;
       case 'die':
         element.style.color = '#222';
-        element.style.fontSize = 'calc(var(--size120) * 15)';
+        element.style.fontSize = 'calc(var(--size120) * 17)';
         element.style.display = 'flex';
         element.style.alignItems = 'center';
         element.style.justifyContent = 'center';
         element.style.backgroundColor = '#fff';
         element.style.borderRadius = 0;
-        element.style.padding = '14px';
+        element.style.padding = 'calc(var(--size120) * .6)';
+        element.style.margin = 'calc(var(--size120) * .3)';
         break;
       case 'diehold':
         element.style.color = '#222';
-        element.style.fontSize = 'calc(var(--size120) * 15)';
+        element.style.fontSize = 'calc(var(--size120) * 17)';
         element.style.display = 'flex';
         element.style.alignItems = 'center';
         element.style.justifyContent = 'center';
-        element.style.backgroundColor = '#2b2';
-        element.style.borderRadius = '50% / 60%';
+        element.style.backgroundColor = '#6c9';
+        element.style.borderRadius = '45% / 45%';
+        element.style.padding = 'calc(var(--size120) * .6)';
+        element.style.margin = 'calc(var(--size120) * .3)';
         break;
       case 'stats':
         element.style.color = '#222';
@@ -430,6 +434,32 @@ export default class Board {
         element.style.width = element.style.width || '100%';
         element.style.height = element.style.height || '100%';
         element.style.boxSizing = 'border-box';
+        break;
+      case 'roll-button':
+        element.style.border = '2px solid #333';
+        element.style.fontSize = 'calc(var(--size120) * 5)';
+        element.style.backgroundColor = '#6c9';
+        element.style.borderRadius = '15% / 25%';
+        element.style.height = '70%';
+        element.style.alignSelf = 'center';
+        break;
+      case 'accept-button':
+        element.style.border = '2px solid #333';
+        element.style.fontSize = 'calc(var(--size120) * 5)';
+        element.style.backgroundColor = '#7bd';
+        element.style.borderRadius = '15% / 50%';
+        element.style.height = '60%';
+        element.style.alignSelf = 'center';
+        break;
+      case 'new-button':
+        element.style.border = '2px solid #333';
+        element.style.fontSize = 'calc(var(--size120) * 3)';
+        element.style.backgroundColor = '#ffd';
+        element.style.borderRadius = '10% / 25%';
+        element.style.width = '18.5%';
+        element.style.height = '70%';
+        element.style.marginTop = 'calc(var(--size120) * 2)';
+        element.style.alignSelf = 'center';
         break;
       }
     });
