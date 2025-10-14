@@ -95,6 +95,8 @@ export default class Fifteen33 {
         }
       }
     }
+    // If solved, set piece 15 to actual 15
+    this.board[3][3] = 15;
     return true;
   }
 

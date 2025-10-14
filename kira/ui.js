@@ -68,6 +68,7 @@ export default class Ui {
   }
 
   _redrawPieces() {
+    const solved = this.program.fifteen.board[3][3] === 15;
     // For each visual piece (0-15), find its logical position in fifteen.board
     for (let visualIdx = 0; visualIdx < 16; visualIdx++) {
       let boardIdx = -1;
@@ -78,14 +79,26 @@ export default class Ui {
           }
         }
       }
+      const piece = this.pieces[visualIdx];
       if (boardIdx !== -1) {
         const [x, y] = this._getScreen(boardIdx);
-        const piece = this.pieces[visualIdx];
         piece.style.left = `${x}px`;
         piece.style.top = `${y}px`;
+        // If solved and this is piece 15, always show it
+        if (visualIdx === 15 && solved) {
+          piece.style.display = '';
+        }
       } else {
-        // If the piece is the null, hide it
-        this.pieces[visualIdx].style.display = 'none';
+        // If the piece is the null, hide it (unless solved and piece 15)
+        if (visualIdx === 15 && solved) {
+          piece.style.display = '';
+        } else {
+          piece.style.display = 'none';
+        }
+      }
+      // Remove borders if solved
+      if (solved) {
+        piece.style.border = 'none';
       }
     }
   }
@@ -110,6 +123,62 @@ export default class Ui {
         piece.style.backgroundImage = `url(${imgUrl})`;
         piece.style.backgroundPosition = `${x}px ${y}px`;
         piece.style.backgroundSize = `${innerW}px ${innerH}px`;
+      }
+    }
+  }
+
+  _startAnim(moves) {
+    if (!moves || moves.length === 0) return;
+    // Animate each piece in moves from its current position to its new position
+    for (let i = 0; i < moves.length; i++) {
+      const fromIndex = moves[i][0];
+      const toIndex = moves[i][1];
+      const pieceNum = this.program.fifteen.board[Math.floor(toIndex / 4)][toIndex % 4];
+      if (pieceNum === null || pieceNum === undefined) continue;
+      const piece = this.pieces[pieceNum];
+      // Get current and target positions
+      const [fromX, fromY] = this._getScreen(fromIndex);
+      const [toX, toY] = this._getScreen(toIndex);
+      // Set current position instantly
+      piece.style.transition = 'none';
+      piece.style.left = `${fromX}px`;
+      piece.style.top = `${fromY}px`;
+      // Force reflow
+      void piece.offsetWidth;
+      // Animate to new position
+      piece.style.transition = 'left 0.5s, top 0.5s';
+      piece.style.left = `${toX}px`;
+      piece.style.top = `${toY}px`;
+    }
+    // After animation, redraw to snap all pieces
+    setTimeout(() => {
+      this._redrawPieces();
+      this._endAnim();
+    }, 500);
+  }
+
+  _endAnim() {
+    // Remove transitions and snap all pieces to their final positions
+    for (let i = 0; i < this.pieces.length; i++) {
+      const piece = this.pieces[i];
+      piece.style.transition = 'none';
+      // Snap to final position
+      let boardIdx = -1;
+      for (let y = 0; y < 4; y++) {
+        for (let x = 0; x < 4; x++) {
+          if (this.program.fifteen.board[y][x] === i) {
+            boardIdx = y * 4 + x;
+          }
+        }
+      }
+      if (boardIdx !== -1) {
+        const [x, y] = this._getScreen(boardIdx);
+        piece.style.left = `${x}px`;
+        piece.style.top = `${y}px`;
+      }
+      // If gameover and this is piece 15, show it now
+      if (this.gameover && i === 15) {
+        piece.style.display = '';
       }
     }
   }
@@ -157,6 +226,8 @@ export default class Ui {
   }
 
   _onTouch(percentX, percentY) {
+    if (this.gameover) return;
+    this._endAnim(); // Snap any ongoing animation
     const x = Math.max(0, Math.min(3, Math.floor(percentX / 25)));
     const y = Math.max(0, Math.min(3, Math.floor(percentY / 25)));
     const index = y * 4 + x;
@@ -165,10 +236,23 @@ export default class Ui {
     if (moves.length > 0) {
       solved = this.program.fifteen.doMoves(moves);
       console.log('moves', JSON.stringify(moves));
+      this._startAnim(moves); // Animate the move
     }
     console.log(this.program.fifteen.toString());
     console.log(solved ? 'Puzzle solved!' : 'Not solved yet.');
     this._redrawPieces();
+    this._checkDone();
+  }
+
+  _checkDone() {
+    if (!this.gameover && this.program.fifteen.isSolved && this.program.fifteen.isSolved()) {
+      this.gameover = true;
+      // Remove borders from all pieces
+      for (let i = 0; i < this.pieces.length; i++) {
+        this.pieces[i].style.border = 'none';
+      }
+      // Do NOT show piece 15 here; will show in _endAnim
+    }
   }
 
   _resize() {
