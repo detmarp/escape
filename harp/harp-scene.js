@@ -27,5 +27,21 @@ export default class HarpScene {
     ob.position.set(0, 0, 0);
 
     this.dax.scene.add(ob);
+
+    // for fun
+    var verts = [];
+    var polys = [];
+    for (let i = 0; i < 100; i++) {
+      const v0 = [Math.random() * 4 - 2, Math.random() * 4 - 2, Math.random() * 4 - 2];
+      const v1 = [Math.random() * 4 - 2, Math.random() * 4 - 2, Math.random() * 4 - 2];
+      const v2 = [Math.random() * 4 - 2, Math.random() * 4 - 2, Math.random() * 4 - 2];
+      const base = verts.length;
+      verts.push(v0, v1, v2);
+      polys.push([base, base + 1, base + 2]);
+    }
+    const randObj = geo.make(verts, polys);
+    randObj.position.set(0, 0, -10);
+    this.dax.scene.add(randObj);
+
   }
 }

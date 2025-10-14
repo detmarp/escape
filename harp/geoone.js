@@ -78,7 +78,7 @@ export default class GeoOne {
     edgeGeometry.setAttribute('position', new THREE.Float32BufferAttribute(edgePositions, 3));
     const edgeMaterial = new THREE.LineBasicMaterial({
       color: 0x00ff00,
-      linewidth: 2
+      linewidth: 1
     });
     const edgeLines = new THREE.LineSegments(edgeGeometry, edgeMaterial);
     // Group mesh and edges

@@ -15,3 +15,4 @@
 - [Gaia](gaia/)
 - [Harp](harp/)
 - [Juno](juno/)
+- [Kira](kira/)
