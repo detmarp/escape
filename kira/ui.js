@@ -17,7 +17,8 @@ export default class Ui {
     this.inner.style.margin = '4px';
     this.inner.style.width = `calc(var(--size120) * ${this.innerSize})`;
     this.inner.style.height = `calc(var(--size120) * ${this.innerSize})`;
-    this.inner.style.background = '#888'; // medium gray
+    // Diagonal stripes background
+    this.inner.style.background = 'repeating-linear-gradient(45deg, #aac 0px, #bbd 3px, #bbd 3px, #cce 9px, #cce 9px, #ddf 12px)';
     this.inner.style.position = 'relative';
     this.inner.style.userSelect = 'none';
     this.inner.style.touchAction = 'none';
@@ -60,6 +61,10 @@ export default class Ui {
         piece.style.backgroundRepeat = 'no-repeat';
         piece.index = i * 4 + j;
         piece.screen = this._getScreen(piece.index);
+        // Corner border radius
+        if (piece.index === 0) piece.style.borderTopLeftRadius = '20%';
+        if (piece.index === 3) piece.style.borderTopRightRadius = '20%';
+        if (piece.index === 12) piece.style.borderBottomLeftRadius = '20%';
         // Initial background will be set by _setPiecesImage
         this.inner.appendChild(piece);
         this.pieces.push(piece);
@@ -99,6 +104,10 @@ export default class Ui {
       // Remove borders if solved
       if (solved) {
         piece.style.border = 'none';
+        // Remove border radius from the 3 corner tiles
+        this.pieces[0].style.borderRadius = '0%';
+        this.pieces[3].style.borderRadius = '0%';
+        this.pieces[12].style.borderRadius = '0%';
       }
     }
   }
@@ -247,11 +256,6 @@ export default class Ui {
   _checkDone() {
     if (!this.gameover && this.program.fifteen.isSolved && this.program.fifteen.isSolved()) {
       this.gameover = true;
-      // Remove borders from all pieces
-      for (let i = 0; i < this.pieces.length; i++) {
-        this.pieces[i].style.border = 'none';
-      }
-      // Do NOT show piece 15 here; will show in _endAnim
     }
   }
 

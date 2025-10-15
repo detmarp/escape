@@ -9,7 +9,7 @@ export default class Fifteen33 {
 
     this.board[3][3] = null;
 
-    this._shuffle(20);
+    this._shuffle(2);
   }
 
   _shuffle(number = 2) {
