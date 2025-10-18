@@ -15,6 +15,18 @@ export default class Tiny {
     return instance;
   }
 
+  canPlace(position, color) {
+    // return an array of legal placements, or null
+    // position and color are optional, but if present will filter results
+    return [
+      { position: 0, color: 'red' },
+    ];
+  }
+
+  doPlace(position, color) {
+    return true;
+  }
+
   toObject() {
     return {
       gameSeed: this.gameSeed,

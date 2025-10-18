@@ -49,6 +49,10 @@ export default class UiContainer {
         line-height: 1.4;
         -webkit-text-size-adjust: 100%; /* prevent iOS/Android aggressive resizing */
         text-size-adjust: 100%;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
       }
     `);
 
