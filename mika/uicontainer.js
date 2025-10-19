@@ -46,13 +46,22 @@ export default class UiContainer {
          and provide a consistent baseline for buttons and labels. */
       #mika-root {
         font-size: 16px; /* baseline readable size on mobile */
-        line-height: 1.4;
+        line-height: 1.1;
         -webkit-text-size-adjust: 100%; /* prevent iOS/Android aggressive resizing */
         text-size-adjust: 100%;
         -webkit-user-select: none;
         -moz-user-select: none;
         -ms-user-select: none;
         user-select: none;
+      }
+  /* paragraphs should not add extra vertical spacing by default */
+  #mika-root p { margin: 0; }
+      /* Make headings more compact vertically */
+      #mika-root h1 {
+        margin: 6px 0; /* smaller top/bottom margin */
+        font-size: 1.4em; /* slightly smaller than default h1 */
+        line-height: 1.05;
+        font-weight: 600;
       }
     `);
 

@@ -2,9 +2,9 @@ export default class UiGame {
   constructor(parent, program) {
     this.parent = parent;
     this.program = program;
-    // Track selected indices
     this.selectedCell = null;
     this.selectedResource = null;
+    this.selectedCard = null;
     this.render();
   }
 
@@ -12,6 +12,8 @@ export default class UiGame {
     this.parent.innerHTML = '';
 
     this.canAcceptResource = false;
+    this.canAcceptCard = false;
+
     this._addHeader('Game board');
     this._addButton('< Main', this._onExit);
     this._addText(`Game Seed: ${this.program.tiny.gameSeed}`);
@@ -20,6 +22,12 @@ export default class UiGame {
 
     if (this.canAcceptResource) {
       this._addButton('Accept', this._onAcceptResource);
+    }
+
+    this._makeCardRow(this.parent);
+
+    if (this.canAcceptCard) {
+      this._addButton('Accept', this._onAcceptCard);
     }
   }
 
@@ -163,8 +171,53 @@ export default class UiGame {
       style.textContent = `
         .mika-resource-row-container { display:flex; justify-content:center; margin-top:12px; }
         .mika-resource-row { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
-  .mika-resource { width:4em; height:4em; border:1px solid #ccc; box-sizing:border-box; display:flex; align-items:center; justify-content:center; cursor:pointer; background:#fff; border-radius:6px; }
+  .mika-resource { width:4em; height:2em; border:1px solid #ccc; box-sizing:border-box; display:flex; align-items:center; justify-content:center; cursor:pointer; background:#fff; border-radius:6px; }
         .mika-resource:active { background:#f5faff; }
+      `;
+      document.head.appendChild(style);
+    }
+  }
+
+  _makeCardRow(parent) {
+    const container = document.createElement('div');
+    container.className = 'mika-card-row-container';
+
+    const row = document.createElement('div');
+    row.className = 'mika-card-row';
+
+    let cards = this.program.tiny.getHand();
+    for (let i = 0; i < cards.length; i++) {
+      const c = document.createElement('div');
+      c.className = 'mika-card';
+      c.dataset.index = i;
+
+      const item = cards && cards[i];
+      let label = '';
+      if (item) {
+        if (typeof item === 'string' || typeof item === 'number') label = String(item);
+        else label = item.short || item.title || item.type || (item.count != null ? String(item.count) : '');
+      }
+      c.textContent = label;
+      if (label && label.length > 12) c.title = label;
+
+      if (this.selectedCard === i) {
+        c.style.border = '3px solid #000';
+      }
+      c.addEventListener('click', (e) => this._onCardClick(i, e));
+      row.appendChild(c);
+    }
+
+    container.appendChild(row);
+    parent.appendChild(container);
+
+    if (!document.getElementById('mika-card-styles')) {
+      const style = document.createElement('style');
+      style.id = 'mika-card-styles';
+      style.textContent = `
+        .mika-card-row-container { display:flex; justify-content:center; margin-top:12px; }
+        .mika-card-row { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+  .mika-card { min-width:4em; height:2em; border:1px solid #ccc; box-sizing:border-box; display:flex; align-items:center; justify-content:center; cursor:pointer; background:#fff; border-radius:6px; padding:6px; }
+        .mika-card:active { background:#f5faff; }
       `;
       document.head.appendChild(style);
     }
@@ -178,9 +231,14 @@ export default class UiGame {
       lines.push(r);
     }
 
-    if (this.selectedResource != null) {
-      let resource = this.program.tiny.getResources()[this.selectedResource];
-      if (index == this.selectedCell) {
+    let b = this.program.tiny.board.cells[index].building;
+    if (b) {
+      lines.push(b.short);
+    }
+
+    if (index == this.selectedCell) {
+      if (this.selectedResource != null) {
+        let resource = this.program.tiny.getResources()[this.selectedResource];
         lines.push(`${resource}`);
         this.canAcceptResource = {
           cell: this.selectedCell,
@@ -188,14 +246,32 @@ export default class UiGame {
           resource: resource,
         };
       }
+
+      if (this.selectedCard != null) {
+        let card = this.program.tiny.getHand()[this.selectedCard];
+        let cardLabel = this._getCardText(this.selectedCard);
+        lines.push(`${cardLabel}`);
+        this.canAcceptCard = {
+          cell: this.selectedCell,
+          cardIndex: this.selectedCard,
+          card: card,
+        };
+      }
     }
 
     return lines.join('\n');
   }
 
+  _getCardText(index) {
+    const cards = this.program.tiny.getHand();
+    const item = cards && cards[index];
+    return item.short;
+  }
+
   _onResourceClick(index, e) {
     console.log('resource click', index);
     this.selectedResource = index;
+    this.selectedCard = null;
     this.render();
   }
 
@@ -206,11 +282,30 @@ export default class UiGame {
     this.render();
   }
 
-  _onAcceptResource() {
-    this.program.tiny.doPlace(this.canAcceptResource.cell, this.canAcceptResource.resource);
-    this.canAcceptResource = null;
-    this.selectedCell = null;
+  _onCardClick(index, e) {
+    console.log('card click', index);
+    this.selectedCard = index;
     this.selectedResource = null;
     this.render();
+  }
+
+  _onAcceptResource() {
+    this.program.tiny.doPlace(this.canAcceptResource.cell, this.canAcceptResource.resource);
+    this._clearSelections();
+    this.render();
+  }
+
+  _onAcceptCard() {
+    this.program.tiny.doCard(this.canAcceptCard.cell, this.canAcceptCard.card);
+    this._clearSelections();
+    this.render();
+  }
+
+  _clearSelections() {
+    this.canAcceptResource = null;
+    this.canAcceptCard = null;
+    this.selectedCell = null;
+    this.selectedResource = null;
+    this.selectedCard = null;
   }
 }
