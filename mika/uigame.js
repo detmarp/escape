@@ -11,13 +11,16 @@ export default class UiGame {
   render() {
     this.parent.innerHTML = '';
 
+    this.canAcceptResource = false;
     this._addHeader('Game board');
     this._addButton('< Main', this._onExit);
     this._addText(`Game Seed: ${this.program.tiny.gameSeed}`);
-    this._addButton('Refresh', this._onRefresh);
-    this._addButton('Click', this._onBoop);
     this._makeGrid(this.parent);
     this._makeResourceRow(this.parent);
+
+    if (this.canAcceptResource) {
+      this._addButton('Accept', this._onAcceptResource);
+    }
   }
 
   _addText(text) {
@@ -84,7 +87,7 @@ export default class UiGame {
       style.textContent = `
         .mika-grid-container { display:flex; justify-content:center; margin-top:12px; }
   .mika-grid { display: grid; grid-template-columns: repeat(4, 4em); grid-auto-rows: 4em; gap: 1px; }
-        .mika-cell { background: #fff; border: 1px solid #ccc; box-sizing: border-box; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .mika-cell { background: #fff; border: 1px solid #ccc; box-sizing: border-box; display:flex; align-items:flex-start; justify-content:flex-start; cursor:pointer; padding:6px; text-align:left; white-space:pre-wrap; overflow:hidden; line-height: 1.0; }
         .mika-cell:active { background: #f0f8ff; }
       `;
       document.head.appendChild(style);
@@ -94,7 +97,7 @@ export default class UiGame {
   _makeCell(index) {
     const cell = document.createElement('div');
     cell.className = 'mika-cell';
-    cell.textContent = index;
+    cell.textContent = this._getCellText(index);
     cell.index = index;
     cell.addEventListener('click', (e) => {
       this._onCellClick(index, e);
@@ -117,11 +120,33 @@ export default class UiGame {
     const row = document.createElement('div');
     row.className = 'mika-resource-row';
 
-    for (let i = 0; i < 5; i++) {
+    // Try to get resources from the program; fall back to 5 placeholders
+    let resources = null;
+    if (this.program && this.program.tiny && typeof this.program.tiny.getResources === 'function') {
+      try {
+        resources = this.program.tiny.getResources();
+      } catch (err) {
+        resources = null;
+      }
+    }
+
+    const count = Array.isArray(resources) && resources.length > 0 ? resources.length : 5;
+
+    for (let i = 0; i < count; i++) {
       const r = document.createElement('div');
       r.className = 'mika-resource';
       r.dataset.index = i;
-      r.textContent = '';
+
+      const item = resources && resources[i];
+      // Choose a display label: prefer name/label/type, then a count or index
+      let label = '';
+      if (item) {
+        if (typeof item === 'string' || typeof item === 'number') label = String(item);
+        else label = item.name || item.label || item.type || (item.count != null ? String(item.count) : '');
+      }
+      r.textContent = label;
+      if (label && label.length > 6) r.title = label; // long labels as tooltip
+
       if (this.selectedResource === i) {
         r.style.border = '3px solid #000';
       }
@@ -145,6 +170,29 @@ export default class UiGame {
     }
   }
 
+  _getCellText(index) {
+    const lines = [String(index)];
+
+    let r = this.program.tiny.board.cells[index].resource;
+    if (r) {
+      lines.push(r);
+    }
+
+    if (this.selectedResource != null) {
+      let resource = this.program.tiny.getResources()[this.selectedResource];
+      if (index == this.selectedCell) {
+        lines.push(`${resource}`);
+        this.canAcceptResource = {
+          cell: this.selectedCell,
+          resourceIndex: this.selectedResource,
+          resource: resource,
+        };
+      }
+    }
+
+    return lines.join('\n');
+  }
+
   _onResourceClick(index, e) {
     console.log('resource click', index);
     this.selectedResource = index;
@@ -155,6 +203,14 @@ export default class UiGame {
     // Dummy handler for now
     console.log('cell click', index);
     this.selectedCell = index;
+    this.render();
+  }
+
+  _onAcceptResource() {
+    this.program.tiny.doPlace(this.canAcceptResource.cell, this.canAcceptResource.resource);
+    this.canAcceptResource = null;
+    this.selectedCell = null;
+    this.selectedResource = null;
     this.render();
   }
 }

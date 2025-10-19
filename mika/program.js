@@ -15,6 +15,9 @@ export default class Program {
     console.log('sss Loaded save data:', JSON.stringify(this.saveData.data));
     this.uiContainer = new uiContainer(this.parent, this);
     this.gotoMode('main');
+
+    this.newGame();
+    this.gotoMode('gameboard');
   }
 
   newGame() {

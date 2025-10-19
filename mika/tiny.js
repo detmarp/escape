@@ -1,6 +1,9 @@
+import TinyBoard from './tinyboard.js';
+
 export default class Tiny {
   constructor() {
     this.gameSeed = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+    this.board = new TinyBoard(this);
   }
 
   static fromObject(obj = {}) {
@@ -23,8 +26,13 @@ export default class Tiny {
     ];
   }
 
-  doPlace(position, color) {
-    return true;
+  getResources() {
+    // returns array of placeable resources
+    return [ 'wood', 'brick', 'wheat' ];
+  }
+
+  doPlace(position, resource) {
+    this.board.cells[position].resource = resource;
   }
 
   toObject() {
