@@ -32,6 +32,16 @@ export default class UiContainer {
       }
     `);
 
+    // mobile interaction tweaks (prevent double-tap zoom and pull-to-refresh)
+    this._addStyle('mobile-behavior', `
+      /* Prefer preventing double-tap zoom and pull-to-refresh where supported */
+      html, body, #mika-root { overscroll-behavior: none; }
+      #mika-root, #mika-root * { touch-action: manipulation; -ms-touch-action: manipulation; }
+    `);
+
+    // add JS guards to handle iOS pull-to-refresh and double-tap zoom prevention
+    this._disableMobileDefaults();
+
     this._addStyle('typography', `
       /* Base typography and smoothing for consistent rendering across platforms */
       #mika-root, #mika-root * {
@@ -95,6 +105,46 @@ export default class UiContainer {
     if (id) style.id = id;
     style.textContent = css;
     head.appendChild(style);
+  }
+
+  _disableMobileDefaults() {
+    if (typeof window === 'undefined' || this._mobileDefaultsApplied) return;
+    this._mobileDefaultsApplied = true;
+
+    // Prevent double-tap to zoom by tracking last touch time
+    let lastTouch = 0;
+    const onTouchStart = (e) => {
+      const now = Date.now();
+      if (now - lastTouch <= 300) {
+        // second tap within 300ms -> prevent zoom
+        e.preventDefault();
+      }
+      lastTouch = now;
+    };
+
+    // Prevent pull-to-refresh on iOS by preventing the overscroll when at top
+    let maybePreventPull = false;
+    let startY = 0;
+    const onTouchMove = (e) => {
+      if (window.scrollY === 0) {
+        const touch = e.touches && e.touches[0];
+        if (!touch) return;
+        const delta = touch.clientY - startY;
+        if (delta > 10) {
+          // pulling down at top -> prevent default
+          e.preventDefault();
+        }
+      }
+    };
+
+    const onTouchStartForPull = (e) => {
+      const touch = e.touches && e.touches[0];
+      if (touch) startY = touch.clientY;
+    };
+
+    document.addEventListener('touchstart', onTouchStart, { passive: false });
+    document.addEventListener('touchstart', onTouchStartForPull, { passive: false });
+    document.addEventListener('touchmove', onTouchMove, { passive: false });
   }
 
   _render() {

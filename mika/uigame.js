@@ -29,6 +29,10 @@ export default class UiGame {
     if (this.canAcceptCard) {
       this._addButton('Accept', this._onAcceptCard);
     }
+
+    if (this.selectedCard != null) {
+      this._makeCard(this.parent, this.program.tiny.getHand()[this.selectedCard]);
+    }
   }
 
   _addText(text) {
@@ -188,7 +192,7 @@ export default class UiGame {
     let cards = this.program.tiny.getHand();
     for (let i = 0; i < cards.length; i++) {
       const c = document.createElement('div');
-      c.className = 'mika-card';
+      c.className = 'mika-card-button';
       c.dataset.index = i;
 
       const item = cards && cards[i];
@@ -214,13 +218,31 @@ export default class UiGame {
       const style = document.createElement('style');
       style.id = 'mika-card-styles';
       style.textContent = `
-        .mika-card-row-container { display:flex; justify-content:center; margin-top:12px; }
-        .mika-card-row { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
-  .mika-card { min-width:4em; height:2em; border:1px solid #ccc; box-sizing:border-box; display:flex; align-items:center; justify-content:center; cursor:pointer; background:#fff; border-radius:6px; padding:6px; }
-        .mika-card:active { background:#f5faff; }
+  .mika-card-row-container { display:flex; justify-content:flex-start; margin-top:12px; }
+  .mika-card-row { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-start; align-content:flex-start; }
+  .mika-card-button { min-width:4em; height:2em; border:1px solid #ccc; box-sizing:border-box; display:flex; align-items:center; justify-content:center; cursor:pointer; background:#fff; border-radius:6px; padding:6px; }
+        .mika-card-button:active { background:#f5faff; }
+  .mika-card { width:15em; max-width:17em; border:1px solid #ccc; box-sizing:border-box; background:#fff; border-radius:6px; padding:12px; margin-top:12px; white-space:pre-wrap; overflow-wrap:break-word; word-break:break-word; }
       `;
       document.head.appendChild(style);
     }
+  }
+
+  _makeCard(parent, card) {
+    // Create a rectangular card element (15em wide) and fill with JSON text
+    const c = document.createElement('div');
+    c.className = 'mika-card';
+    // show a readable JSON representation; fallback to empty string
+    try {
+      c.textContent = card == null ? '' : (typeof card === 'string' ? card : JSON.stringify(card, null, 2));
+    } catch (err) {
+      c.textContent = String(card);
+    }
+    // ensure multi-line JSON wraps nicely
+    c.style.whiteSpace = 'pre-wrap';
+    c.style.wordBreak = 'break-word';
+    parent.appendChild(c);
+    return c;
   }
 
   _getCellText(index) {
@@ -290,7 +312,7 @@ export default class UiGame {
   }
 
   _onAcceptResource() {
-    this.program.tiny.doPlace(this.canAcceptResource.cell, this.canAcceptResource.resource);
+    this.program.tiny.doResource(this.canAcceptResource.cell, this.canAcceptResource.resource);
     this._clearSelections();
     this.render();
   }
