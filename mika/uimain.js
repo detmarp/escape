@@ -12,6 +12,10 @@ export default class UiMain {
     title.textContent = 'Main';
     this.parent.appendChild(title);
 
+    this._addButton('Settings', () => {
+      this.program.gotoMode('settings');
+    });
+
     const startButton = document.createElement('button');
     startButton.textContent = 'New game';
     startButton.addEventListener('click', () => {
@@ -22,12 +26,9 @@ export default class UiMain {
 
     this._addButton('Quickstart', this._onQuickstart);
 
-    const settingsButton = document.createElement('button');
-    settingsButton.textContent = 'Settings';
-    settingsButton.addEventListener('click', () => {
-      this.program.gotoMode('settings');
-    });
-    this.parent.appendChild(settingsButton);
+    if (this.program.lastGame) {
+      this._addButton('Continue', this._onContinue);
+    }
   }
 
   _addText(text) {
@@ -56,5 +57,9 @@ export default class UiMain {
   _onQuickstart() {
     this.program.newGame();
     this.program.gotoMode('gameboard');
+  }
+
+  _onContinue() {
+    this.program.tryContinue();
   }
 }

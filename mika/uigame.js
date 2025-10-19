@@ -62,15 +62,6 @@ export default class UiGame {
     this.program.gotoMode('main');
   }
 
-  _onRefresh() {
-    this.render();
-  }
-
-  _onBoop() {
-    const iso = new Date().toISOString().replace(/\.\d{3}Z$/, '').replace('T', '-');
-    console.log('bbb boop', iso);
-  }
-
   _makeGrid(parent) {
     // Create container and inject local styles so we don't touch global CSS
     const container = document.createElement('div');
@@ -222,7 +213,7 @@ export default class UiGame {
   .mika-card-row { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-start; align-content:flex-start; }
   .mika-card-button { min-width:4em; height:2em; border:1px solid #ccc; box-sizing:border-box; display:flex; align-items:center; justify-content:center; cursor:pointer; background:#fff; border-radius:6px; padding:6px; }
         .mika-card-button:active { background:#f5faff; }
-  .mika-card { width:15em; max-width:17em; border:1px solid #ccc; box-sizing:border-box; background:#fff; border-radius:6px; padding:12px; margin-top:12px; white-space:pre-wrap; overflow-wrap:break-word; word-break:break-word; }
+  #mika-root .mika-card { width:15em; max-width:17em; border:1px solid #ccc; box-sizing:border-box; background:#fff; border-radius:6px; padding:12px; margin-top:12px; white-space:pre-wrap; overflow-wrap:break-word; word-break:break-word; font-family: monospace, ui-monospace, 'SFMono-Regular', Menlo, 'Roboto Mono', 'Segoe UI Mono', 'Ubuntu Mono'; }
       `;
       document.head.appendChild(style);
     }
@@ -291,7 +282,6 @@ export default class UiGame {
   }
 
   _onResourceClick(index, e) {
-    console.log('resource click', index);
     this.selectedResource = index;
     this.selectedCard = null;
     this.render();
@@ -315,12 +305,14 @@ export default class UiGame {
     this.program.tiny.doResource(this.canAcceptResource.cell, this.canAcceptResource.resource);
     this._clearSelections();
     this.render();
+    this.program.saveCurrent();
   }
 
   _onAcceptCard() {
     this.program.tiny.doCard(this.canAcceptCard.cell, this.canAcceptCard.card);
     this._clearSelections();
     this.render();
+    this.program.saveCurrent();
   }
 
   _clearSelections() {

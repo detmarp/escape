@@ -2,26 +2,76 @@ export default class UiSettings {
   constructor(parent, program) {
     this.parent = parent;
     this.program = program;
+
+    this._render();
   }
 
   _render() {
-    this.parent.textContent = '';
-    const title = document.createElement('h1');
-    title.textContent = 'Main Menu';
-    this.parent.appendChild(title);
+    this.parent.innerHTML = '';
 
-    const startButton = document.createElement('button');
-    startButton.textContent = 'Start Game';
-    startButton.addEventListener('click', () => {
-      this.program.gotoMode('game');
-    });
-    this.parent.appendChild(startButton);
+    this._addHeader('Settings');
+    this._addButton('< Main', this._onExit);
+    // add toggle bound to this.program.saveData.data.key
+    this._addSettingsToggle('Auto-continue last game', 'autocontinue');
+  }
 
-    const settingsButton = document.createElement('button');
-    settingsButton.textContent = 'Settings';
-    settingsButton.addEventListener('click', () => {
-      this.program.gotoMode('settings');
+  _addText(text) {
+    const p = document.createElement('p');
+    p.textContent = text;
+    this.parent.appendChild(p);
+  }
+
+  _addHeader(text) {
+    const h = document.createElement('h1');
+    h.textContent = text;
+    this.parent.appendChild(h);
+    return h;
+  }
+
+  _addButton(label, onClick) {
+    const button = document.createElement('button');
+    button.textContent = label;
+    if (typeof onClick === 'function') {
+      button.addEventListener('click', onClick.bind(this));
+    }
+    this.parent.appendChild(button);
+    return button;
+  }
+
+  _addSettingsToggle(label, key) {
+    // Read current value from program.saveData.data (safe access)
+    const current = !!this.program.saveData.data[key];
+    const checkbox = this._addCheckbox(label, current, (checked) => {
+      this.program.saveData.data[key] = !!checked;
+      this.program.save();
+      this._render();
     });
-    this.parent.appendChild(settingsButton);
+    return checkbox;
+  }
+
+  _addCheckbox(label, checked, onChange) {
+    const container = document.createElement('div');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = checked;
+    checkbox.id = `checkbox-${label.replace(/\s+/g, '-').toLowerCase()}`;
+    checkbox.addEventListener('change', (e) => {
+      if (typeof onChange === 'function') {
+        onChange(e.target.checked);
+      }
+    });
+
+    const labelElement = document.createElement('label');
+    labelElement.htmlFor = checkbox.id;
+    labelElement.textContent = label;
+
+    container.appendChild(checkbox);
+    container.appendChild(labelElement);
+    this.parent.appendChild(container);
+    return checkbox;
+  }
+
+  _onExit() {
+    this.program.gotoMode('main');
   }
 }

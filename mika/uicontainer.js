@@ -93,6 +93,41 @@ export default class UiContainer {
       /* Slight visual adjustment for hover (desktop) */
       #mika-root button:hover { filter: brightness(0.95); }
     `);
+
+    this._addStyle('checkbox-styles', `
+      /* Make checkboxes look like compact buttons */
+      #mika-root input[type="checkbox"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 2.2em;
+        height: 1.4em;
+        border-radius: 8px;
+        border: 1px solid #cfcfcf;
+        background: #fff;
+        display: inline-block;
+        vertical-align: middle;
+        cursor: pointer;
+        box-sizing: border-box;
+        transition: background-color 120ms ease, border-color 120ms ease;
+      }
+
+      /* checked: blue background and white check icon */
+      #mika-root input[type="checkbox"]:checked {
+        background-color: #007acc;
+        border-color: #007acc;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='white' d='M6.2 10.6L3 7.4 1.6 8.8l4.6 4.6L14.4 5.2 13 3.8z'/></svg>");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 60% 60%;
+      }
+
+      /* hover and focus affordances */
+      #mika-root input[type="checkbox"]:hover { filter: brightness(0.98); }
+      #mika-root input[type="checkbox"]:focus { outline: 2px solid rgba(0,122,204,0.25); outline-offset: 2px; }
+
+      /* allow labels next to checkbox to look like text buttons */
+      #mika-root label { cursor: pointer; }
+    `);
   }
 
   _addStyle(id, css) {
