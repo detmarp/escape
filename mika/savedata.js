@@ -1,5 +1,6 @@
 export default class SaveData {
   constructor() {
+    //this._debugClear();
     this._normalize();
     this.load();
   }
@@ -29,5 +30,9 @@ export default class SaveData {
     this.data.settings = this.data.settings || {};
     this.data.history = this.data.history || [];
     this.data.count = this.data.count || 0;
+  }
+
+  _debugClear() {
+    localStorage.removeItem('saveData');
   }
 }

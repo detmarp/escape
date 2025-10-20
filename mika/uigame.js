@@ -1,7 +1,12 @@
+import Icons from './icons.js';
+import UiParts from './uiparts.js';
+
 export default class UiGame {
   constructor(parent, program) {
     this.parent = parent;
     this.program = program;
+    this.upParts = new UiParts(this.program.tiny);
+
     this.selectedCell = null;
     this.selectedResource = null;
     this.selectedCard = null;
@@ -33,6 +38,27 @@ export default class UiGame {
     if (this.selectedCard != null) {
       this._makeCard(this.parent, this.program.tiny.getHand()[this.selectedCard]);
     }
+
+    // convert a CSS size (e.g. "2em", "24px", "1.5rem") to pixels relative to an element
+    function cssSizeToPx(size, relativeTo) {
+      if (typeof size === 'number') return size;
+      const tmp = document.createElement('div');
+      tmp.style.position = 'absolute';
+      tmp.style.visibility = 'hidden';
+      tmp.style.height = '0';
+      tmp.style.width = size;
+      (document.body).appendChild(tmp);
+      const px = parseFloat(getComputedStyle(tmp).width) || 0;
+      tmp.parentNode.removeChild(tmp);
+      return Math.round(px);
+    }
+
+    // var icons = new Icons();
+    // this.parent.appendChild(icons.makeHouse(cssSizeToPx('2em'), '#f00'));
+    // this.parent.appendChild(icons.makeHouse(cssSizeToPx('6em'), '#00b'));
+    // this.parent.appendChild(icons.makeCube(cssSizeToPx('2em'), '#0f0'));
+    // this.parent.appendChild(icons.makeCube(cssSizeToPx('4em'), '#f80'));
+    // this.parent.appendChild(icons.makeCube(cssSizeToPx('8em'), '#0ff'));
   }
 
   _addText(text) {
@@ -100,8 +126,47 @@ export default class UiGame {
   _makeCell(index) {
     const cell = document.createElement('div');
     cell.className = 'mika-cell';
-    cell.textContent = this._getCellText(index);
-    cell.index = index;
+    // Replace textual content with icons for building/resource when present
+    const cellText = this._getCellText(index);
+    // container for icons
+    const iconContainer = document.createElement('div');
+    iconContainer.style.display = 'flex';
+    iconContainer.style.flexDirection = 'column';
+    iconContainer.style.alignItems = 'center';
+    iconContainer.style.justifyContent = 'center';
+    iconContainer.style.width = '100%';
+    iconContainer.style.height = '100%';
+
+    const cellObj = this.program.tiny.board.cells[index];
+    const building = cellObj && cellObj.building;
+    const resource = cellObj && cellObj.resource;
+
+    const icons = new Icons();
+    // building (house) if present
+    if (building) {
+      const bColor = this.upParts.getMeeple(building.category).color;
+      const house = icons.makeHouse(64, bColor);
+      house.style.width = '50%';
+      house.style.height = '50%';
+      iconContainer.appendChild(house);
+    }
+    // resource (cube) if present
+    if (resource) {
+      const rColor = (this.upParts && typeof this.upParts.getMeeple === 'function') ? (this.upParts.getMeeple(resource).color || '#ccc') : '#ccc';
+      const cube = icons.makeCube(48, rColor);
+      cube.style.width = '50%';
+      cube.style.height = '50%';
+      iconContainer.appendChild(cube);
+    }
+
+    // fallback: if no icons were added, show the old text as title for discoverability
+    if (iconContainer.childElementCount === 0) {
+      cell.textContent = '';
+      cell.title = cellText;
+    } else {
+      cell.appendChild(iconContainer);
+      cell.title = cellText;
+    }
     cell.addEventListener('click', (e) => {
       this._onCellClick(index, e);
     });
@@ -135,6 +200,7 @@ export default class UiGame {
 
     const count = Array.isArray(resources) && resources.length > 0 ? resources.length : 5;
 
+    const icons = new Icons();
     for (let i = 0; i < count; i++) {
       const r = document.createElement('div');
       r.className = 'mika-resource';
@@ -147,8 +213,14 @@ export default class UiGame {
         if (typeof item === 'string' || typeof item === 'number') label = String(item);
         else label = item.name || item.label || item.type || (item.count != null ? String(item.count) : '');
       }
-      r.textContent = label;
-      if (label && label.length > 6) r.title = label; // long labels as tooltip
+      // create an SVG icon to fill the resource slot instead of plain text
+      const iconColor = this.upParts.getMeeple(item).color;
+      const svgIcon = icons.makeCube(80, iconColor);
+      // make the svg scale to the container
+      svgIcon.style.width = '100%';
+      svgIcon.style.height = '90%';
+      r.appendChild(svgIcon);
+      if (label && label.length > 6) r.title = label; // keep long labels as tooltip
 
       if (this.selectedResource === i) {
         r.style.border = '3px solid #000';
@@ -180,7 +252,17 @@ export default class UiGame {
     const row = document.createElement('div');
     row.className = 'mika-card-row';
 
+    const icons = new Icons();
     let cards = this.program.tiny.getHand();
+    // simple mapping from category to color; extend as needed
+    const categoryColor = {
+      attack: '#e55353',
+      defend: '#5b8cff',
+      resource: '#4bbf73',
+      magic: '#b86bff',
+      default: '#cccccc',
+    };
+
     for (let i = 0; i < cards.length; i++) {
       const c = document.createElement('div');
       c.className = 'mika-card-button';
@@ -192,7 +274,15 @@ export default class UiGame {
         if (typeof item === 'string' || typeof item === 'number') label = String(item);
         else label = item.short || item.title || item.type || (item.count != null ? String(item.count) : '');
       }
-      c.textContent = label;
+      // create an SVG icon based on the card.category and insert it instead of text
+      const cat = item && item.category ? String(item.category).toLowerCase() : 'default';
+      const iconColor = this.upParts.getMeeple(item.category).color;
+      const svgIcon = icons.makeHouse(64, iconColor);
+      svgIcon.style.width = '100%';
+      svgIcon.style.height = '100%';
+      // clear any text and append the icon
+      c.textContent = '';
+      c.appendChild(svgIcon);
       if (label && label.length > 12) c.title = label;
 
       if (this.selectedCard === i) {
