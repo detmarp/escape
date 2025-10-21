@@ -73,4 +73,41 @@ export default class Tiny {
       })
     };
   }
+
+  getResourceCells() {
+    // return a obj, where the key is a cell index, and the value something truthy
+    var result = {};
+    var cells = (this.board && Array.isArray(this.board.cells)) ? this.board.cells : [];
+    cells.forEach((cell, i) => {
+      if (!cell || !cell.resource) {
+        result[i] = true;
+      }
+    });
+    return result;
+  }
+
+  getBuildingPlacements() {
+    // return description of all legal building placements
+    let placements = [];
+
+    let hand = this.getHand();
+
+    let list = [];
+    this.board.cells.forEach((cell, i) => {
+      if (cell.resource) {
+        list.push(i);
+      }
+    });
+
+    for (var i = 0; i < list.length - 2; i++) {
+      var k = i % hand.length;
+      var card = hand[k];
+      placements.push({
+        cells: [ list[i], list[i + 1], list[i + 2] ],
+        card: card
+      });
+    }
+
+    return placements;
+  }
 }

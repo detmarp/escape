@@ -90,6 +90,18 @@ export default class UiContainer {
         touch-action: manipulation;
       }
 
+      /* usable-button: visually indicates a primary/usable action (pale green) */
+      #mika-root button.usable-button {
+        background: #dff7e0; /* pale green */
+        color: #0a5a1a; /* darker green for good contrast */
+      }
+      /* allow the usable-button utility class on non-button elements too */
+      #mika-root .usable-button {
+        background: #bfb;
+        color: #0a5a1a;
+        border-color: #272;
+      }
+
       /* Slight visual adjustment for hover (desktop) */
       #mika-root button:hover { filter: brightness(0.95); }
     `);

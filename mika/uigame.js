@@ -175,6 +175,43 @@ export default class UiGame {
     } else {
       cell.style.border = '';
     }
+
+    // mark cell as usable if tiny reports it as a resource-target cell
+    let resourceCells = this.program.tiny.getResourceCells();
+    if (this.selectedResource != null &&
+      Object.prototype.hasOwnProperty.call(resourceCells, index)
+    ) {
+      cell.classList.add('usable-button');
+    }
+
+    if (this.selectedCard != null) {
+      var placements = this.program.tiny.getBuildingPlacements();
+      let usable = false;
+      if (Array.isArray(placements) && this.selectedCard != null) {
+        const selected = this.program.tiny.getHand()[this.selectedCard];
+        const selCat = selected && selected.category ? String(selected.category) : null;
+        if (selCat != null) {
+          for (let p of placements) {
+            if (!p) continue;
+            const pCat = p.card && p.card.category ? String(p.card.category) : null;
+            if (pCat !== selCat) continue;
+
+            // support placements.cells as array or as an object/map
+            if (Array.isArray(p.cells)) {
+              if (p.cells.indexOf(index) !== -1) { usable = true; break; }
+            } else if (p.cells && Object.prototype.hasOwnProperty.call(p.cells, index)) {
+              usable = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (usable) {
+        cell.classList.add('usable-button');
+      }
+    }
+
     return cell;
   }
 
@@ -203,7 +240,7 @@ export default class UiGame {
     const icons = new Icons();
     for (let i = 0; i < count; i++) {
       const r = document.createElement('div');
-      r.className = 'mika-resource';
+      r.className = 'mika-resource usable-button';
       r.dataset.index = i;
 
       const item = resources && resources[i];
@@ -289,6 +326,27 @@ export default class UiGame {
         c.style.border = '3px solid #000';
       }
       c.addEventListener('click', (e) => this._onCardClick(i, e));
+
+      var placements = this.program.tiny.getBuildingPlacements();
+      let usable = false;
+      const itmCat = item && item.category ? String(item.category) : null;
+      if (itmCat && Array.isArray(placements)) {
+        for (let p of placements) {
+          if (!p || !p.card) continue;
+          const pCat = p.card.category ? String(p.card.category) : null;
+          if (pCat === itmCat) { usable = true; break; }
+        }
+      } else if (itmCat && placements && typeof placements === 'object') {
+        for (let k in placements) {
+          if (!Object.prototype.hasOwnProperty.call(placements, k)) continue;
+          const p = placements[k];
+          if (!p || !p.card) continue;
+          const pCat = p.card.category ? String(p.card.category) : null;
+          if (pCat === itmCat) { usable = true; break; }
+        }
+      }
+      if (usable) c.classList.add('usable-button');
+
       row.appendChild(c);
     }
 
