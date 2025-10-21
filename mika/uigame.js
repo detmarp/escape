@@ -146,8 +146,8 @@ export default class UiGame {
     if (building) {
       const bColor = this.upParts.getMeeple(building.category).color;
       const house = icons.makeHouse(64, bColor);
-      house.style.width = '50%';
-      house.style.height = '50%';
+      house.style.width = '60%';
+      house.style.height = '60%';
       iconContainer.appendChild(house);
     }
     // resource (cube) if present

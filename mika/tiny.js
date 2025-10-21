@@ -55,6 +55,7 @@ export default class Tiny {
 
   doCard(position, card) {
     this.board.cells[position].building = card;
+    this.board.cells[position].resource = null;
   }
 
   toObject() {
@@ -79,7 +80,7 @@ export default class Tiny {
     var result = {};
     var cells = (this.board && Array.isArray(this.board.cells)) ? this.board.cells : [];
     cells.forEach((cell, i) => {
-      if (!cell || !cell.resource) {
+      if (!cell.resource && !cell.building) {
         result[i] = true;
       }
     });

@@ -3,11 +3,11 @@ export default class UiParts {
     this.tiny = tiny;
 
     this.meeples = {
-      wheat: { color: '#fab533', label: 'Wheat' },
+      wheat: { color: '#fae533', label: 'Wheat' },
       wood: { color: '#5a423d', label: 'Wood' },
-      brick: { color: '#f76045', label: 'Brick' },
+      brick: { color: '#f74045', label: 'Brick' },
       stone: { color: '#999', label: 'Stone' },
-      glass: { color: '#016d9b', label: 'Glass' },
+      glass: { color: '#117ddb', label: 'Glass' },
 
       red: { color: '#ff0000', label: 'Red' },
       orange: { color: '#ffa500', label: 'Orange' },
