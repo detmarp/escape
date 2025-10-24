@@ -1,3 +1,5 @@
+import uiParts from './uiparts.js';
+
 export default class Icons {
   constructor() {
   }
@@ -43,7 +45,8 @@ export default class Icons {
     return [origHex, darkHex, lightHex];
   }
 
-  makeHouse(size = 64, color = '#ddd') {
+  makeHouse(color = '#ddd') {
+    var size = 80;
     const xmlns = 'http://www.w3.org/2000/svg';
     const svg = this._createSVG(size);
 
@@ -88,7 +91,8 @@ export default class Icons {
     return svg;
   }
 
-  makeCube(size = 64, color = '#aaa') {
+  makeCube(color = '#aaa') {
+    var size = 80;
     const xmlns = 'http://www.w3.org/2000/svg';
     const svg = this._createSVG(size);
     const [origColor, darkColor, lightColor] = this._getColors(color);
@@ -119,14 +123,12 @@ export default class Icons {
 
     const xmlnsNs = xmlns;
 
-    console.log(`ttt (${tx},${ty}) scale(${scale})`);
     const to2d = ([x,y]) => `${x * scale + tx},${y * scale + ty}`;
     const pts = layout.map(to2d);
 
     function makeFace(pointIndices, faceColor, edgeColor) {
       const poly = document.createElementNS(xmlnsNs, 'polygon');
       const ptsList = pointIndices.map(i => pts[i]);
-      console.log(`ccc ${JSON.stringify(ptsList.join(' '))}`);
       poly.setAttribute('points', ptsList.join(' '));
       poly.setAttribute('fill', faceColor);
       poly.setAttribute('stroke', edgeColor);
@@ -141,6 +143,73 @@ export default class Icons {
     svg.appendChild(right);
     svg.appendChild(left);
     svg.appendChild(top);
+
+    return svg;
+  }
+
+  makePattern(lines) {
+    // lines: rectangle of chars (rows high, cols wide). '-' means blank.
+    // each character is a color code; we map a char to a hex color deterministically.
+    const xmlns = 'http://www.w3.org/2000/svg';
+
+    // normalize input to array of strings
+    let rowsArr = [];
+    if (!lines) rowsArr = [];
+    else if (Array.isArray(lines)) rowsArr = lines.slice();
+    else if (typeof lines === 'string') rowsArr = lines.split('\n');
+    else rowsArr = [];
+
+    // trim possible trailing empty lines
+    while (rowsArr.length > 0 && rowsArr[rowsArr.length - 1].length === 0) rowsArr.pop();
+
+    const rows = rowsArr.length;
+    const cols = rows > 0 ? Math.max(...rowsArr.map(r => r.length)) : 0;
+
+    const cell = 25; // each little square is 25x25
+    const gutter = 0; // no extra gutter between cells (border handled by stroke)
+
+    // size of the block to draw
+    const totalW = cols * (cell + gutter);
+    const totalH = rows * (cell + gutter);
+
+    // choose an SVG drawing size that will be at least 120 but large enough to contain the pattern
+    const minSize = 120;
+    const pad = 6;
+    const size = Math.max(minSize, totalW + pad * 2, totalH + pad * 2);
+
+    const svg = this._createSVG(size);
+
+    // helper: map a character to a hex color
+    function charToColor(ch) {
+      let parts = new uiParts().getMeeple(ch);
+      return parts.color;
+    }
+
+    // center offsets
+    const offsetX = Math.round((size - totalW) / 2);
+    const offsetY = Math.round((size - totalH) / 2);
+
+    // draw each cell
+    for (let r = 0; r < rows; r++) {
+      const line = rowsArr[r] || '';
+      for (let c = 0; c < cols; c++) {
+        const ch = c < line.length ? line[c] : '-';
+        if (ch == '-') {
+          continue;
+        }
+        const color = charToColor(ch);
+        const x = offsetX + c * (cell + gutter);
+        const y = offsetY + r * (cell + gutter);
+        const rect = document.createElementNS(xmlns, 'rect');
+        rect.setAttribute('x', String(x));
+        rect.setAttribute('y', String(y));
+        rect.setAttribute('width', String(cell));
+        rect.setAttribute('height', String(cell));
+        rect.setAttribute('fill', color);
+        rect.setAttribute('stroke', '#888');
+        rect.setAttribute('stroke-width', '1');
+        svg.appendChild(rect);}
+    }
 
     return svg;
   }

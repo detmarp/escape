@@ -20,9 +20,14 @@ export default class UiGame {
     this.canAcceptCard = false;
 
     this._addHeader('Game board');
-    this._addButton('< Main', this._onExit);
     this._addText(`Game Seed: ${this.program.tiny.gameSeed}`);
+    this._addButton('< Main', this._onExit);
     this._makeGrid(this.parent);
+
+    if (this.program.tiny.doneResource && !this.program.tiny.full) {
+      this._addButton('End turn', this._onEndTurn);
+    }
+
     this._makeResourceRow(this.parent);
 
     if (this.canAcceptResource) {
@@ -52,13 +57,6 @@ export default class UiGame {
       tmp.parentNode.removeChild(tmp);
       return Math.round(px);
     }
-
-    // var icons = new Icons();
-    // this.parent.appendChild(icons.makeHouse(cssSizeToPx('2em'), '#f00'));
-    // this.parent.appendChild(icons.makeHouse(cssSizeToPx('6em'), '#00b'));
-    // this.parent.appendChild(icons.makeCube(cssSizeToPx('2em'), '#0f0'));
-    // this.parent.appendChild(icons.makeCube(cssSizeToPx('4em'), '#f80'));
-    // this.parent.appendChild(icons.makeCube(cssSizeToPx('8em'), '#0ff'));
   }
 
   _addText(text) {
@@ -145,7 +143,7 @@ export default class UiGame {
     // building (house) if present
     if (building) {
       const bColor = this.upParts.getMeeple(building.category).color;
-      const house = icons.makeHouse(64, bColor);
+      const house = icons.makeHouse(bColor);
       house.style.width = '60%';
       house.style.height = '60%';
       iconContainer.appendChild(house);
@@ -153,7 +151,7 @@ export default class UiGame {
     // resource (cube) if present
     if (resource) {
       const rColor = (this.upParts && typeof this.upParts.getMeeple === 'function') ? (this.upParts.getMeeple(resource).color || '#ccc') : '#ccc';
-      const cube = icons.makeCube(48, rColor);
+      const cube = icons.makeCube(rColor);
       cube.style.width = '50%';
       cube.style.height = '50%';
       iconContainer.appendChild(cube);
@@ -240,7 +238,11 @@ export default class UiGame {
     const icons = new Icons();
     for (let i = 0; i < count; i++) {
       const r = document.createElement('div');
-      r.className = 'mika-resource usable-button';
+      if (this.program.tiny.doneResource) {
+        r.className = 'mika-resource';
+      } else {
+        r.className = 'mika-resource usable-button';
+      }
       r.dataset.index = i;
 
       const item = resources && resources[i];
@@ -252,7 +254,7 @@ export default class UiGame {
       }
       // create an SVG icon to fill the resource slot instead of plain text
       const iconColor = this.upParts.getMeeple(item).color;
-      const svgIcon = icons.makeCube(80, iconColor);
+      const svgIcon = icons.makeCube(iconColor);
       // make the svg scale to the container
       svgIcon.style.width = '100%';
       svgIcon.style.height = '90%';
@@ -314,7 +316,7 @@ export default class UiGame {
       // create an SVG icon based on the card.category and insert it instead of text
       const cat = item && item.category ? String(item.category).toLowerCase() : 'default';
       const iconColor = this.upParts.getMeeple(item.category).color;
-      const svgIcon = icons.makeHouse(64, iconColor);
+      const svgIcon = icons.makeHouse(iconColor);
       svgIcon.style.width = '100%';
       svgIcon.style.height = '100%';
       // clear any text and append the icon
@@ -371,12 +373,83 @@ export default class UiGame {
     // Create a rectangular card element (15em wide) and fill with JSON text
     const c = document.createElement('div');
     c.className = 'mika-card';
-    // show a readable JSON representation; fallback to empty string
+
+    // add some vertically stacked elements
+    // row with "hello" on the left and a house icon right-justified
+    const row = document.createElement('div');
+    row.style.display = 'flex';
+    row.style.justifyContent = 'space-between';
+    row.style.alignItems = 'center';
+    row.style.width = '100%';
+    row.style.marginBottom = '8px';
+
+    const left = document.createElement('div');
+    left.textContent = 'hello';
+    row.appendChild(left);
+
+    const right = document.createElement('div');
+    right.style.display = 'flex';
+    right.style.alignItems = 'center';
+    right.style.justifyContent = 'flex-end';
+
+    const icons = new Icons();
+    const iconColor = this.upParts.getMeeple(card.category).color;
+    const houseIcon = icons.makeHouse(iconColor);
+    houseIcon.style.width = '1em';
+    houseIcon.style.height = '1em';
+    right.appendChild(houseIcon);
+
+    row.appendChild(right);
+    c.appendChild(row);
+
+    // pattern button
+    // create a 4em square clickable div containing the SVG from icons.makePattern()
     try {
-      c.textContent = card == null ? '' : (typeof card === 'string' ? card : JSON.stringify(card, null, 2));
+      const patternBtn = document.createElement('div');
+      // sizing and visual
+      patternBtn.style.width = '4em';
+      patternBtn.style.height = '4em';
+      patternBtn.style.boxSizing = 'border-box';
+      patternBtn.style.border = '1px solid #000';
+      // make the button a block element and center it horizontally
+      patternBtn.style.display = 'block';
+      patternBtn.style.overflow = 'hidden';
+      patternBtn.style.cursor = 'pointer';
+      patternBtn.style.margin = '8px auto';
+
+      // get the svg from icons.makePattern()
+      const patternSvg = icons.makePattern(card.shape);
+      if (patternSvg) {
+        // make svg fill the div
+        patternSvg.style.width = '100%';
+        patternSvg.style.height = '100%';
+        patternSvg.style.display = 'block';
+        patternBtn.appendChild(patternSvg);
+      }
+
+      // click handler
+      patternBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        console.log('click');
+      });
+
+      // insert the button into the card (under the header row, before JSON)
+      c.appendChild(patternBtn);
     } catch (err) {
-      c.textContent = String(card);
+      // defensive: if anything goes wrong, don't break the rest of the card rendering
+      console.warn('failed to create pattern button', err);
     }
+
+    // JSON
+    const jsonDiv = document.createElement('div');
+    jsonDiv.textContent = JSON.stringify(card, null, 2);
+    jsonDiv.style.fontFamily = "monospace, ui-monospace, 'SFMono-Regular', Menlo, 'Roboto Mono', 'Segoe UI Mono', 'Ubuntu Mono'";
+    jsonDiv.style.whiteSpace = 'pre-wrap';
+    jsonDiv.style.wordBreak = 'break-word';
+    jsonDiv.style.overflow = 'visible';
+    jsonDiv.style.width = '100%';
+    c.appendChild(jsonDiv);
+
     // ensure multi-line JSON wraps nicely
     c.style.whiteSpace = 'pre-wrap';
     c.style.wordBreak = 'break-word';
@@ -400,12 +473,14 @@ export default class UiGame {
     if (index == this.selectedCell) {
       if (this.selectedResource != null) {
         let resource = this.program.tiny.getResources()[this.selectedResource];
-        lines.push(`${resource}`);
-        this.canAcceptResource = {
-          cell: this.selectedCell,
-          resourceIndex: this.selectedResource,
-          resource: resource,
-        };
+        if (this.program.tiny.canDoResource(index, resource)) {
+          lines.push(`${resource}`);
+          this.canAcceptResource = {
+            cell: this.selectedCell,
+            resourceIndex: this.selectedResource,
+            resource: resource,
+          };
+        }
       }
 
       if (this.selectedCard != null) {
@@ -430,6 +505,9 @@ export default class UiGame {
   }
 
   _onResourceClick(index, e) {
+    if (this.program.tiny.doneResource) {
+      return;
+    }
     this.selectedResource = index;
     this.selectedCard = null;
     this.render();
@@ -458,6 +536,13 @@ export default class UiGame {
 
   _onAcceptCard() {
     this.program.tiny.doCard(this.canAcceptCard.cell, this.canAcceptCard.card);
+    this._clearSelections();
+    this.render();
+    this.program.saveCurrent();
+  }
+
+  _onEndTurn() {
+    this.program.tiny.endTurn();
     this._clearSelections();
     this.render();
     this.program.saveCurrent();

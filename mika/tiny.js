@@ -25,13 +25,11 @@ export default class Tiny {
     return instance;
   }
 
-  canPlace(position, color) {
-    // return an array of legal placements, or null
-    // position and color are optional, but if present will filter results
-    return [
-      { position: 0, color: 'red' },
-    ];
+  endTurn() {
+    this.doneResource = false;
+    this.full = false;
   }
+
 
   getResources() {
     // returns array of placeable resources
@@ -49,8 +47,24 @@ export default class Tiny {
     return hand;
   }
 
+  canDoResource(position, resource) {
+    // return an array of legal placements, or null
+    // position and color are optional, but if present will filter results
+    // TODO detmar - not really implemented
+    if (!this.board.cells[position].resource && !this.doneResource) {
+      return {
+        position: position,
+        resource: resource,
+      };
+    }
+  }
+
   doResource(position, resource) {
+    if (!this.canDoResource(position, resource)) {
+      return;
+    }
     this.board.cells[position].resource = resource;
+    this.doneResource = true;
   }
 
   doCard(position, card) {

@@ -20,9 +20,21 @@ export default class UiParts {
 
       default: { color: '#f0f', label: 'Default' }
     };
-  }
+
+    this.alias = {
+      r: 'brick',
+      y: 'wheat',
+      g: 'stone',
+      c: 'glass',
+      b: 'wood',
+    };
+}
+
 
   getMeeple(name) {
+    if (!(name in this.meeples)) {
+      name = this.alias[name];
+    }
     return this.meeples[name] || this.meeples.default;
   }
 }
