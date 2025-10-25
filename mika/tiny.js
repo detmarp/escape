@@ -5,6 +5,7 @@ export default class Tiny {
   constructor() {
     this.board = new TinyBoard(this);
     this.deck = new TinyDeck();
+    this.score = {};
 
     this.gameSeed = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
   }
@@ -148,25 +149,6 @@ export default class Tiny {
         }
       }
     }
-    console.log(`fff ${JSON.stringify(placements)}`);
-    //     let shapeRows = shape.length;
-    //     let shapeCols = shapeRows > 0 ? Math.max(...shape.map(row => row.length)) : 0;
-
-    // let list = [];
-    // this.board.cells.forEach((cell, i) => {
-    //   if (cell.resource) {
-    //     list.push(i);
-    //   }
-    // });
-
-    // for (var i = 0; i < list.length - 2; i++) {
-    //   var k = i % hand.length;
-    //   var card = hand[k];
-    //   placements.push({
-    //     cells: [ list[i], list[i + 1], list[i + 2] ],
-    //     card: card
-    //   });
-    // }
 
     return placements;
   }
@@ -231,5 +213,101 @@ export default class Tiny {
       pattern.cells.push({ offset: i, resource });
     }
     return pattern;
+  }
+
+  calculateScore() {
+    this.score = {};
+
+    this.score.empty = -1 * this._countCells(cell => !cell.building);
+
+    let canFeed = this._findBuildingsByCategory('red').length * 4;
+    this.score.red = 0;
+
+    let blueCount = this._findBuildingsByCategory('blue').length;
+    let fedCount = Math.min(canFeed, blueCount);
+    this.score.blue = 3 * fedCount;
+
+    this.score.pink = 1 * this._findBuildingsByCategory('pink').length;
+
+    this.score.black = 0;
+
+    this.score.orange = this._findBuildingsByCategory('orange').length * fedCount;
+
+    this.score.gray = this._findBuildingsByCategory('gray').length * 2;
+
+    this.score.yellow = 0;
+    this._findBuildingsByCategory('yellow').forEach(yellow => {
+      // For each yellow,
+      let unique = new Set();
+      this._findBuildings(b => {
+        // count unique types in same row or column
+        return (
+          b.index !== yellow.index &&
+          (b.x === yellow.x || b.y === yellow.y)
+        );
+      }).forEach(b => {
+        unique.add(b.category);
+      });
+      this.score.yellow += 1 * unique.size;
+    });
+
+    let greenCount = this._findBuildingsByCategory('green').length;
+    const greenTable = [2, 5, 9, 14, 20];
+    this.score.green = greenTable[Math.min(greenCount, greenTable.length) - 1] || 0;
+
+    this.score.gray = 0;
+    this._findBuildingsByCategory('gray').forEach(gray => {
+      // find adjacent blue
+      this.score.gray += 1 * this._findBuildings(b => {
+        return (
+          Math.abs(b.x - gray.x) + Math.abs(b.y - gray.y) === 1 &&
+          b.category === 'blue'
+        )}).length;
+    });
+
+    return this._totalScore();
+  }
+
+  _totalScore() {
+    this.score.total = 0;
+    for (const [key, val] of Object.entries(this.score)) {
+      if (key !== 'total') {
+        const n = (typeof val === 'number') ? val : (Number(val) || 0);
+        this.score.total += n;
+      }
+    }
+    return this.score;
+  }
+
+  _findBuildings(predicate) {
+    let buildings = [];
+    this.board.cells.forEach(cell => {
+      if (cell.building) {
+        let building = {
+          index: cell.index,
+          x: cell.index % 4,
+          y: Math.floor(cell.index / 4),
+          category: cell.building.category,
+        };
+        if (predicate(building)) {
+          buildings.push(building);
+        }
+      }
+    });
+    return buildings;
+  }
+
+  _findBuildingsByCategory(category) {
+    return this._findBuildings(b => b.category === category);
+  }
+
+  _countCells(predicate) {
+    let count = 0;
+    this.board.cells.forEach(cell => {
+      if (predicate(cell)) {
+        count++;
+      }
+    });
+    return count;
   }
 }

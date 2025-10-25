@@ -24,6 +24,8 @@ export default class UiGame {
     this._addHeader('Game board');
     this._addText(`Game Seed: ${this.program.tiny.gameSeed}`);
     this._addButton('< Main', this._onExit);
+
+    this._makeScore();
     this._makeGrid(this.parent);
 
     if (this.program.tiny.doneResource && !this.program.tiny.full) {
@@ -33,7 +35,7 @@ export default class UiGame {
     this._makeResourceRow(this.parent);
 
     if (this.canAcceptResource) {
-      this._addButton('Accept', this._onAcceptResource);
+      this._addButton('Place resource', this._onAcceptResource);
     }
 
     this._makeCardRow(this.parent);
@@ -83,6 +85,12 @@ export default class UiGame {
 
   _onExit() {
     this.program.gotoMode('main');
+  }
+
+  _makeScore() {
+    let score = this.program.tiny.calculateScore();
+    let text = JSON.stringify(score, null, 2);
+    this._addText(text);
   }
 
   _makeGrid(parent) {
@@ -337,7 +345,7 @@ export default class UiGame {
     }
 
     if (this.canAcceptCard) {
-      this._addButton('Accept', this._onAcceptCard);
+      this._addButton(`Build ${this.canAcceptCard.card.name}`, this._onAcceptCard);
     }
   }
 

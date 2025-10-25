@@ -11,8 +11,8 @@ export default class UiParts {
 
       red: { color: '#ff0000', label: 'Red' },
       orange: { color: '#ffa500', label: 'Orange' },
-      yellow: { color: '#ffff00', label: 'Yellow' },
-      green: { color: '#00ff44', label: 'Green' },
+      yellow: { color: '#eeee11', label: 'Yellow' },
+      green: { color: '#17b441', label: 'Green' },
       blue: { color: '#0088ff', label: 'Blue' },
       black: { color: '#444', label: 'Black' },
       gray: { color: '#bbb', label: 'Gray' },
