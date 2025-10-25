@@ -10,6 +10,8 @@ export default class UiGame {
     this.selectedCell = null;
     this.selectedResource = null;
     this.selectedCard = null;
+    this.cardPlacementIndex = 0;
+    this.shownCard = 0;
     this.render();
   }
 
@@ -35,13 +37,10 @@ export default class UiGame {
     }
 
     this._makeCardRow(this.parent);
+    this._makeCardButtons();
 
-    if (this.canAcceptCard) {
-      this._addButton('Accept', this._onAcceptCard);
-    }
-
-    if (this.selectedCard != null) {
-      this._makeCard(this.parent, this.program.tiny.getHand()[this.selectedCard]);
+    if (this.shownCard != null) {
+      this._makeCard(this.parent, this.program.tiny.getHand()[this.shownCard]);
     }
 
     // convert a CSS size (e.g. "2em", "24px", "1.5rem") to pixels relative to an element
@@ -183,34 +182,56 @@ export default class UiGame {
     }
 
     if (this.selectedCard != null) {
-      var placements = this.program.tiny.getBuildingPlacements();
-      let usable = false;
-      if (Array.isArray(placements) && this.selectedCard != null) {
-        const selected = this.program.tiny.getHand()[this.selectedCard];
-        const selCat = selected && selected.category ? String(selected.category) : null;
-        if (selCat != null) {
-          for (let p of placements) {
-            if (!p) continue;
-            const pCat = p.card && p.card.category ? String(p.card.category) : null;
-            if (pCat !== selCat) continue;
-
-            // support placements.cells as array or as an object/map
-            if (Array.isArray(p.cells)) {
-              if (p.cells.indexOf(index) !== -1) { usable = true; break; }
-            } else if (p.cells && Object.prototype.hasOwnProperty.call(p.cells, index)) {
-              usable = true;
-              break;
-            }
-          }
-        }
-      }
-
-      if (usable) {
+      if (this._isCellSelectedPlacement(index)) {
         cell.classList.add('usable-button');
       }
     }
 
     return cell;
+  }
+
+  _placementCount(card) {
+    let count = 0;
+    let placements = this.program.tiny.getBuildingPlacements();
+    for (const p of placements) {
+      if (p.card.category === card.category) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  _isCellSelectedPlacement(index) {
+    if (this.selectedCard != null) {
+      var card = this.program.tiny.getHand()[this.selectedCard];
+      let placements = this.program.tiny.getBuildingPlacements();
+      let repeatFilter = 0;
+      for (const p of placements) {
+        if (p.card.category === card.category) {
+          // this placement is for this building
+          if (this.cardPlacementIndex === repeatFilter) {
+            if (p.resourceIndexes.indexOf(index) !== -1) {
+              this.selectedPlacement = p;
+              return true;
+            }
+          }
+          repeatFilter++;
+        }
+      }
+    }
+      // var card = this.program.tiny.getHand()[this.selectedCard];
+      // let usable = false;
+      // let placements = this.program.tiny.getBuildingPlacements();
+      // let repeatFilter = 0;
+      //     if (p.resourceIndexes.indexOf(index) !== -1) {
+      //       if (this.cardPlacementIndex === repeatFilter) {
+      //         usable = true;
+      //       }
+      //       repeatFilter++;
+      //     }
+      //   }
+      // }
+
   }
 
   _makeResource(parent) {
@@ -284,6 +305,42 @@ export default class UiGame {
     }
   }
 
+  _makeCardButtons() {
+    let row = null;
+
+    if (this.selectedCard != null) {
+      let count = this._placementCount(this.program.tiny.getHand()[this.selectedCard]);
+      if (count > 1) {
+        row = row || document.createElement('div');
+        this._addButton(
+          `${this.cardPlacementIndex + 1} / ${count}`,
+          () => {
+            // on card placement button click
+            this.cardPlacementIndex = (this.cardPlacementIndex + 1) % count;
+            this.render();
+          }
+        );
+      }
+
+      if (this.selectedPlacement) {
+        if (this.selectedCell != null) {
+          if (this.selectedPlacement.resourceIndexes.indexOf(this.selectedCell) !== -1) {
+            this.canAcceptCard = {
+              cell: this.selectedCell,
+              cardIndex: this.selectedCard,
+              card: this.program.tiny.getHand()[this.selectedCard],
+              placement: this.selectedPlacement,
+            };
+          }
+        }
+      }
+    }
+
+    if (this.canAcceptCard) {
+      this._addButton('Accept', this._onAcceptCard);
+    }
+  }
+
   _makeCardRow(parent) {
     const container = document.createElement('div');
     container.className = 'mika-card-row-container';
@@ -302,6 +359,7 @@ export default class UiGame {
       default: '#cccccc',
     };
 
+    var placements = this.program.tiny.getBuildingPlacements();
     for (let i = 0; i < cards.length; i++) {
       const c = document.createElement('div');
       c.className = 'mika-card-button';
@@ -329,7 +387,6 @@ export default class UiGame {
       }
       c.addEventListener('click', (e) => this._onCardClick(i, e));
 
-      var placements = this.program.tiny.getBuildingPlacements();
       let usable = false;
       const itmCat = item && item.category ? String(item.category) : null;
       if (itmCat && Array.isArray(placements)) {
@@ -430,7 +487,7 @@ export default class UiGame {
       // click handler
       patternBtn.addEventListener('click', (ev) => {
         ev.stopPropagation();
-        console.log('click');
+        this._onPivotPattern(card);
       });
 
       // insert the button into the card (under the header row, before JSON)
@@ -482,20 +539,22 @@ export default class UiGame {
           };
         }
       }
-
-      if (this.selectedCard != null) {
-        let card = this.program.tiny.getHand()[this.selectedCard];
-        let cardLabel = this._getCardText(this.selectedCard);
-        lines.push(`${cardLabel}`);
-        this.canAcceptCard = {
-          cell: this.selectedCell,
-          cardIndex: this.selectedCard,
-          card: card,
-        };
-      }
     }
 
     return lines.join('\n');
+  }
+
+  _canPlaceCard(cellIndex, card) {
+    let result = [];
+    let placements = this.program.tiny.getBuildingPlacements();
+    for (let p of placements) {
+      if (p.card.category === card.category) {
+        if (p.resourceIndexes.indexOf(cellIndex) !== -1) {
+          result.push(p);
+        }
+      }
+    }
+    return result.length > 0 ? result : null;
   }
 
   _getCardText(index) {
@@ -510,6 +569,7 @@ export default class UiGame {
     }
     this.selectedResource = index;
     this.selectedCard = null;
+    this.selectedPlacement = null;
     this.render();
   }
 
@@ -517,13 +577,16 @@ export default class UiGame {
     // Dummy handler for now
     console.log('cell click', index);
     this.selectedCell = index;
+    this.selectedPlacement = null;
     this.render();
   }
 
   _onCardClick(index, e) {
-    console.log('card click', index);
     this.selectedCard = index;
+    this.shownCard = index;
+    this.cardPlacementIndex = 0;
     this.selectedResource = null;
+    this.selectedPlacement = null;
     this.render();
   }
 
@@ -535,7 +598,7 @@ export default class UiGame {
   }
 
   _onAcceptCard() {
-    this.program.tiny.doCard(this.canAcceptCard.cell, this.canAcceptCard.card);
+    this.program.tiny.doCard(this.canAcceptCard.cell, this.canAcceptCard.placement);
     this._clearSelections();
     this.render();
     this.program.saveCurrent();
@@ -554,5 +617,13 @@ export default class UiGame {
     this.selectedCell = null;
     this.selectedResource = null;
     this.selectedCard = null;
+    this.cardPlacementIndex = 0;
+    this.selectedPlacement = null;
   }
+
+  _onPivotPattern(card) {
+    card.shape = this.program.tiny.pivotList(card.shape);
+    this.render();
+  }
+
 }
