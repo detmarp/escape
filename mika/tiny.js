@@ -8,11 +8,25 @@ export default class Tiny {
     this.score = {};
 
     this.gameSeed = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+    this.randomSeed = this.gameSeed;
+
+    let drawPile = this.shuffle([
+      'wood', 'brick', 'wheat', 'stone', 'glass',
+      'wood', 'brick', 'wheat', 'stone', 'glass',
+      'wood', 'brick', 'wheat', 'stone', 'glass',
+      ]);
+
+    this.resources = {
+      drawPile: drawPile.slice(3),
+      row: drawPile.slice(0, 3),
+      picked: null,
+    };
   }
 
   static fromObject(obj = {}) {
     const instance = new Tiny();
     instance.gameSeed = parseInt(obj.gameSeed, 10);
+    instance.randomSeed = parseInt(obj.randomSeed, 10) || instance.gameSeed;
     if (Array.isArray(obj.cells)) {
       obj.cells.forEach((cellData, i) => {
         if (cellData.resource) {
@@ -26,15 +40,39 @@ export default class Tiny {
     return instance;
   }
 
+  random(range) {
+    if (range <= 0) return 0;
+    this.randomSeed = ((this.randomSeed * 1664525 + 1013904223) >>> 0);
+    const frac = this.randomSeed / 0x100000000;
+    return Math.floor(frac * range);
+  }
+
+  shuffle(list) {
+    const out = list.slice();
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = this.random(i + 1);
+      const tmp = out[i];
+      out[i] = out[j];
+      out[j] = tmp;
+    }
+    return out;
+  }
+
   endTurn() {
+    if (this.resources.picked) {
+      this.resources.drawPile.push(this.resources.picked);
+      this.resources.picked = null;
+      const next = this.resources.drawPile.splice(0, 1);
+      this.resources.row.push(next[0]);
+    }
+
     this.doneResource = false;
     this.full = false;
   }
 
 
   getResources() {
-    // returns array of placeable resources
-    return [ 'wood', 'brick', 'wheat', 'stone', 'glass' ];
+    return this.resources.row
   }
 
   getHand() {
@@ -71,6 +109,12 @@ export default class Tiny {
     }
     this.board.cells[position].resource = resource;
     this.doneResource = true;
+
+    const i = this.resources.row.indexOf(resource);
+    if (i !== -1) {
+      this.resources.row.splice(i, 1);
+    }
+    this.resources.picked = resource;
   }
 
   doCard(position, placement) {
@@ -86,6 +130,7 @@ export default class Tiny {
   toObject() {
     return {
       gameSeed: this.gameSeed,
+      randomSeed: this.randomSeed,
       cells: Array.from({ length: 16 }, (_, i) => {
         const c = (this.board && Array.isArray(this.board.cells)) ? this.board.cells[i] || {} : {};
         const out = {};

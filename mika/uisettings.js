@@ -9,10 +9,12 @@ export default class UiSettings {
   _render() {
     this.parent.innerHTML = '';
 
-    this._addHeader('Settings');
+    this._addHeader('Settings ⚙');
     this._addButton('< Main', this._onExit);
     // add toggle bound to this.program.saveData.data.key
     this._addSettingsToggle('Auto-continue last game', 'autocontinue');
+    this._addSettingsToggle('Enable edit mode', 'editmode');
+    this._addSettingsToggle('Preview resources', 'previewresources');
   }
 
   _addText(text) {

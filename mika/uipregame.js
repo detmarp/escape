@@ -14,7 +14,6 @@ export default class UiGame {
     this._addButton('< Main', this._onExit);
     this._addText(`Game Seed: ${this.program.tiny.gameSeed}`);
     this._addButton('Play', this._onPlay);
-    this._addButton('Click', this._onBoop);
   }
 
   _addText(text) {
@@ -46,10 +45,5 @@ export default class UiGame {
 
   _onPlay() {
     this.program.gotoMode('gameboard');
-  }
-
-  _onBoop() {
-    const iso = new Date().toISOString().replace(/\.\d{3}Z$/, '').replace('T', '-');
-    console.log('bbb boop', iso);
   }
 }

@@ -12,7 +12,7 @@ export default class UiMain {
     title.textContent = 'Main';
     this.parent.appendChild(title);
 
-    this._addButton('Settings', () => {
+    this._addButton('Settings ⚙', () => {
       this.program.gotoMode('settings');
     });
 

@@ -1,21 +1,29 @@
 import Icons from './icons.js';
 import UiParts from './uiparts.js';
+import uxTwo from './uxTwo.js';
 
 export default class UiGame {
   constructor(parent, program) {
     this.parent = parent;
     this.program = program;
     this.upParts = new UiParts(this.program.tiny);
+    this.uxTwo = new uxTwo();
 
     this.selectedCell = null;
     this.selectedResource = null;
     this.selectedCard = null;
     this.cardPlacementIndex = 0;
     this.shownCard = 0;
-    this.render();
+    this.refresh();
   }
 
-  render() {
+  refresh() {
+    this.canEdit = this.program.saveData.data.editmode;
+
+    this._render();
+  }
+
+  _render() {
     this.parent.innerHTML = '';
 
     this.canAcceptResource = false;
@@ -27,6 +35,10 @@ export default class UiGame {
 
     this._makeScore();
     this._makeGrid(this.parent);
+
+    if (this.canEdit) {
+      this._makeEditControls();
+    }
 
     if (this.program.tiny.doneResource && !this.program.tiny.full) {
       this._addButton('End turn', this._onEndTurn);
@@ -57,6 +69,55 @@ export default class UiGame {
       const px = parseFloat(getComputedStyle(tmp).width) || 0;
       tmp.parentNode.removeChild(tmp);
       return Math.round(px);
+    }
+  }
+
+  _makeEditControls() {
+    let box = this.parent;
+    if (this.editEnabled) {
+      box = document.createElement('div');
+      box.style.border = '1px solid #ccc';
+      box.style.padding = '8px';
+      box.style.marginTop = '0';
+      this.parent.appendChild(box);
+    }
+
+    this.uxTwo.addToggle(box,
+      this.editEnabled ? 'Edit mode' : 'Enable edit mode',
+      this.editEnabled,
+      (enabled) => {
+        this.editEnabled = enabled;
+        this.refresh();
+      }
+    );
+    if (!this.editEnabled) {
+      return;
+    }
+
+    if (this.selectedCell != null) {
+      let cell = this.program.tiny.board.cells[this.selectedCell];
+      if (cell.resource) {
+        this.uxTwo.addButton(box, `Delete resource ${cell.resource}`, () => {
+          this._onEditDeleteResource(cell);
+        });
+      }
+      if (cell.building) {
+        this.uxTwo.addButton(box, `Delete building ${cell.building.short}`, () => {
+          this._onEditDeleteBuilding(cell);
+        });
+      }
+      if (this.selectedResource != null) {
+        let resource = this.program.tiny.getResources()[this.selectedResource];
+        this.uxTwo.addButton(box, `Add resource ${resource}`, () => {
+          this._onEditAddResource(cell, resource);
+        });
+      }
+      if (this.selectedCard != null) {
+        let card = this.program.tiny.getHand()[this.selectedCard];
+        this.uxTwo.addButton(box, `Add building ${card.name}`, () => {
+          this._onEditAddBuilding(cell, card);
+        });
+      }
     }
   }
 
@@ -227,18 +288,18 @@ export default class UiGame {
         }
       }
     }
-      // var card = this.program.tiny.getHand()[this.selectedCard];
-      // let usable = false;
-      // let placements = this.program.tiny.getBuildingPlacements();
-      // let repeatFilter = 0;
-      //     if (p.resourceIndexes.indexOf(index) !== -1) {
-      //       if (this.cardPlacementIndex === repeatFilter) {
-      //         usable = true;
-      //       }
-      //       repeatFilter++;
-      //     }
-      //   }
-      // }
+    // var card = this.program.tiny.getHand()[this.selectedCard];
+    // let usable = false;
+    // let placements = this.program.tiny.getBuildingPlacements();
+    // let repeatFilter = 0;
+    //     if (p.resourceIndexes.indexOf(index) !== -1) {
+    //       if (this.cardPlacementIndex === repeatFilter) {
+    //         usable = true;
+    //       }
+    //       repeatFilter++;
+    //     }
+    //   }
+    // }
 
   }
 
@@ -252,14 +313,12 @@ export default class UiGame {
     const row = document.createElement('div');
     row.className = 'mika-resource-row';
 
-    // Try to get resources from the program; fall back to 5 placeholders
-    let resources = null;
-    if (this.program && this.program.tiny && typeof this.program.tiny.getResources === 'function') {
-      try {
-        resources = this.program.tiny.getResources();
-      } catch (err) {
-        resources = null;
-      }
+    let resources;
+    if (this.editEnabled) {
+      resources = ['wood', 'brick', 'wheat', 'stone', 'glass'];
+    }
+    else {
+      resources = this.program.tiny.getResources();
     }
 
     const count = Array.isArray(resources) && resources.length > 0 ? resources.length : 5;
@@ -297,6 +356,16 @@ export default class UiGame {
       row.appendChild(r);
     }
 
+    if (this.program.saveData.data.previewresources) {
+      for (const item2 of this.program.tiny.resources.drawPile) {
+        const iconColor2 = this.upParts.getMeeple(item2).color;
+        const svg2 = icons.makeCube(iconColor2);
+        svg2.style.width = '1.8em';
+        svg2.style.height = '1.8em';
+        row.appendChild(svg2);
+      }
+    }
+
     container.appendChild(row);
     parent.appendChild(container);
 
@@ -325,7 +394,7 @@ export default class UiGame {
           () => {
             // on card placement button click
             this.cardPlacementIndex = (this.cardPlacementIndex + 1) % count;
-            this.render();
+            this.refresh();
           }
         );
       }
@@ -449,7 +518,7 @@ export default class UiGame {
     row.style.marginBottom = '8px';
 
     const left = document.createElement('div');
-    left.textContent = 'hello';
+    left.textContent = card.name;
     row.appendChild(left);
 
     const right = document.createElement('div');
@@ -578,7 +647,7 @@ export default class UiGame {
     this.selectedResource = index;
     this.selectedCard = null;
     this.selectedPlacement = null;
-    this.render();
+    this.refresh();
   }
 
   _onCellClick(index, e) {
@@ -586,7 +655,7 @@ export default class UiGame {
     console.log('cell click', index);
     this.selectedCell = index;
     this.selectedPlacement = null;
-    this.render();
+    this.refresh();
   }
 
   _onCardClick(index, e) {
@@ -595,27 +664,27 @@ export default class UiGame {
     this.cardPlacementIndex = 0;
     this.selectedResource = null;
     this.selectedPlacement = null;
-    this.render();
+    this.refresh();
   }
 
   _onAcceptResource() {
     this.program.tiny.doResource(this.canAcceptResource.cell, this.canAcceptResource.resource);
     this._clearSelections();
-    this.render();
+    this.refresh();
     this.program.saveCurrent();
   }
 
   _onAcceptCard() {
     this.program.tiny.doCard(this.canAcceptCard.cell, this.canAcceptCard.placement);
     this._clearSelections();
-    this.render();
+    this.refresh();
     this.program.saveCurrent();
   }
 
   _onEndTurn() {
     this.program.tiny.endTurn();
     this._clearSelections();
-    this.render();
+    this.refresh();
     this.program.saveCurrent();
   }
 
@@ -631,7 +700,34 @@ export default class UiGame {
 
   _onPivotPattern(card) {
     card.shape = this.program.tiny.pivotList(card.shape);
-    this.render();
+    this.refresh();
   }
 
+  _onEditDeleteBuilding(cell) {
+    cell.building = null;
+    this._clearSelections();
+    this.refresh();
+    this.program.saveCurrent();
+  }
+
+  _onEditDeleteResource(cell) {
+    cell.resource = null;
+    this._clearSelections();
+    this.refresh();
+    this.program.saveCurrent();
+  }
+
+  _onEditAddBuilding(cell, building) {
+    cell.building = building;
+    this._clearSelections();
+    this.refresh();
+    this.program.saveCurrent();
+  }
+
+  _onEditAddResource(cell, resource) {
+    cell.resource = resource;
+    this._clearSelections();
+    this.refresh();
+    this.program.saveCurrent();
+  }
 }
