@@ -23,6 +23,15 @@ export default class Tiny {
       row: drawPile.slice(0, 3),
       picked: null,
     };
+
+    this.startGame();
+  }
+
+  startGame() {
+    this.cardMap = {};
+    this.deck.cards.forEach(card => {
+      this.cardMap[card.category] = card;
+    });
   }
 
   toObject() {
@@ -159,7 +168,23 @@ export default class Tiny {
     if (idx === -1) return;
     let special = this.specials[idx];
     this.specials.splice(idx, 1);
-    console.log(`qqq doSpecial ${JSON.stringify(special)}`);
+
+    if (special.name === 'addResource') {
+      console.log(`this.board.cells[${special.cell}].resource =`, params.resource);
+      this.board.cells[special.cell].resource = params.resource;
+    }
+
+    if (special.name === 'replaceBuilding') {
+      const cellIdx = params.cell;
+      let card = this.cardMap[params.building];
+      this.board.cells[cellIdx].building = card;
+      this.board.cells[cellIdx].resource = null;
+      if (card.special) {
+        this.addSpecial(card.special, { cell: cellIdx });
+      }
+
+    }
+
   }
 
   getResourceCells() {

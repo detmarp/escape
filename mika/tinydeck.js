@@ -104,7 +104,7 @@ export default class TinyDeck {
           'br-'
         ],
         special: {
-          name: 'replaceBuildings',
+          name: 'replaceBuilding',
           count: 2,
         },
         max: 1,

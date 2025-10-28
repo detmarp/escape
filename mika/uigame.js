@@ -306,37 +306,52 @@ export default class UiGame {
         let card = this.program.tiny.board.cells[cell].building;
         let buildingName = card.name;
         let onClick = (this.selectedCell != special.cell) ? null : (value) => {
-          console.log(`bbb ${value}`);
+          this.program.tiny.doSpecial(special.id, { resource: value });
+          this.refresh();
         };
         this.uxTwo.addMeeplePicker(
           this.parent,
           ['wood', 'brick', 'wheat', 'stone', 'glass'],
           special.resource,
           (value) => {
-            console.log(`aaa ${value}`);
             special.resource = value;
+            this.refresh();
           },
           `Add resource to ${buildingName}`,
-          onClick);
+          onClick
+        );
+      }
+
+      if (special.name === 'replaceBuilding') {
+        let cell = special.cell;
+        let card = this.program.tiny.board.cells[cell].building;
+        let buildingName = card.name;
+        let onClick;
+        if (
+          this.selectedCell != null &&
+          this.selectedCell != special.cell &&
+          this.program.tiny.board.cells[this.selectedCell].building
+        ) {
+          onClick = (value) => {
+            this.program.tiny.doSpecial(special.id, { building: value, cell: this.selectedCell });
+            this.refresh();
+          };
         }
-      },
-    //   let div = document.createElement('div');
-    //   div.style.border = '1px solid #ccc';
-    //   div.style.padding = '3px';
-    //   div.style.borderRadius = '4px';
-    //   this.parent.appendChild(div);
+        special.building = special.building || 'blue';
+        this.uxTwo.addMeeplePicker(
+          this.parent,
+          ['blue', 'red', 'green', 'yellow', 'orange', 'black', 'gray'],
+          special.building,
+          (value) => {
+            special.building = value;
+            this.refresh();
+          },
+          `Replace with ${special.building}`,
+          onClick
+        );
+      }
 
-    //   let text = document.createElement('span');
-    //   text.textContent = JSON.stringify(special);
-    //   div.appendChild(text);
-
-    //   this.uxTwo.addButton(div, 'Do special', () => {
-    //     this.program.tiny.doSpecial(special.id, special.params);
-    //     this.refresh();
-    //     this.program.saveCurrent();
-    //   });
-    // }
-  );
+    });
   }
 
   _makeResourceRow(parent) {
@@ -671,8 +686,6 @@ export default class UiGame {
   }
 
   _onCellClick(index, e) {
-    // Dummy handler for now
-    console.log('cell click', index);
     this.selectedCell = index;
     this.selectedPlacement = null;
     this.refresh();
