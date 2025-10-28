@@ -18,6 +18,13 @@ export default class UiGame {
   }
 
   refresh() {
+    if (this.editEnabled) {
+      this.resources = ['wood', 'brick', 'wheat', 'stone', 'glass'];
+    }
+    else {
+      this.resources = this.program.tiny.getResources();
+    }
+
     this.canEdit = this.program.saveData.data.editmode;
 
     this._render();
@@ -43,6 +50,8 @@ export default class UiGame {
     if (this.program.tiny.doneResource && !this.program.tiny.full) {
       this._addButton('End turn', this._onEndTurn);
     }
+
+    this._makeSpecial();
 
     this._makeResourceRow(this.parent);
 
@@ -107,7 +116,7 @@ export default class UiGame {
         });
       }
       if (this.selectedResource != null) {
-        let resource = this.program.tiny.getResources()[this.selectedResource];
+        let resource = this.resources[this.selectedResource];
         this.uxTwo.addButton(box, `Add resource ${resource}`, () => {
           this._onEditAddResource(cell, resource);
         });
@@ -288,43 +297,56 @@ export default class UiGame {
         }
       }
     }
-    // var card = this.program.tiny.getHand()[this.selectedCard];
-    // let usable = false;
-    // let placements = this.program.tiny.getBuildingPlacements();
-    // let repeatFilter = 0;
-    //     if (p.resourceIndexes.indexOf(index) !== -1) {
-    //       if (this.cardPlacementIndex === repeatFilter) {
-    //         usable = true;
-    //       }
-    //       repeatFilter++;
-    //     }
-    //   }
-    // }
-
   }
 
-  _makeResource(parent) {
+  _makeSpecial() {
+    this.program.tiny.specials.forEach(special => {
+      if (special.name === 'addResource') {
+        let cell = special.cell;
+        let card = this.program.tiny.board.cells[cell].building;
+        let buildingName = card.name;
+        let onClick = (this.selectedCell != special.cell) ? null : (value) => {
+          console.log(`bbb ${value}`);
+        };
+        this.uxTwo.addMeeplePicker(
+          this.parent,
+          ['wood', 'brick', 'wheat', 'stone', 'glass'],
+          special.resource,
+          (value) => {
+            console.log(`aaa ${value}`);
+            special.resource = value;
+          },
+          `Add resource to ${buildingName}`,
+          onClick);
+        }
+      },
+    //   let div = document.createElement('div');
+    //   div.style.border = '1px solid #ccc';
+    //   div.style.padding = '3px';
+    //   div.style.borderRadius = '4px';
+    //   this.parent.appendChild(div);
+
+    //   let text = document.createElement('span');
+    //   text.textContent = JSON.stringify(special);
+    //   div.appendChild(text);
+
+    //   this.uxTwo.addButton(div, 'Do special', () => {
+    //     this.program.tiny.doSpecial(special.id, special.params);
+    //     this.refresh();
+    //     this.program.saveCurrent();
+    //   });
+    // }
+  );
   }
 
   _makeResourceRow(parent) {
     const container = document.createElement('div');
     container.className = 'mika-resource-row-container';
-
     const row = document.createElement('div');
     row.className = 'mika-resource-row';
-
-    let resources;
-    if (this.editEnabled) {
-      resources = ['wood', 'brick', 'wheat', 'stone', 'glass'];
-    }
-    else {
-      resources = this.program.tiny.getResources();
-    }
-
-    const count = Array.isArray(resources) && resources.length > 0 ? resources.length : 5;
-
     const icons = new Icons();
-    for (let i = 0; i < count; i++) {
+
+    this.resources.forEach((item, i) => {
       const r = document.createElement('div');
       if (this.program.tiny.doneResource) {
         r.className = 'mika-resource';
@@ -333,13 +355,8 @@ export default class UiGame {
       }
       r.dataset.index = i;
 
-      const item = resources && resources[i];
       // Choose a display label: prefer name/label/type, then a count or index
-      let label = '';
-      if (item) {
-        if (typeof item === 'string' || typeof item === 'number') label = String(item);
-        else label = item.name || item.label || item.type || (item.count != null ? String(item.count) : '');
-      }
+      let label = item.name;
       // create an SVG icon to fill the resource slot instead of plain text
       const iconColor = this.upParts.getMeeple(item).color;
       const svgIcon = icons.makeCube(iconColor);
@@ -354,7 +371,7 @@ export default class UiGame {
       }
       r.addEventListener('click', (e) => this._onResourceClick(i, e));
       row.appendChild(r);
-    }
+    });
 
     if (this.program.saveData.data.previewresources) {
       for (const item2 of this.program.tiny.resources.drawPile) {
@@ -373,11 +390,14 @@ export default class UiGame {
       const style = document.createElement('style');
       style.id = 'mika-resource-styles';
       style.textContent = `
-        .mika-resource-row-container { display:flex; justify-content:center; margin-top:12px; }
-        .mika-resource-row { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+    .mika-resource-row-container { display:flex; justify-content:center; margin-top:12px; }
+    /* keep resource icons and type buttons on a single horizontal row; allow horizontal scrolling if needed */
+    .mika-resource-row { display:flex; gap:8px; flex-wrap:nowrap; justify-content:center; align-items:center; overflow-x:auto; }
   .mika-resource { width:4em; height:2em; border:1px solid #ccc; box-sizing:border-box; display:flex; align-items:center; justify-content:center; cursor:pointer; background:#fff; border-radius:6px; }
-        .mika-resource:active { background:#f5faff; }
-      `;
+    .mika-resource:active { background:#f5faff; }
+  .mika-resource-type { width:2.4em; height:2.4em; border:1px solid #ccc; box-sizing:border-box; display:flex; align-items:center; justify-content:center; cursor:pointer; background:#fff; border-radius:6px; padding:4px; }
+  .mika-resource-type:active { background:#f5faff; }
+  `;
       document.head.appendChild(style);
     }
   }
@@ -606,7 +626,7 @@ export default class UiGame {
 
     if (index == this.selectedCell) {
       if (this.selectedResource != null) {
-        let resource = this.program.tiny.getResources()[this.selectedResource];
+        let resource = this.resources[this.selectedResource];
         if (this.program.tiny.canDoResource(index, resource)) {
           lines.push(`${resource}`);
           this.canAcceptResource = {
@@ -719,6 +739,11 @@ export default class UiGame {
 
   _onEditAddBuilding(cell, building) {
     cell.building = building;
+
+    if (building.special) {
+      this.program.tiny.addSpecial(building.special, { cell: cell.index });
+    }
+
     this._clearSelections();
     this.refresh();
     this.program.saveCurrent();

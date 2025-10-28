@@ -6,6 +6,8 @@ export default class Tiny {
     this.board = new TinyBoard(this);
     this.deck = new TinyDeck();
     this.score = {};
+    this.specials = [];
+    this.specialId = 0;
 
     this.gameSeed = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
     this.randomSeed = this.gameSeed;
@@ -23,6 +25,25 @@ export default class Tiny {
     };
   }
 
+  toObject() {
+    return {
+      gameSeed: this.gameSeed,
+      randomSeed: this.randomSeed,
+      cells: Array.from({ length: 16 }, (_, i) => {
+        const c = (this.board && Array.isArray(this.board.cells)) ? this.board.cells[i] || {} : {};
+        const out = {};
+        if (c.resource) {
+          out.resource = c.resource;
+        }
+        if (c.building) {
+          out.building = c.building.short;
+        }
+        return out;
+      }),
+      specials: this.specials || undefined,
+    };
+  }
+
   static fromObject(obj = {}) {
     const instance = new Tiny();
     instance.gameSeed = parseInt(obj.gameSeed, 10);
@@ -37,6 +58,7 @@ export default class Tiny {
         }
       });
     }
+    instance.specials = obj.specials || [];
     return instance;
   }
 
@@ -125,24 +147,19 @@ export default class Tiny {
     }
     this.board.cells[position].building = placement.card;
     this.board.cells[position].resource = null;
+
+    if (placement.card.special) {
+      this.addSpecial(placement.card.special, { cell: position });
+    }
   }
 
-  toObject() {
-    return {
-      gameSeed: this.gameSeed,
-      randomSeed: this.randomSeed,
-      cells: Array.from({ length: 16 }, (_, i) => {
-        const c = (this.board && Array.isArray(this.board.cells)) ? this.board.cells[i] || {} : {};
-        const out = {};
-        if (c.resource) {
-          out.resource = c.resource;
-        }
-        if (c.building) {
-          out.building = c.building.short;
-        }
-        return out;
-      })
-    };
+  doSpecial(id, params) {
+    // find the special with this id, set it as active, optionally merge params, and remove it from the list
+    const idx = this.specials.findIndex(s => s && s.id === id);
+    if (idx === -1) return;
+    let special = this.specials[idx];
+    this.specials.splice(idx, 1);
+    console.log(`qqq doSpecial ${JSON.stringify(special)}`);
   }
 
   getResourceCells() {
@@ -311,6 +328,18 @@ export default class Tiny {
     });
 
     return this._totalScore();
+  }
+
+  addSpecial(special, params) {
+    let count = special.count || 1;
+    for (let i = 0; i < count; i++) {
+      let s = Object.assign({}, special);
+      s.id = this.specialId++;
+      if (params) {
+        Object.assign(s, params);
+      }
+      this.specials.push(s);
+    }
   }
 
   _totalScore() {

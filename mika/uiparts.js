@@ -3,20 +3,20 @@ export default class UiParts {
     this.tiny = tiny;
 
     this.meeples = {
-      wheat: { color: '#fae533', label: 'Wheat' },
-      wood: { color: '#5a423d', label: 'Wood' },
-      brick: { color: '#f74045', label: 'Brick' },
-      stone: { color: '#999', label: 'Stone' },
-      glass: { color: '#117ddb', label: 'Glass' },
+      wheat: { color: '#fae533', label: 'Wheat', type: 'resource' },
+      wood: { color: '#5a423d', label: 'Wood', type: 'resource' },
+      brick: { color: '#f74045', label: 'Brick', type: 'resource' },
+      stone: { color: '#999', label: 'Stone', type: 'resource' },
+      glass: { color: '#117ddb', label: 'Glass', type: 'resource' },
 
-      red: { color: '#ff0000', label: 'Red' },
-      orange: { color: '#ffa500', label: 'Orange' },
-      yellow: { color: '#eeee11', label: 'Yellow' },
-      green: { color: '#17b441', label: 'Green' },
-      blue: { color: '#0088ff', label: 'Blue' },
-      black: { color: '#444', label: 'Black' },
-      gray: { color: '#bbb', label: 'Gray' },
-      pink: { color: '#ff55ff', label: 'Pink' },
+      red: { color: '#ff0000', label: 'Red', type: 'building' },
+      orange: { color: '#ffa500', label: 'Orange', type: 'building' },
+      yellow: { color: '#eeee11', label: 'Yellow', type: 'building' },
+      green: { color: '#17b441', label: 'Green', type: 'building' },
+      blue: { color: '#0088ff', label: 'Blue', type: 'building' },
+      black: { color: '#444', label: 'Black', type: 'building' },
+      gray: { color: '#bbb', label: 'Gray', type: 'building' },
+      pink: { color: '#ff55ff', label: 'Pink', type: 'building' },
 
       default: { color: '#f0f', label: 'Default' }
     };

@@ -147,6 +147,14 @@ export default class Icons {
     return svg;
   }
 
+  makeMeeple(meeple) {
+    if (meeple.type === 'building') {
+      return this.makeHouse(meeple.color);
+    } else {
+      return this.makeCube(meeple.color);
+    }
+  }
+
   makePattern(lines) {
     // lines: rectangle of chars (rows high, cols wide). '-' means blank.
     // each character is a color code; we map a char to a hex color deterministically.

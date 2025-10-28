@@ -59,6 +59,9 @@ export default class TinyDeck {
         category: 'black',
         name: 'Factory',
         short: 'fact',
+        special: {
+          name: 'addResource',
+        },
         shape: [
           'b---',
           'rggr',
@@ -100,6 +103,10 @@ export default class TinyDeck {
           '-yg',
           'br-'
         ],
+        special: {
+          name: 'replaceBuildings',
+          count: 2,
+        },
         max: 1,
         score: {
           value: 1

@@ -81,6 +81,7 @@ export default class UiContainer {
         font-size: 16px;
         line-height: 1.2;
         padding: 10px 14px;
+        margin: 0 4px 0 0;
         border-radius: 8px;
         border: 0;
         background: #007acc;
@@ -88,6 +89,11 @@ export default class UiContainer {
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
         touch-action: manipulation;
+      }
+      #mika-root button:disabled {
+        background: #ccc;
+        color: #666;
+        cursor: default;
       }
 
       /* usable-button: visually indicates a primary/usable action (pale green) */
