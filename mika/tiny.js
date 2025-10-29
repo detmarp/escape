@@ -32,12 +32,20 @@ export default class Tiny {
     this.deck.cards.forEach(card => {
       this.cardMap[card.category] = card;
     });
+
+    this._refresh();
+  }
+
+  _refresh() {
+    this.gameOver = this.gameOver ||
+      this._countCells(cell => cell.building || cell.resource) >= 3;
   }
 
   toObject() {
     return {
       gameSeed: this.gameSeed,
       randomSeed: this.randomSeed,
+      gameOver: this.gameOver,
       cells: Array.from({ length: 16 }, (_, i) => {
         const c = (this.board && Array.isArray(this.board.cells)) ? this.board.cells[i] || {} : {};
         const out = {};
@@ -68,6 +76,7 @@ export default class Tiny {
       });
     }
     instance.specials = obj.specials || [];
+    instance.gameOver = obj.gameOver;
     return instance;
   }
 
@@ -99,6 +108,8 @@ export default class Tiny {
 
     this.doneResource = false;
     this.full = false;
+
+    this._refresh();
   }
 
 
@@ -121,6 +132,10 @@ export default class Tiny {
     // return an array of legal placements, or null
     // position and color are optional, but if present will filter results
     // TODO detmar - not really implemented
+    if (this.gameOver) {
+      return;
+    }
+
     if (
       this.board.cells[position].resource ||
       this.board.cells[position].building ||
@@ -149,6 +164,10 @@ export default class Tiny {
   }
 
   doCard(position, placement) {
+    if (this.gameOver) {
+      return;
+    }
+
     for (let i=0; i < placement.resourceIndexes.length; i++) {
       const idx = placement.resourceIndexes[i];
       this.board.cells[idx].resource = null;
@@ -163,6 +182,10 @@ export default class Tiny {
   }
 
   doSpecial(id, params) {
+    if (this.gameOver) {
+      return;
+    }
+
     // find the special with this id, set it as active, optionally merge params, and remove it from the list
     const idx = this.specials.findIndex(s => s && s.id === id);
     if (idx === -1) return;
@@ -202,6 +225,10 @@ export default class Tiny {
   getBuildingPlacements() {
     // return description of all legal building placements
     let placements = [];
+    if (this.gameOver) {
+      return placements;
+    }
+
     let hand = this.getHand();
     for (let h = 0; h < hand.length; h++) {
       let card = hand[h];
@@ -356,6 +383,10 @@ export default class Tiny {
   }
 
   addSpecial(special, params) {
+    if (this.gameOver) {
+      return;
+    }
+
     let count = special.count || 1;
     for (let i = 0; i < count; i++) {
       let s = Object.assign({}, special);

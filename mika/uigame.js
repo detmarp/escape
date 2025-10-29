@@ -41,6 +41,11 @@ export default class UiGame {
     this._addButton('< Main', this._onExit);
 
     this._makeScore();
+
+    if (this.program.tiny.gameOver) {
+      this._addText('Game Over');
+    }
+
     this._makeGrid(this.parent);
 
     if (this.canEdit) {
@@ -758,6 +763,7 @@ export default class UiGame {
     }
 
     this._clearSelections();
+    this.program.tiny._refresh();
     this.refresh();
     this.program.saveCurrent();
   }
@@ -765,6 +771,7 @@ export default class UiGame {
   _onEditAddResource(cell, resource) {
     cell.resource = resource;
     this._clearSelections();
+    this.program.tiny._refresh();
     this.refresh();
     this.program.saveCurrent();
   }
