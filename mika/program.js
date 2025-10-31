@@ -14,17 +14,13 @@ export default class Program {
   run() {
     this.saveData = new SaveData();
     console.log('sss Loaded save data:', JSON.stringify(this.saveData.data));
-    if (this.saveData.data.current) {
-      var lastTiny = Tiny.fromObject(this.saveData.data.current);
-      if (lastTiny) {
-        this.lastGame = lastTiny;
-      }
-    }
+
+    this.currentGame = this._getCurrentFromHistory();
 
     this.uiContainer = new uiContainer(this.parent, this);
     this.gotoMode('main');
 
-    if (this.saveData.data.autocontinue && this.lastGame) {
+    if (this.saveData.data.autocontinue && this.currentGame) {
       this.tryContinue();
     }
   }
@@ -35,8 +31,8 @@ export default class Program {
   }
 
   tryContinue() {
-    if (this.lastGame) {
-      this.tiny = this.lastGame;
+    if (this.currentGame) {
+      this.tiny = this.currentGame;
       this.save();
       this.gotoMode('gameboard');
       return true;
@@ -56,10 +52,39 @@ export default class Program {
     }
   }
 
-  saveCurrent() {
-    this.saveData.data.current = this.tiny.toObject();
-    this.lastGame = this.tiny;
+  saveCurrent(tiny) {
+    this.saveData.data = this.saveData.data || {};
+    this.saveData.data.history = Array.isArray(this.saveData.data.history) ? this.saveData.data.history : [];
+
+    let history = {};
+    for (const entry of this.saveData.data.history) {
+      entry.timeStamp = entry.timeStamp || Date.now();
+      history[entry.timeStamp] = entry;
+    }
+
+    const data = tiny.toObject();
+    data.timeStamp = data.timeStamp || Date.now();
+    history[data.timeStamp] = data;
+
+    this.currentGame = tiny;
+
+    this.saveData.data.history = Object.values(history);
     this.save();
+  }
+
+  _getCurrentFromHistory() {
+    let recent;
+    const hist = (this.saveData && this.saveData.data && this.saveData.data.history) || [];
+    for (const item of hist) {
+      if (!item || item.gameOver) {
+        continue;
+      }
+      if (!recent || recent.timeStamp < item.timeStamp) {
+        recent = item;
+      }
+    }
+
+    return recent && Tiny.fromObject(recent);
   }
 
   save() {

@@ -708,22 +708,19 @@ export default class UiGame {
   _onAcceptResource() {
     this.program.tiny.doResource(this.canAcceptResource.cell, this.canAcceptResource.resource);
     this._clearSelections();
-    this.refresh();
-    this.program.saveCurrent();
+    this._saveAndRefresh();
   }
 
   _onAcceptCard() {
     this.program.tiny.doCard(this.canAcceptCard.cell, this.canAcceptCard.placement);
     this._clearSelections();
-    this.refresh();
-    this.program.saveCurrent();
+    this._saveAndRefresh();
   }
 
   _onEndTurn() {
     this.program.tiny.endTurn();
     this._clearSelections();
-    this.refresh();
-    this.program.saveCurrent();
+    this._saveAndRefresh();
   }
 
   _clearSelections() {
@@ -744,15 +741,13 @@ export default class UiGame {
   _onEditDeleteBuilding(cell) {
     cell.building = null;
     this._clearSelections();
-    this.refresh();
-    this.program.saveCurrent();
+    this._saveAndRefresh();
   }
 
   _onEditDeleteResource(cell) {
     cell.resource = null;
     this._clearSelections();
-    this.refresh();
-    this.program.saveCurrent();
+    this._saveAndRefresh();
   }
 
   _onEditAddBuilding(cell, building) {
@@ -764,15 +759,18 @@ export default class UiGame {
 
     this._clearSelections();
     this.program.tiny._refresh();
-    this.refresh();
-    this.program.saveCurrent();
+    this._saveAndRefresh();
   }
 
   _onEditAddResource(cell, resource) {
     cell.resource = resource;
     this._clearSelections();
     this.program.tiny._refresh();
+    this._saveAndRefresh();
+  }
+
+  _saveAndRefresh() {
+    this.program.saveCurrent(this.program.tiny);
     this.refresh();
-    this.program.saveCurrent();
   }
 }

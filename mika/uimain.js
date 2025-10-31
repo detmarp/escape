@@ -16,11 +16,31 @@ export default class UiMain {
       this.program.gotoMode('settings');
     });
 
+    let history = {};
+    let seedMap = {};
+    for (const entry of this.program.saveData.data.history) {
+      history[entry.timeStamp] = entry;
+      seedMap[entry.gameSeed] = entry;
+    }
+
     let row1 = this._startRow('Daily games');
+    let now = new Date();
     for (let i = 0; i < 15; i++) {
-      const btn = this._gameButton();
+      let info = this._getDayInfo(now, i);
+      let seed = info.seed;
+      let data = seedMap[seed];
+      if (data) {
+        delete history[data.timeStamp];
+      }
+      let params = {
+        day: info.weekdayabbr,
+        seed,
+        data,
+      };
+      const btn = this._gameButton(params);
       row1.appendChild(btn);
     }
+
     let row2 = this._startRow('Other games');
     for (let i = 0; i < 25; i++) {
       const btn = this._gameButton();
@@ -39,9 +59,25 @@ export default class UiMain {
       this._addButton('Quickstart', this._onQuickstart);
     }
 
-    if (this.program.lastGame) {
+    if (this.program.currentGame) {
       this._addButton('Continue', this._onContinue);
     }
+  }
+
+  _getDayInfo(now, daysAgo) {
+    // return some info about the day `daysAgo` before `now` (0 = today)
+    const MS_DAY = 24 * 60 * 60 * 1000;
+    const d = new Date(now.getTime() - (daysAgo * MS_DAY));
+    const month = d.getMonth(); // 0-11
+    const day = d.getDate(); // 1-31
+    const year = d.getFullYear();
+    const weekday = d.getDay(); // 0-6, local weekday for that date
+    const weekdayabbr = new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(d);
+    const utcMidnightTs = Math.floor(Date.UTC(year, month, day) / 1000);
+    // simple positive 32-bit hash of utcMidnightTs (Knuth multiplicative)
+    const hash = (Number(utcMidnightTs) * 2654435761) >>> 0;
+    const seed = (hash % 900000) + 100000;
+    return { ago: daysAgo, weekdayabbr, ts: utcMidnightTs, seed };
   }
 
   _startRow(label) {
@@ -148,10 +184,10 @@ export default class UiMain {
     return button;
   }
 
-  _gameButton() {
+  _gameButton(params) {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.textContent = 'hello';
+    btn.textContent = JSON.stringify(params);
     // make it a 6em square
     btn.style.width = '6em';
     btn.style.height = '6em';
@@ -163,9 +199,16 @@ export default class UiMain {
     // prevent flex container from stretching the button
     btn.style.flex = '0 0 auto';
     btn.style.display = 'inline-flex';
-    btn.style.alignItems = 'center';
-    btn.style.justifyContent = 'center';
-    btn.style.textAlign = 'center';
+    // align text to upper left
+    btn.style.alignItems = 'flex-start';
+    btn.style.justifyContent = 'flex-start';
+    btn.style.textAlign = 'left';
+    // allow text to wrap (even without spaces)
+    btn.style.whiteSpace = 'normal';
+    btn.style.wordWrap = 'break-word';
+    btn.style.overflowWrap = 'anywhere';
+    btn.style.overflow = 'hidden';
+    btn.style.padding = '0.25em';
 
     // inert click handler (do nothing)
     btn.addEventListener('click', (e) => {
@@ -184,5 +227,23 @@ export default class UiMain {
 
   _onContinue() {
     this.program.tryContinue();
+  }
+
+  _ago(timeStamp) {
+    let ago = Math.floor((Date.now() - timeStamp) / 1000);
+    // return string. use these rules
+    // if seconds <= 30 "now"
+    // otherwise round up to minutes.
+    // if minutes < 60 then "X m"
+    // round up to hours, ading 15 minut and then rounding up.
+    // if hours < 20 then "X h"
+    // else round up to days, "X d"
+    if (ago <= 30) return 'now';
+    const minutes = Math.ceil(ago / 60);
+    if (minutes < 60) return `${minutes} m`;
+    const hours = Math.ceil((minutes + 15) / 60);
+    if (hours < 20) return `${hours} h`;
+    const days = Math.ceil(hours / 24);
+    return `${days} d`;
   }
 }

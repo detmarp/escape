@@ -11,9 +11,11 @@ export default class UiSettings {
 
     this._addHeader('Settings ⚙');
     this._addButton('< Main', this._onExit);
+    this._addText('System');
     this._addSettingsToggle('Show quick start', 'quickstart');
     this._addSettingsToggle('Auto-continue last game', 'autocontinue');
-    this._addSettingsToggle('Enable edit mode', 'editmode');
+    this._addText('In-game');
+    this._addSettingsToggle('Allow edit mode', 'editmode');
     this._addSettingsToggle('Preview resources', 'previewresources');
   }
 
