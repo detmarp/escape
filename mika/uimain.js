@@ -1,3 +1,5 @@
+import TinyHistory from './tinyhistory.js';
+
 export default class UiMain {
   constructor(parent, program) {
     this.parent = parent;
@@ -16,36 +18,25 @@ export default class UiMain {
       this.program.gotoMode('settings');
     });
 
-    let history = {};
-    let seedMap = {};
-    for (const entry of this.program.saveData.data.history) {
-      history[entry.timeStamp] = entry;
-      seedMap[entry.gameSeed] = entry;
-    }
+    let history = new TinyHistory(this.program.saveData.data.history);
+
+    let daily = history.getDailyGames(15);
 
     let row1 = this._startRow('Daily games');
-    let now = new Date();
-    for (let i = 0; i < 15; i++) {
-      let info = this._getDayInfo(now, i);
-      let seed = info.seed;
-      let data = seedMap[seed];
-      if (data) {
-        delete history[data.timeStamp];
-      }
-      let params = {
-        day: info.weekdayabbr,
-        seed,
-        data,
-      };
-      const btn = this._gameButton(params);
+    daily.forEach((entry) => {
+      const btn = this._gameButton(entry);
       row1.appendChild(btn);
-    }
+    });
 
+    let other = history.getOtherGames(25);
     let row2 = this._startRow('Other games');
-    for (let i = 0; i < 25; i++) {
-      const btn = this._gameButton();
+    const newGame = this._gameButton();
+    row2.appendChild(newGame);
+
+    other.forEach((entry) => {
+      const btn = this._gameButton(entry);
       row2.appendChild(btn);
-    }
+    });
 
     const startButton = document.createElement('button');
     startButton.textContent = 'New game';
@@ -83,81 +74,59 @@ export default class UiMain {
   _startRow(label) {
     const lbl = document.createElement('div');
     lbl.textContent = label;
-    lbl.style.marginBottom = '0';
+    lbl.style.marginBottom = '0.5em';
     this.parent.appendChild(lbl);
-
-    const outer = document.createElement('div');
-    outer.style.width = '28em';
-    outer.style.overflow = 'hidden';
-    outer.style.padding = '0.5em';
-    outer.style.border = '1px solid black';
-    outer.style.borderRadius = '4px';
-    outer.style.background = 'transparent';
 
     const scroller = document.createElement('div');
     scroller.style.display = 'flex';
     scroller.style.flexDirection = 'row';
     scroller.style.gap = '0.5em';
     scroller.style.alignItems = 'center';
-    scroller.style.whiteSpace = 'nowrap';
-    scroller.style.transform = 'translateX(0px)';
-    scroller.style.willChange = 'transform';
-    scroller.style.touchAction = 'none';
+    scroller.style.width = '28em';
+    scroller.style.overflowX = 'auto';
+    scroller.style.overflowY = 'hidden';
+    scroller.style.padding = '0.5em';
+    scroller.style.border = '1px solid black';
+    scroller.style.borderRadius = '4px';
+    scroller.style.background = 'transparent';
+    scroller.style.cursor = 'grab';
+    // Hide scrollbar but keep scrolling
+    scroller.style.scrollbarWidth = 'none'; // Firefox
+    scroller.style.msOverflowStyle = 'none'; // IE/Edge
+    // Tell browser we won't preventDefault on touch - allows passive scrolling
+    scroller.style.touchAction = 'pan-x';
 
-    outer.appendChild(scroller);
-
-    let dragging = false;
+    // Simple drag-to-scroll for mouse only
+    let isDragging = false;
     let startX = 0;
-    let startTranslate = 0;
-    let maxTranslate = 0;
+    let scrollLeft = 0;
 
-    function getTranslate() {
-      const m = (scroller.style.transform || '').match(/translateX\((-?(?:\d+|\d+\.\d+))px\)/);
-      return m ? Math.abs(Number(m[1])) : 0;
-    }
+    scroller.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.pageX - scroller.offsetLeft;
+      scrollLeft = scroller.scrollLeft;
+      scroller.style.cursor = 'grabbing';
+    });
 
-    function clamp(v, a, b) { return Math.min(Math.max(v, a), b); }
+    scroller.addEventListener('mouseleave', () => {
+      isDragging = false;
+      scroller.style.cursor = 'grab';
+    });
 
-    function recomputeMax() {
-      const extra = Math.max(0, scroller.scrollWidth - outer.clientWidth);
-      maxTranslate = extra;
-    }
+    scroller.addEventListener('mouseup', () => {
+      isDragging = false;
+      scroller.style.cursor = 'grab';
+    });
 
-    function onPointerDown(e) {
-      if (e.pointerType === 'mouse' && e.button !== 0) return;
-      dragging = true;
-      startX = e.clientX;
-      startTranslate = getTranslate();
-      recomputeMax();
-      try { outer.setPointerCapture && outer.setPointerCapture(e.pointerId); } catch (err) {}
-      outer.style.cursor = 'grabbing';
-      scroller.style.userSelect = 'none';
+    scroller.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
       e.preventDefault();
-    }
+      const x = e.pageX - scroller.offsetLeft;
+      const walk = (x - startX) * 2; // scroll speed multiplier
+      scroller.scrollLeft = scrollLeft - walk;
+    });
 
-    function onPointerMove(e) {
-      if (!dragging) return;
-      const dx = e.clientX - startX;
-      let next = clamp(startTranslate - dx, 0, maxTranslate);
-      scroller.style.transform = `translateX(${-next}px)`;
-      e.preventDefault();
-    }
-
-    function onPointerUp(e) {
-      if (!dragging) return;
-      dragging = false;
-      try { outer.releasePointerCapture && outer.releasePointerCapture(e.pointerId); } catch (err) {}
-      outer.style.cursor = 'default';
-      scroller.style.userSelect = '';
-    }
-
-    outer.addEventListener('pointerdown', onPointerDown);
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
-
-    window.addEventListener('resize', recomputeMax);
-
-    this.parent.appendChild(outer);
+    this.parent.appendChild(scroller);
     return scroller;
   }
 
@@ -210,13 +179,10 @@ export default class UiMain {
     btn.style.overflow = 'hidden';
     btn.style.padding = '0.25em';
 
-    // inert click handler (do nothing)
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      // intentionally no-op
-    });
+    btn.onclick = () => {
+      this._onGameButton(params);
+    };
 
-    this.parent.appendChild(btn);
     return btn;
   }
 
@@ -227,6 +193,19 @@ export default class UiMain {
 
   _onContinue() {
     this.program.tryContinue();
+  }
+
+  _onGameButton(entry) {
+    let history = new TinyHistory(this.program.saveData.data.history);
+    let tiny = history.tinyFromObject(entry);
+    this.program.newGame(tiny);
+
+    if (tiny.started) {
+      this.program.gotoMode('gameboard');
+    }
+    else {
+      this.program.gotoMode('pregame');
+    }
   }
 
   _ago(timeStamp) {

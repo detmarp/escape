@@ -179,6 +179,17 @@ export default class UiContainer {
     let maybePreventPull = false;
     let startY = 0;
     const onTouchMove = (e) => {
+      // Don't interfere with scrollable containers
+      const target = e.target;
+      let el = target;
+      while (el && el !== document.body) {
+        const overflow = window.getComputedStyle(el).overflowX;
+        if (overflow === 'auto' || overflow === 'scroll') {
+          return; // inside a scrollable element, let it scroll naturally
+        }
+        el = el.parentElement;
+      }
+
       if (window.scrollY === 0) {
         const touch = e.touches && e.touches[0];
         if (!touch) return;

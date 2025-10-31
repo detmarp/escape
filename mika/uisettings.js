@@ -17,6 +17,14 @@ export default class UiSettings {
     this._addText('In-game');
     this._addSettingsToggle('Allow edit mode', 'editmode');
     this._addSettingsToggle('Preview resources', 'previewresources');
+    //this._addSettingsToggle('Debug end after 3 moves', 'debugendafter3');
+    this._addText('Data');
+    this._addButton('Clear *ALL* saved data', () => {
+      this._clearData();
+    });
+    this._addButton('Clear game history', () => {
+      this._clearOnlyHistory();
+    });
   }
 
   _addText(text) {
@@ -78,4 +86,18 @@ export default class UiSettings {
   _onExit() {
     this.program.gotoMode('main');
   }
+
+  _clearData() {
+    this.program.saveData._debugClear();
+    this.program.save();
+    this._render();
+  }
+
+  _clearOnlyHistory() {
+    this.program.saveData.load();
+    this.program.saveData.data.history = [];
+    this.program.save();
+    this._render();
+  }
+
 }

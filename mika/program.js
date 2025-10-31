@@ -5,6 +5,7 @@ import uiSettings from './uisettings.js';
 import uiPreGame from './uipregame.js';
 import Tiny from './tiny.js';
 import SaveData from './savedata.js';
+import TinyHistory from './tinyhistory.js';
 
 export default class Program {
   constructor(parent) {
@@ -13,7 +14,7 @@ export default class Program {
 
   run() {
     this.saveData = new SaveData();
-    console.log('sss Loaded save data:', JSON.stringify(this.saveData.data));
+    this.saveData._debugPrint('sss Loaded:');
 
     this.currentGame = this._getCurrentFromHistory();
 
@@ -25,8 +26,9 @@ export default class Program {
     }
   }
 
-  newGame() {
-    this.tiny = new Tiny();
+  newGame(tiny) {
+    // Init with this tiny, or make a new one
+    this.tiny = tiny || new Tiny();
     this.save();
   }
 
@@ -54,21 +56,9 @@ export default class Program {
 
   saveCurrent(tiny) {
     this.saveData.data = this.saveData.data || {};
-    this.saveData.data.history = Array.isArray(this.saveData.data.history) ? this.saveData.data.history : [];
-
-    let history = {};
-    for (const entry of this.saveData.data.history) {
-      entry.timeStamp = entry.timeStamp || Date.now();
-      history[entry.timeStamp] = entry;
-    }
-
-    const data = tiny.toObject();
-    data.timeStamp = data.timeStamp || Date.now();
-    history[data.timeStamp] = data;
-
-    this.currentGame = tiny;
-
-    this.saveData.data.history = Object.values(history);
+    let history = new TinyHistory(this.saveData.data.history);
+    let data = history.saveGame(tiny);
+    this.saveData.data.history = data;
     this.save();
   }
 
@@ -89,6 +79,6 @@ export default class Program {
 
   save() {
     this.saveData.save();
-    console.log('ttt Saved data:', JSON.stringify(this.saveData.data));
+    this.saveData._debugPrint('ttt Saved:');
   }
 }

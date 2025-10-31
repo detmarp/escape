@@ -34,5 +34,16 @@ export default class SaveData {
 
   _debugClear() {
     localStorage.removeItem('saveData');
+    this.data = {};
+    this._normalize();
+  }
+
+  _debugPrint(prefix) {
+    console.log(prefix, JSON.stringify(this.data));
+    if (this.data.history) {
+      this.data.history.forEach((entry, index) => {
+        console.log(index, JSON.stringify(entry));
+      });
+    }
   }
 }

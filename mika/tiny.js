@@ -2,14 +2,18 @@ import TinyBoard from './tinyboard.js';
 import TinyDeck from './tinydeck.js';
 
 export default class Tiny {
-  constructor() {
+  constructor(seed, rules) {
+    this.rules = rules ? Object.assign({}, rules) : {};
     this.board = new TinyBoard(this);
     this.deck = new TinyDeck();
     this.score = {};
     this.specials = [];
     this.specialId = 0;
+    this.timeStamp = Date.now();
 
-    this.gameSeed = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+    this.gameSeed = (typeof seed === 'number') ?
+      seed :
+      Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
     this.randomSeed = this.gameSeed;
 
     let drawPile = this.shuffle([
@@ -37,8 +41,10 @@ export default class Tiny {
   }
 
   _refresh() {
+    this.started = this.started || this._countCells(cell => cell.building || cell.resource) > 0;
+
     this.gameOver = this.gameOver ||
-      this._countCells(cell => cell.building || cell.resource) >= 3;
+      this._countCells(cell => cell.building || cell.resource) >= 16;
   }
 
   toObject() {
@@ -58,6 +64,7 @@ export default class Tiny {
         return out;
       }),
       specials: this.specials || undefined,
+      timeStamp: this.timeStamp,
     };
   }
 
@@ -77,6 +84,8 @@ export default class Tiny {
     }
     instance.specials = obj.specials || [];
     instance.gameOver = obj.gameOver;
+    instance.timeStamp = obj.timeStamp;
+    instance._refresh();
     return instance;
   }
 
