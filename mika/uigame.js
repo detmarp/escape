@@ -1,6 +1,7 @@
 import Icons from './icons.js';
 import UiParts from './uiparts.js';
 import uxTwo from './uxTwo.js';
+import TinyBot from './tinybot.js';
 
 export default class UiGame {
   constructor(parent, program) {
@@ -49,6 +50,10 @@ export default class UiGame {
 
     this._makeGrid(this.parent);
 
+    if (this.program.saveData.data.botbutton) {
+      this._showBot();
+    }
+
     if (this.canEdit) {
       this._makeEditControls();
     }
@@ -85,6 +90,20 @@ export default class UiGame {
       tmp.parentNode.removeChild(tmp);
       return Math.round(px);
     }
+  }
+
+  _showBot() {
+    let box = document.createElement('div');
+    box.style.border = '1px solid #ccc';
+    box.style.padding = '8px';
+    box.style.marginTop = '0';
+    this.parent.appendChild(box);
+
+    this.uxTwo.addButton(box, 'Make Bot move', () => {
+      let bot = new TinyBot(this.tiny);
+      bot.makeMove();
+      this._saveAndRefresh();
+    });
   }
 
   _makeEditControls() {

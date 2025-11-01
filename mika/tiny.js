@@ -148,17 +148,32 @@ export default class Tiny {
       return;
     }
 
-    if (
-      this.board.cells[position].resource ||
-      this.board.cells[position].building ||
-      this.doneResource
-    ) {
+    let list = [];
+
+    for (let c = 0; c < this.board.cells.length; c++) {
+      if (position != null && c !== position) {
+        continue;
+      }
+      if (this.board.cells[c].building || this.board.cells[c].resource) {
+        continue;
+      }
+      for (const r of this.resources.row) {
+        if (resource != null && r !== resource) {
+          continue;
+        }
+        let can = {
+          position: c,
+          resource: r,
+        };
+        list.push(can);
+      }
+    }
+
+    if (list.length === 0) {
       return;
     }
-    return {
-      position: position,
-      resource: resource,
-    };
+
+    return list;
   }
 
   doResource(position, resource) {

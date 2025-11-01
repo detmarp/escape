@@ -14,7 +14,7 @@ export default class Program {
 
   run() {
     this.saveData = new SaveData();
-    this.saveData._debugPrint('sss Loaded:');
+    ///this.saveData._debugPrint('sss Loaded:');
 
     this.currentGame = this._getCurrentFromHistory();
 
@@ -79,6 +79,6 @@ export default class Program {
 
   save() {
     this.saveData.save();
-    this.saveData._debugPrint('ttt Saved:');
+    ///this.saveData._debugPrint('ttt Saved:');
   }
 }

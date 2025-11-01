@@ -246,7 +246,7 @@ export default class UiMain {
       layer.textContent = score;
       layer.style.fontSize = '3em';
       layer.style.fontWeight = 'bold';
-      layer.style.color = '#333333';
+      layer.style.color = score < 0 ? '#dd0000' : '#333333';
       layer.style.display = 'flex';
       layer.style.alignItems = 'center';
       layer.style.justifyContent = 'center';
