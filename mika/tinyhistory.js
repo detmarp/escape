@@ -23,8 +23,12 @@ export default class TinyHistory {
       let index = this._findBySeed(list, dayInfo.seed);
       if (index >= 0) {
         dayInfo.saved = list[index];
+        dayInfo.over = dayInfo.saved.gameOver;
+        dayInfo.time = dayInfo.saved.timeStamp;
+        dayInfo.points = dayInfo.saved.points;
         list.splice(index, 1);
       }
+      dayInfo.daily = true;
       daily.push(dayInfo);
     }
     return daily;
@@ -33,7 +37,10 @@ export default class TinyHistory {
   getOtherGames(count = 25) {
     let other = [];
     for (const entry of this.originalHistory) {
-      const params = { saved: entry, seed: entry.gameSeed, time: entry.timeStamp, over: entry.gameOver };
+      const params = {
+        saved: entry, seed: entry.gameSeed, time: entry.timeStamp, over: entry.gameOver,
+        points: entry.points,
+      };
       other.push(params);
       if (other.length >= count) break;
     }
@@ -133,6 +140,10 @@ export default class TinyHistory {
     // simple positive 32-bit hash of utcMidnightTs (Knuth multiplicative)
     const hash = (Number(midnight) * 2654435761) >>> 0;
     const seed = (hash % 900000) + 100000;
-    return { ago: daysAgo, weekday, midnight, seed, hash };
+    return {
+      ago: daysAgo, weekday, midnight, seed, hash,
+      month: month + 1,
+      day: day,
+    };
   }
 }

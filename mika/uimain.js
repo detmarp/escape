@@ -38,20 +38,8 @@ export default class UiMain {
       row2.appendChild(btn);
     });
 
-    const startButton = document.createElement('button');
-    startButton.textContent = 'New game';
-    startButton.addEventListener('click', () => {
-      this.program.newGame();
-      this.program.gotoMode('pregame');
-    });
-    this.parent.appendChild(startButton);
-
     if (this.program.saveData.data.quickstart) {
       this._addButton('Quickstart', this._onQuickstart);
-    }
-
-    if (this.program.currentGame) {
-      this._addButton('Continue', this._onContinue);
     }
   }
 
@@ -154,9 +142,9 @@ export default class UiMain {
   }
 
   _gameButton(params) {
+    console.log(`bbb ${JSON.stringify(params)}`);
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.textContent = JSON.stringify(params);
     // make it a 6em square
     btn.style.width = '6em';
     btn.style.height = '6em';
@@ -167,21 +155,156 @@ export default class UiMain {
     btn.style.boxSizing = 'border-box';
     // prevent flex container from stretching the button
     btn.style.flex = '0 0 auto';
-    btn.style.display = 'inline-flex';
-    // align text to upper left
-    btn.style.alignItems = 'flex-start';
-    btn.style.justifyContent = 'flex-start';
-    btn.style.textAlign = 'left';
-    // allow text to wrap (even without spaces)
-    btn.style.whiteSpace = 'normal';
-    btn.style.wordWrap = 'break-word';
-    btn.style.overflowWrap = 'anywhere';
+    // very light grey background, no border
+    btn.style.backgroundColor = '#f0f0f0';
+    btn.style.border = 'none';
+    // remove default padding so child can fill completely
+    btn.style.padding = '0';
+    // position relative so child layers can fill it
+    btn.style.position = 'relative';
     btn.style.overflow = 'hidden';
-    btn.style.padding = '0.25em';
 
     btn.onclick = () => {
       this._onGameButton(params);
     };
+
+    let over = params && params.over;
+    let started = params && params.saved;
+
+    let colors;
+    let border = '0.1em';
+    colors = [ '#e6f2ff', '#b3d9ff' ];
+    if (over) {
+      colors = [ '#ffec97', '#daa520' ];
+      border = '0.4em';
+    }
+    else if (started) {
+      colors = [ '#91c5fc', '#2c80d4' ];
+      border = '0.3em';
+    }
+    if (colors) {
+      // Blue
+      let layer = document.createElement('div');
+      layer.style.backgroundColor = colors[0];
+      layer.style.border = border + ' solid ' + colors[1];
+      layer.style.borderRadius = '8px';
+      layer.style.boxSizing = 'border-box';
+      // fill the parent button completely
+      layer.style.position = 'absolute';
+      layer.style.top = '0';
+      layer.style.left = '0';
+      layer.style.width = '100%';
+      layer.style.height = '100%';
+      btn.appendChild(layer);
+    }
+
+    let star = over;
+    if (star) {
+      let layer = document.createElement('div');
+      layer.style.opacity = '0.7';
+      layer.textContent = '⭐';
+      layer.style.fontSize = '4em';
+      layer.style.display = 'flex';
+      layer.style.alignItems = 'center';
+      layer.style.justifyContent = 'center';
+      layer.style.position = 'absolute';
+      layer.style.top = '0';
+      layer.style.left = '0';
+      layer.style.width = '100%';
+      layer.style.height = '100%';
+      layer.style.pointerEvents = 'none';
+      btn.appendChild(layer);
+    }
+
+    let newGame;
+    newGame = !params;
+    if (newGame) {
+      // New Game
+      let layer = document.createElement('div');
+      layer.textContent = 'New Game';
+      layer.style.color = '#333333';
+      layer.style.fontSize = '1.8em';
+      layer.style.fontWeight = 'bold';
+      layer.style.display = 'flex';
+      layer.style.alignItems = 'center';
+      layer.style.justifyContent = 'center';
+      layer.style.position = 'absolute';
+      layer.style.top = '0';
+      layer.style.left = '0';
+      layer.style.width = '100%';
+      layer.style.height = '100%';
+      layer.style.pointerEvents = 'none';
+      btn.appendChild(layer);
+      // early out
+      return btn;
+    }
+
+    let score;
+    score = params && params.points;
+    if (score !== undefined) {
+      let layer = document.createElement('div');
+      layer.textContent = score;
+      layer.style.fontSize = '3em';
+      layer.style.fontWeight = 'bold';
+      layer.style.color = '#333333';
+      layer.style.display = 'flex';
+      layer.style.alignItems = 'center';
+      layer.style.justifyContent = 'center';
+      layer.style.position = 'absolute';
+      layer.style.top = '0';
+      layer.style.left = '0';
+      layer.style.width = '100%';
+      layer.style.height = '100%';
+      layer.style.pointerEvents = 'none';
+      btn.appendChild(layer);
+    }
+
+    let seed;
+    seed = params && !params.daily && params.seed;
+    if (seed) {
+      let layer = document.createElement('div');
+      layer.textContent = seed;
+      layer.style.fontSize = '0.9em';
+      layer.style.color = '#505050';
+      layer.style.position = 'absolute';
+      layer.style.top = '0.4em';
+      layer.style.right = '0.6em';
+      layer.style.pointerEvents = 'none';
+      btn.appendChild(layer);
+    }
+
+    let ago;
+    ago = started && params.time && this._ago(params.time);
+    if (ago) {
+      let layer = document.createElement('div');
+      layer.textContent = ago;
+      layer.style.fontSize = '1.2em';
+      layer.style.fontWeight = 'bold';
+      layer.style.color = '#404040';
+      layer.style.position = 'absolute';
+      layer.style.bottom = '0.3em';
+      layer.style.left = '0.4em';
+      layer.style.pointerEvents = 'none';
+      btn.appendChild(layer);
+    }
+
+    let day;
+    if (params.daily && params.month && params.day && params.weekday) {
+      let abbr = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][params.weekday];
+      day = `${abbr} ${params.month}/${params.day}`;
+    }
+    if (day) {
+      let layer = document.createElement('div');
+      layer.textContent = day;
+      layer.style.fontSize = '0.9em';
+      layer.style.fontWeight = 'bold';
+      layer.style.color = '#404040';
+      layer.style.position = 'absolute';
+      layer.style.top = '0.4em';
+      layer.style.left = '0.5em';
+      layer.style.pointerEvents = 'none';
+      btn.appendChild(layer);
+    }
 
     return btn;
   }
@@ -219,10 +342,10 @@ export default class UiMain {
     // else round up to days, "X d"
     if (ago <= 30) return 'now';
     const minutes = Math.ceil(ago / 60);
-    if (minutes < 60) return `${minutes} m`;
+    if (minutes < 60) return `${minutes}m`;
     const hours = Math.ceil((minutes + 15) / 60);
-    if (hours < 20) return `${hours} h`;
+    if (hours < 20) return `${hours}h`;
     const days = Math.ceil(hours / 24);
-    return `${days} d`;
+    return `${days}d`;
   }
 }

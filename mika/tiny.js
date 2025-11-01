@@ -65,6 +65,7 @@ export default class Tiny {
       }),
       specials: this.specials || undefined,
       timeStamp: this.timeStamp,
+      points: this.score.total || 0,
     };
   }
 
@@ -85,6 +86,7 @@ export default class Tiny {
     instance.specials = obj.specials || [];
     instance.gameOver = obj.gameOver;
     instance.timeStamp = obj.timeStamp;
+    instance.score.total = obj.points || 0;
     instance._refresh();
     return instance;
   }
