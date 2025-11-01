@@ -6,7 +6,8 @@ export default class UiGame {
   constructor(parent, program) {
     this.parent = parent;
     this.program = program;
-    this.upParts = new UiParts(this.program.tiny);
+    this.tiny = this.program.tiny;
+    this.upParts = new UiParts(this.tiny);
     this.uxTwo = new uxTwo();
 
     this.selectedCell = null;
@@ -22,7 +23,7 @@ export default class UiGame {
       this.resources = ['wood', 'brick', 'wheat', 'stone', 'glass'];
     }
     else {
-      this.resources = this.program.tiny.getResources();
+      this.resources = this.tiny.getResources();
     }
 
     this.canEdit = this.program.saveData.data.editmode;
@@ -37,12 +38,12 @@ export default class UiGame {
     this.canAcceptCard = false;
 
     this._addHeader('Game board');
-    this._addText(`Game Seed: ${this.program.tiny.gameSeed}`);
+    this._addText(`Game Seed: ${this.tiny.gameSeed}`);
     this._addButton('< Main', this._onExit);
 
     this._makeScore();
 
-    if (this.program.tiny.gameOver) {
+    if (this.tiny.gameOver) {
       this._addText('Game Over');
     }
 
@@ -52,7 +53,7 @@ export default class UiGame {
       this._makeEditControls();
     }
 
-    if (this.program.tiny.doneResource && !this.program.tiny.full) {
+    if (this.tiny.doneResource && !this.tiny.full) {
       this._addButton('End turn', this._onEndTurn);
     }
 
@@ -68,7 +69,7 @@ export default class UiGame {
     this._makeCardButtons();
 
     if (this.shownCard != null) {
-      this._makeCard(this.parent, this.program.tiny.getHand()[this.shownCard]);
+      this._makeCard(this.parent, this.tiny.getHand()[this.shownCard]);
     }
 
     // convert a CSS size (e.g. "2em", "24px", "1.5rem") to pixels relative to an element
@@ -109,7 +110,7 @@ export default class UiGame {
     }
 
     if (this.selectedCell != null) {
-      let cell = this.program.tiny.board.cells[this.selectedCell];
+      let cell = this.tiny.board.cells[this.selectedCell];
       if (cell.resource) {
         this.uxTwo.addButton(box, `Delete resource ${cell.resource}`, () => {
           this._onEditDeleteResource(cell);
@@ -127,7 +128,7 @@ export default class UiGame {
         });
       }
       if (this.selectedCard != null) {
-        let card = this.program.tiny.getHand()[this.selectedCard];
+        let card = this.tiny.getHand()[this.selectedCard];
         this.uxTwo.addButton(box, `Add building ${card.name}`, () => {
           this._onEditAddBuilding(cell, card);
         });
@@ -163,7 +164,7 @@ export default class UiGame {
   }
 
   _makeScore() {
-    let score = this.program.tiny.calculateScore();
+    let score = this.tiny.calculateScore();
     let text = JSON.stringify(score, null, 2);
     this._addText(text);
   }
@@ -217,7 +218,7 @@ export default class UiGame {
     iconContainer.style.width = '100%';
     iconContainer.style.height = '100%';
 
-    const cellObj = this.program.tiny.board.cells[index];
+    const cellObj = this.tiny.board.cells[index];
     const building = cellObj && cellObj.building;
     const resource = cellObj && cellObj.resource;
 
@@ -257,7 +258,7 @@ export default class UiGame {
     }
 
     // mark cell as usable if tiny reports it as a resource-target cell
-    let resourceCells = this.program.tiny.getResourceCells();
+    let resourceCells = this.tiny.getResourceCells();
     if (this.selectedResource != null &&
       Object.prototype.hasOwnProperty.call(resourceCells, index)
     ) {
@@ -275,7 +276,7 @@ export default class UiGame {
 
   _placementCount(card) {
     let count = 0;
-    let placements = this.program.tiny.getBuildingPlacements();
+    let placements = this.tiny.getBuildingPlacements();
     for (const p of placements) {
       if (p.card.category === card.category) {
         count++;
@@ -286,8 +287,8 @@ export default class UiGame {
 
   _isCellSelectedPlacement(index) {
     if (this.selectedCard != null) {
-      var card = this.program.tiny.getHand()[this.selectedCard];
-      let placements = this.program.tiny.getBuildingPlacements();
+      var card = this.tiny.getHand()[this.selectedCard];
+      let placements = this.tiny.getBuildingPlacements();
       let repeatFilter = 0;
       for (const p of placements) {
         if (p.card.category === card.category) {
@@ -305,13 +306,13 @@ export default class UiGame {
   }
 
   _makeSpecial() {
-    this.program.tiny.specials.forEach(special => {
+    this.tiny.special.specials.forEach(special => {
       if (special.name === 'addResource') {
         let cell = special.cell;
-        let card = this.program.tiny.board.cells[cell].building;
+        let card = this.tiny.board.cells[cell].building;
         let buildingName = card.name;
         let onClick = (this.selectedCell != special.cell) ? null : (value) => {
-          this.program.tiny.doSpecial(special.id, { resource: value });
+          this.tiny.doSpecial(special.id, { resource: value });
           this.refresh();
         };
         this.uxTwo.addMeeplePicker(
@@ -329,16 +330,16 @@ export default class UiGame {
 
       if (special.name === 'replaceBuilding') {
         let cell = special.cell;
-        let card = this.program.tiny.board.cells[cell].building;
+        let card = this.tiny.board.cells[cell].building;
         let buildingName = card.name;
         let onClick;
         if (
           this.selectedCell != null &&
           this.selectedCell != special.cell &&
-          this.program.tiny.board.cells[this.selectedCell].building
+          this.tiny.board.cells[this.selectedCell].building
         ) {
           onClick = (value) => {
-            this.program.tiny.doSpecial(special.id, { building: value, cell: this.selectedCell });
+            this.tiny.doSpecial(special.id, { building: value, cell: this.selectedCell });
             this.refresh();
           };
         }
@@ -356,6 +357,29 @@ export default class UiGame {
         );
       }
 
+      if (special.name === 'swapResource') {
+        let cell = this.selectedCell;
+        let canUse = this.tiny.doneResource &&
+          this.tiny.doneResource.cellIndex === cell &&
+          this.tiny.board.cells[cell].resource == special.resource;
+        let onClick = !canUse ? null : (value) => {
+          this.tiny.doSpecial(special.id, { cell: cell, resource: value });
+          this.refresh();
+        };
+        this.uxTwo.addMeeplePicker(
+          this.parent,
+          ['wood', 'brick', 'wheat', 'stone', 'glass'],
+          special.selection,
+          (value) => {
+            special.selection = value;
+            this.refresh();
+          },
+          `Swap resource`,
+          onClick
+        );
+      }
+
+
     });
   }
 
@@ -368,7 +392,7 @@ export default class UiGame {
 
     this.resources.forEach((item, i) => {
       const r = document.createElement('div');
-      if (this.program.tiny.doneResource) {
+      if (this.tiny.doneResource) {
         r.className = 'mika-resource';
       } else {
         r.className = 'mika-resource usable-button';
@@ -394,7 +418,7 @@ export default class UiGame {
     });
 
     if (this.program.saveData.data.previewresources) {
-      for (const item2 of this.program.tiny.resources.drawPile) {
+      for (const item2 of this.tiny.resources.drawPile) {
         const iconColor2 = this.upParts.getMeeple(item2).color;
         const svg2 = icons.makeCube(iconColor2);
         svg2.style.width = '1.8em';
@@ -426,7 +450,7 @@ export default class UiGame {
     let row = null;
 
     if (this.selectedCard != null) {
-      let count = this._placementCount(this.program.tiny.getHand()[this.selectedCard]);
+      let count = this._placementCount(this.tiny.getHand()[this.selectedCard]);
       if (count > 1) {
         row = row || document.createElement('div');
         this._addButton(
@@ -445,7 +469,7 @@ export default class UiGame {
             this.canAcceptCard = {
               cell: this.selectedCell,
               cardIndex: this.selectedCard,
-              card: this.program.tiny.getHand()[this.selectedCard],
+              card: this.tiny.getHand()[this.selectedCard],
               placement: this.selectedPlacement,
             };
           }
@@ -466,7 +490,7 @@ export default class UiGame {
     row.className = 'mika-card-row';
 
     const icons = new Icons();
-    let cards = this.program.tiny.getHand();
+    let cards = this.tiny.getHand();
     // simple mapping from category to color; extend as needed
     const categoryColor = {
       attack: '#e55353',
@@ -476,7 +500,7 @@ export default class UiGame {
       default: '#cccccc',
     };
 
-    var placements = this.program.tiny.getBuildingPlacements();
+    var placements = this.tiny.getBuildingPlacements();
     for (let i = 0; i < cards.length; i++) {
       const c = document.createElement('div');
       c.className = 'mika-card-button';
@@ -634,12 +658,12 @@ export default class UiGame {
   _getCellText(index) {
     const lines = [String(index)];
 
-    let r = this.program.tiny.board.cells[index].resource;
+    let r = this.tiny.board.cells[index].resource;
     if (r) {
       lines.push(r);
     }
 
-    let b = this.program.tiny.board.cells[index].building;
+    let b = this.tiny.board.cells[index].building;
     if (b) {
       lines.push(b.short);
     }
@@ -647,7 +671,7 @@ export default class UiGame {
     if (index == this.selectedCell) {
       if (this.selectedResource != null) {
         let resource = this.resources[this.selectedResource];
-        if (this.program.tiny.canDoResource(index, resource)) {
+        if (this.tiny.canDoResource(index, resource)) {
           lines.push(`${resource}`);
           this.canAcceptResource = {
             cell: this.selectedCell,
@@ -663,7 +687,7 @@ export default class UiGame {
 
   _canPlaceCard(cellIndex, card) {
     let result = [];
-    let placements = this.program.tiny.getBuildingPlacements();
+    let placements = this.tiny.getBuildingPlacements();
     for (let p of placements) {
       if (p.card.category === card.category) {
         if (p.resourceIndexes.indexOf(cellIndex) !== -1) {
@@ -675,13 +699,13 @@ export default class UiGame {
   }
 
   _getCardText(index) {
-    const cards = this.program.tiny.getHand();
+    const cards = this.tiny.getHand();
     const item = cards && cards[index];
     return item.short;
   }
 
   _onResourceClick(index, e) {
-    if (this.program.tiny.doneResource) {
+    if (this.tiny.doneResource) {
       return;
     }
     this.selectedResource = index;
@@ -706,19 +730,19 @@ export default class UiGame {
   }
 
   _onAcceptResource() {
-    this.program.tiny.doResource(this.canAcceptResource.cell, this.canAcceptResource.resource);
+    this.tiny.doResource(this.canAcceptResource.cell, this.canAcceptResource.resource);
     this._clearSelections();
     this._saveAndRefresh();
   }
 
   _onAcceptCard() {
-    this.program.tiny.doCard(this.canAcceptCard.cell, this.canAcceptCard.placement);
+    this.tiny.doCard(this.canAcceptCard.cell, this.canAcceptCard.placement);
     this._clearSelections();
     this._saveAndRefresh();
   }
 
   _onEndTurn() {
-    this.program.tiny.endTurn();
+    this.tiny.endTurn();
     this._clearSelections();
     this._saveAndRefresh();
   }
@@ -734,7 +758,7 @@ export default class UiGame {
   }
 
   _onPivotPattern(card) {
-    card.shape = this.program.tiny.pivotList(card.shape);
+    card.shape = this.tiny.pivotList(card.shape);
     this.refresh();
   }
 
@@ -754,23 +778,23 @@ export default class UiGame {
     cell.building = building;
 
     if (building.special) {
-      this.program.tiny.addSpecial(building.special, { cell: cell.index });
+      this.tiny.addSpecial(building.special, { cell: cell.index });
     }
 
     this._clearSelections();
-    this.program.tiny._refresh();
+    this.tiny._refresh();
     this._saveAndRefresh();
   }
 
   _onEditAddResource(cell, resource) {
     cell.resource = resource;
     this._clearSelections();
-    this.program.tiny._refresh();
+    this.tiny._refresh();
     this._saveAndRefresh();
   }
 
   _saveAndRefresh() {
-    this.program.saveCurrent(this.program.tiny);
+    this.program.saveCurrent(this.tiny);
     this.refresh();
   }
 }

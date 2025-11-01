@@ -45,6 +45,9 @@ export default class TinyHistory {
       if (other.length >= count) break;
     }
 
+    // Sort by timeStamp, largest first
+    other.sort((a, b) => (b.time || 0) - (a.time || 0));
+
     return other;
   }
 

@@ -9,8 +9,7 @@ export default class Tiny {
     this.board = new TinyBoard(this);
     this.deck = new TinyDeck();
     this.score_old = {};
-    this.specials = [];
-    this.specialId = 0;
+    this.special = new TinySpecial(this);
     this.timeStamp = Date.now();
 
     this.gameSeed = (typeof seed === 'number') ?
@@ -65,7 +64,7 @@ export default class Tiny {
         }
         return out;
       }),
-      specials: this.specials || undefined,
+      specials: this.special.specials || undefined,
       timeStamp: this.timeStamp,
       points: this.score_old.total || 0,
     };
@@ -85,7 +84,7 @@ export default class Tiny {
         }
       });
     }
-    instance.specials = obj.specials || [];
+    instance.special.specials = obj.specials || [];
     instance.gameOver = obj.gameOver;
     instance.timeStamp = obj.timeStamp;
     instance.score_old.total = obj.points || 0;
@@ -119,7 +118,7 @@ export default class Tiny {
       this.resources.row.push(next[0]);
     }
 
-    this.doneResource = false;
+    this.doneResource = null;
     this.full = false;
 
     this._refresh();
@@ -167,7 +166,10 @@ export default class Tiny {
       return;
     }
     this.board.cells[position].resource = resource;
-    this.doneResource = true;
+    this.doneResource = {
+      cellIndex: position,
+      resource: resource,
+    };
 
     const i = this.resources.row.indexOf(resource);
     if (i !== -1) {
@@ -190,7 +192,7 @@ export default class Tiny {
     this.board.cells[position].resource = null;
 
     if (placement.card.special) {
-      this.addSpecial(placement.card.special, { cell: position });
+      this.special.addSpecial(placement.card.special, { cell: position });
     }
   }
 
@@ -198,29 +200,14 @@ export default class Tiny {
     if (this.gameOver) {
       return;
     }
+    return this.special.doSpecial(id, params);
+  }
 
-    // find the special with this id, set it as active, optionally merge params, and remove it from the list
-    const idx = this.specials.findIndex(s => s && s.id === id);
-    if (idx === -1) return;
-    let special = this.specials[idx];
-    this.specials.splice(idx, 1);
-
-    if (special.name === 'addResource') {
-      console.log(`this.board.cells[${special.cell}].resource =`, params.resource);
-      this.board.cells[special.cell].resource = params.resource;
+  addSpecial(special, params) {
+    if (this.gameOver) {
+      return;
     }
-
-    if (special.name === 'replaceBuilding') {
-      const cellIdx = params.cell;
-      let card = this.cardMap[params.building];
-      this.board.cells[cellIdx].building = card;
-      this.board.cells[cellIdx].resource = null;
-      if (card.special) {
-        this.addSpecial(card.special, { cell: cellIdx });
-      }
-
-    }
-
+    return this.special.addSpecial(special, params);
   }
 
   getResourceCells() {
@@ -393,22 +380,6 @@ export default class Tiny {
     });
 
     return this._totalScore();
-  }
-
-  addSpecial(special, params) {
-    if (this.gameOver) {
-      return;
-    }
-
-    let count = special.count || 1;
-    for (let i = 0; i < count; i++) {
-      let s = Object.assign({}, special);
-      s.id = this.specialId++;
-      if (params) {
-        Object.assign(s, params);
-      }
-      this.specials.push(s);
-    }
   }
 
   _totalScore() {
