@@ -1,8 +1,9 @@
 export default class TinyScore {
   constructor(tiny) {
     this.tiny = tiny;
-    this.rawScore = 0;
     this.penalty = 0;
+    this.rawScore = 0;
+    this.displayScore = 0;
     this.finalScore = 0;
     this.categories = {};
   }
@@ -10,6 +11,7 @@ export default class TinyScore {
   calculate() {
     this.rawScore = 0;
     this.penalty = 0;
+    this.displayScore = 0;
     this.finalScore = 0;
 
     this.penalty = -1 * this._countCells(cell => !cell.building);
@@ -61,11 +63,13 @@ export default class TinyScore {
 
     this.rawScore = Object.values(this.categories).reduce((sum, val) => sum + val, 0);
     this.finalScore = this.rawScore + this.penalty;
+    this.displayScore = this.tiny.gameOver ? this.finalScore : this.rawScore;
 
     let debug = {
       rawScore: this.rawScore,
       penalty: this.penalty,
       finalScore: this.finalScore,
+      displayScore: this.displayScore,
       categories: this.categories,
     };
     console.log(`sss: ${JSON.stringify(debug)}`);

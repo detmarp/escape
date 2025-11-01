@@ -8,7 +8,6 @@ export default class Tiny {
     this.rules = rules ? Object.assign({}, rules) : {};
     this.board = new TinyBoard(this);
     this.deck = new TinyDeck();
-    this.score_old = {};
     this.special = new TinySpecial(this);
     this.score = new TinyScore(this);
     this.timeStamp = Date.now();
@@ -68,8 +67,6 @@ export default class Tiny {
       cells.push(c);
     });
 
-    let points = this.gameOver ? this.score.finalScore : this.score.rawScore;
-
     return {
       gameSeed: this.gameSeed,
       randomSeed: this.randomSeed,
@@ -78,7 +75,7 @@ export default class Tiny {
       cells,
       specials: this.special.specials || undefined,
       timeStamp: this.timeStamp,
-      points,
+      points: this.score.displayScore,
       resources: this.resources,
     };
   }
@@ -367,91 +364,8 @@ export default class Tiny {
   }
 
   calculateScore() {
-    this.score_old = {};
-
-    this.score_old.empty = -1 * this._countCells(cell => !cell.building);
-
-    let canFeed = this._findBuildingsByCategory('red').length * 4;
-    this.score_old.red = 0;
-
-    let blueCount = this._findBuildingsByCategory('blue').length;
-    let fedCount = Math.min(canFeed, blueCount);
-    this.score_old.blue = 3 * fedCount;
-
-    this.score_old.pink = 1 * this._findBuildingsByCategory('pink').length;
-
-    this.score_old.black = 0;
-
-    this.score_old.orange = this._findBuildingsByCategory('orange').length * fedCount;
-
-    this.score_old.gray = this._findBuildingsByCategory('gray').length * 2;
-
-    this.score_old.yellow = 0;
-    this._findBuildingsByCategory('yellow').forEach(yellow => {
-      // For each yellow,
-      let unique = new Set();
-      this._findBuildings(b => {
-        // count unique types in same row or column
-        return (
-          b.index !== yellow.index &&
-          (b.x === yellow.x || b.y === yellow.y)
-        );
-      }).forEach(b => {
-        unique.add(b.category);
-      });
-      this.score_old.yellow += 1 * unique.size;
-    });
-
-    let greenCount = this._findBuildingsByCategory('green').length;
-    const greenTable = [2, 5, 9, 14, 20];
-    this.score_old.green = greenTable[Math.min(greenCount, greenTable.length) - 1] || 0;
-
-    this.score_old.gray = 0;
-    this._findBuildingsByCategory('gray').forEach(gray => {
-      // find adjacent blue
-      this.score_old.gray += 1 * this._findBuildings(b => {
-        return (
-          Math.abs(b.x - gray.x) + Math.abs(b.y - gray.y) === 1 &&
-          b.category === 'blue'
-        )}).length;
-    });
-
     this.score.calculate();
-
-    return this._totalScore();
-  }
-
-  _totalScore() {
-    this.score_old.total = 0;
-    for (const [key, val] of Object.entries(this.score_old)) {
-      if (key !== 'total') {
-        const n = (typeof val === 'number') ? val : (Number(val) || 0);
-        this.score_old.total += n;
-      }
-    }
-    return this.score_old;
-  }
-
-  _findBuildings(predicate) {
-    let buildings = [];
-    this.board.cells.forEach(cell => {
-      if (cell.building) {
-        let building = {
-          index: cell.index,
-          x: cell.index % 4,
-          y: Math.floor(cell.index / 4),
-          category: cell.building.category,
-        };
-        if (predicate(building)) {
-          buildings.push(building);
-        }
-      }
-    });
-    return buildings;
-  }
-
-  _findBuildingsByCategory(category) {
-    return this._findBuildings(b => b.category === category);
+    return this.score.displayScore
   }
 
   _countCells(predicate) {
