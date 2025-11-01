@@ -142,7 +142,6 @@ export default class UiMain {
   }
 
   _gameButton(params) {
-    console.log(`bbb ${JSON.stringify(params)}`);
     const btn = document.createElement('button');
     btn.type = 'button';
     // make it a 6em square

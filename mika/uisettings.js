@@ -19,7 +19,8 @@ export default class UiSettings {
     this._addSettingsToggle('Preview resources', 'previewresources');
     //this._addSettingsToggle('Debug end after 3 moves', 'debugendafter3');
     this._addText('Misc');
-    this._addSettingsToggle('Bot button', 'botbutton');
+    this._addSettingsToggle('Show bot button', 'botbutton');
+    this._addSettingsToggle('Log SaveData', 'logsavedata');
     this._addText('Data');
     this._addButton('Clear *ALL* saved data', () => {
       this._clearData();

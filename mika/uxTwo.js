@@ -44,7 +44,9 @@ export default class UxTwo {
   addButton(parent, label, onClick) {
     const button = document.createElement('button');
     button.textContent = label;
-    button.addEventListener('click', onClick.bind(this));
+    if (typeof onClick === 'function') {
+      button.addEventListener('click', onClick.bind(this));
+    }
     parent.appendChild(button);
     return button;
   }

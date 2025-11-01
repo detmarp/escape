@@ -10,6 +10,7 @@ export default class Tiny {
     this.deck = new TinyDeck();
     this.score_old = {};
     this.special = new TinySpecial(this);
+    this.score = new TinyScore(this);
     this.timeStamp = Date.now();
 
     this.gameSeed = (typeof seed === 'number') ?
@@ -44,29 +45,41 @@ export default class Tiny {
   _refresh() {
     this.started = this.started || this._countCells(cell => cell.building || cell.resource) > 0;
 
-    this.gameOver = this.gameOver ||
-      this._countCells(cell => cell.building || cell.resource) >= 16;
+    if (!this.gameOver) {
+      if (this._countCells(cell => cell.building || cell.resource) >= 16) {
+        this.gameOver = true;
+        this.timeStamp = Date.now();
+      }
+    }
+
+    this.score.calculate();
   }
 
   toObject() {
+    let cells = [];
+    this.board.cells.forEach(cell => {
+      let c = [];
+      if (cell.building) {
+        c.push(cell.building.category);
+      }
+      if (cell.resource) {
+        c.push(cell.resource);
+      }
+      cells.push(c);
+    });
+
+    let points = this.gameOver ? this.score.finalScore : this.score.rawScore;
+
     return {
       gameSeed: this.gameSeed,
       randomSeed: this.randomSeed,
+      started: this.started,
       gameOver: this.gameOver,
-      cells: Array.from({ length: 16 }, (_, i) => {
-        const c = (this.board && Array.isArray(this.board.cells)) ? this.board.cells[i] || {} : {};
-        const out = {};
-        if (c.resource) {
-          out.resource = c.resource;
-        }
-        if (c.building) {
-          out.building = c.building.short;
-        }
-        return out;
-      }),
+      cells,
       specials: this.special.specials || undefined,
       timeStamp: this.timeStamp,
-      points: this.score_old.total || 0,
+      points,
+      resources: this.resources,
     };
   }
 
@@ -74,20 +87,29 @@ export default class Tiny {
     const instance = new Tiny();
     instance.gameSeed = parseInt(obj.gameSeed, 10);
     instance.randomSeed = parseInt(obj.randomSeed, 10) || instance.gameSeed;
-    if (Array.isArray(obj.cells)) {
-      obj.cells.forEach((cellData, i) => {
-        if (cellData.resource) {
-          instance.board.cells[i].resource = cellData.resource;
-        }
-        if (cellData.building) {
-          instance.board.cells[i].building = instance.deck.map.get(cellData.building);
-        }
-      });
-    }
     instance.special.specials = obj.specials || [];
     instance.gameOver = obj.gameOver;
     instance.timeStamp = obj.timeStamp;
-    instance.score_old.total = obj.points || 0;
+
+    obj.cells.forEach((cell, i) => {
+      cell.forEach(contents => {
+        let building = instance.lookupHand(contents);
+        if (building) {
+          instance.board.cells[i].building = building;
+        }
+        else {
+          let resource = instance.lookupResource(contents);
+          if (resource) {
+            instance.board.cells[i].resource = resource;
+          }
+        }
+      });
+    });
+
+    if (obj.resources) {
+      instance.resources = obj.resources;
+    }
+
     instance._refresh();
     return instance;
   }
@@ -394,6 +416,8 @@ export default class Tiny {
         )}).length;
     });
 
+    this.score.calculate();
+
     return this._totalScore();
   }
 
@@ -438,5 +462,59 @@ export default class Tiny {
       }
     });
     return count;
+  }
+
+  getResourceList() {
+    // Array of the resources for this game
+    return ['wood', 'brick', 'wheat', 'stone', 'glass'];
+  }
+
+  getCategoryList() {
+    // Array of the building categories for this game
+    return ['red', 'orange', 'yellow', 'green', 'blue', 'black', 'gray', 'pink'];
+  }
+
+  getCardNameList() {
+    // Array of short names of cards in the current hand
+    return this.getHand().map(card => card.short);
+  }
+
+  lookupDeck(name) {
+    // return a card object from the entire deck by this name; or null
+    const deck = this.getDeck();
+    return deck.find(card => card.name === name) || null;
+  }
+
+  lookupHand(name) {
+    // return a card object from the current hand by short name; or null
+    const hand = this.getHand();
+    // search by short name
+    let card = hand.find(card => card.short === name);
+    if (!card) {
+      // search by category
+      card = hand.find(card => card.category === name);
+    }
+    return card;
+  }
+
+
+  lookupResource(name) {
+    // Returns a resource string, or null
+    // name can be a full name, or a resource code letter
+    const resources = this.getResourceList();
+    if (resources.includes(name)) {
+      return name;
+    }
+    const map = {
+      'w': 'wood',
+      'b': 'brick',
+      'y': 'wheat',
+      'g': 'glass',
+      's': 'stone',
+    };
+    if (map.hasOwnProperty(name)) {
+      return map[name];
+    }
+    return null;
   }
 }

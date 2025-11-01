@@ -99,7 +99,7 @@ export default class UiGame {
     box.style.marginTop = '0';
     this.parent.appendChild(box);
 
-    this.uxTwo.addButton(box, 'Make Bot move', () => {
+    this.uxTwo.addButton(box, 'Use bot', this.tiny.gameOver ? null : () => {
       let bot = new TinyBot(this.tiny);
       bot.makeMove();
       this._saveAndRefresh();
@@ -332,7 +332,7 @@ export default class UiGame {
         let buildingName = card.name;
         let onClick = (this.selectedCell != special.cell) ? null : (value) => {
           this.tiny.doSpecial(special.id, { resource: value });
-          this.refresh();
+          this._saveAndRefresh();
         };
         this.uxTwo.addMeeplePicker(
           this.parent,
@@ -359,7 +359,7 @@ export default class UiGame {
         ) {
           onClick = (value) => {
             this.tiny.doSpecial(special.id, { building: value, cell: this.selectedCell });
-            this.refresh();
+            this._saveAndRefresh();
           };
         }
         special.building = special.building || 'blue';
@@ -383,7 +383,7 @@ export default class UiGame {
           this.tiny.board.cells[cell].resource == special.resource;
         let onClick = !canUse ? null : (value) => {
           this.tiny.doSpecial(special.id, { cell: cell, resource: value });
-          this.refresh();
+          this._saveAndRefresh();
         };
         this.uxTwo.addMeeplePicker(
           this.parent,
