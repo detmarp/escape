@@ -61,6 +61,7 @@ export default class TinyDeck {
         short: 'fact',
         special: {
           name: 'addResource',
+          special: { name: 'swapResource', permanent: true },
         },
         shape: [
           'b---',

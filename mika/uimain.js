@@ -289,7 +289,7 @@ export default class UiMain {
     }
 
     let day;
-    if (params.daily && params.month && params.day && params.weekday) {
+    if (params.daily && params.month && params.day && params.weekday !== undefined) {
       let abbr = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][params.weekday];
       day = `${abbr} ${params.month}/${params.day}`;
     }
