@@ -14,7 +14,7 @@ export default class Program {
 
   run() {
     this.saveData = new SaveData();
-    this.saveData._debugClear();
+    //this.saveData._debugClear();
     if (this.saveData.data.logsavedata) {
       this.saveData._debugPrint('Loaded:');
     }
@@ -23,6 +23,8 @@ export default class Program {
 
     this.uiContainer = new uiContainer(this.parent, this);
     this.gotoMode('main');
+    this.newGame();
+    this.gotoMode('pregame');
 
     if (this.saveData.data.autocontinue && this.currentGame) {
       this.tryContinue();
