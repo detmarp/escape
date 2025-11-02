@@ -14,6 +14,7 @@ export default class Program {
 
   run() {
     this.saveData = new SaveData();
+    this.saveData._debugClear();
     if (this.saveData.data.logsavedata) {
       this.saveData._debugPrint('Loaded:');
     }
