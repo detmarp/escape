@@ -1,38 +1,25 @@
-/**
- * TinyFactory - Singleton factory for managing card data and Tiny game instances
- *
- * This class loads card data once and provides it to all Tiny game instances.
- * It acts as a central data store that can be initialized from JSON files.
- *
- * Usage:
- *   // Initialize once when your app starts
- *   await TinyFactory.initialize();
- *
- *   // Later, create Tiny instances that reference the shared data
- *   const game1 = TinyFactory.createTiny();
- *   const game2 = TinyFactory.createTiny(123456);
- */
+import TinyDeck from './tinydeck.js';
+import Tiny from './tiny.js';
 
-//import TinyDeck from './tinydeck.js';
+// 🔴🟠🟡🟢🔵⚫⚪🟣
+// 🟥🟧🟨🟩🟦⬛⬜🟪
+// ❤️🧡💛💚💙🖤🤍💜
+// 💶🪙💰
+// 🪙🟥🟧🟨🟩🟦⬛⬜🟪
 
-class TinyFactory {
+export default class TinyFactory {
   constructor() {
     this._initialized = false;
     this._cardData = null;
     this._deck = null;
   }
 
-  /**
-   * Initialize the factory with card data
-   * Loads card data from multiple JSON files and combines them
-   */
   async initialize() {
     if (this._initialized) {
       console.warn('TinyFactory already initialized');
       return;
     }
 
-    // List of JSON files to load
     const dataFiles = [
       'tinydatared.json',
       'tinydataorange.json',
@@ -43,8 +30,6 @@ class TinyFactory {
       'tinydatagray.json',
       'tinydatapink.json',
     ];
-
-    // Load all JSON files
     const loadPromises = dataFiles.map(async (filename) => {
       const response = await fetch(filename);
       if (!response.ok) {
@@ -52,12 +37,10 @@ class TinyFactory {
       }
       return response.json();
     });
-
-    // Wait for all files to load
     const allData = await Promise.all(loadPromises);
-
-    // Combine all arrays into one
     this._cardData = allData.flat();
+
+    this.deck = new TinyDeck(this._cardData);
 
     // Create deck structure directly from card data
     this._deck = {
@@ -66,22 +49,24 @@ class TinyFactory {
     };
 
     this._initialized = true;
-
-    // Register this factory with Tiny so new Tiny() instances can use it
-    const { default: Tiny } = await import('./tiny.js');
-    Tiny.setFactory(this);
   }
 
-  /**
-   * Check if factory is initialized
-   */
-  isInitialized() {
-    return this._initialized;
+  tinyFromRandom() {
+    let tiny = new Tiny();
+    return tiny;
   }
 
-  /**
-   * Get the shared deck instance
-   */
+  tinyFromSeed(seed) {
+    let tiny = new Tiny();
+    return tiny;
+  }
+
+  tinyFromSavedata(saveData) {
+    let tiny = new Tiny();
+    return tiny;
+  }
+
+
   getDeck() {
     if (!this._initialized) {
       throw new Error('TinyFactory not initialized. Call initialize() first.');
@@ -125,15 +110,5 @@ class TinyFactory {
     this._initialized = false;
     this._cardData = null;
     this._deck = null;
-
-    // Also clear the factory reference in Tiny
-    import('./tiny.js').then(module => {
-      const Tiny = module.default;
-      Tiny.setFactory(null);
-    });
   }
 }
-
-// Export singleton instance
-const instance = new TinyFactory();
-export default instance;

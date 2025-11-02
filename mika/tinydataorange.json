@@ -1,19 +1,5 @@
 [
   {
-    "category": "yellow",
-    "name": "Theater",
-    "short": "thtr",
-    "shape": [
-      "-g-",
-      "bcb"
-    ],
-    "score": {
-      "value": 1,
-      "condition": "unique-row-column"
-    },
-    "text": "1{coin} for each other unique building type in the same row and column as {yellow}."
-  },
-  {
     "category": "green",
     "name": "Tavern",
     "short": "tavrn",
@@ -38,28 +24,5 @@
       "condition": "fed-blue"
     },
     "text": "1{coin} for each fed {blue}."
-  },
-  {
-    "name": "Architect's Guild",
-    "short": "arch",
-    "category": "pink",
-    "shape": [
-      "--c",
-      "-yg",
-      "br-"
-    ],
-    "special": {
-      "name": "replaceBuilding",
-      "count": 2
-    },
-    "max": 1,
-    "score": {
-      "value": 1
-    },
-    "built": {
-      "action": "replace",
-      "max": 2
-    },
-    "text": "1{coin}. When constructed, replace up to 2 buildings in your town with any other building."
   }
 ]

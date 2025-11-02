@@ -11,11 +11,13 @@ import TinyFactory from './tinyfactory.js';
 export default class Program {
   constructor(parent) {
     this.parent = parent;
+    this.factory = new TinyFactory();
   }
 
   async run() {
-    await TinyFactory.initialize();
-    Tiny.setFactory(TinyFactory);
+    await this.factory.initialize();
+
+    this.factory.deck._debugDump(); // detmar
 
     this.saveData = new SaveData();
     //this.saveData._debugClear();
@@ -27,8 +29,8 @@ export default class Program {
 
     this.uiContainer = new uiContainer(this.parent, this);
     this.gotoMode('main');
-    this.newGame();
-    this.gotoMode('pregame');
+    //this.newGame();
+    //this.gotoMode('pregame');
 
     if (this.saveData.data.autocontinue && this.currentGame) {
       this.tryContinue();
@@ -37,7 +39,7 @@ export default class Program {
 
   newGame(tiny) {
     // Init with this tiny, or make a new one
-    this.tiny = tiny || new Tiny();
+    this.tiny = tiny || new Tiny(null, null, this.factory.getDeck());
     this.save();
   }
 
@@ -65,7 +67,7 @@ export default class Program {
 
   saveCurrent(tiny) {
     this.saveData.data = this.saveData.data || {};
-    let history = new TinyHistory(this.saveData.data.history);
+    let history = new TinyHistory(this.saveData.data.history, this.factory.getDeck());
     let data = history.saveGame(tiny);
     this.saveData.data.history = data;
     this.save();
@@ -83,7 +85,7 @@ export default class Program {
       }
     }
 
-    return recent && Tiny.fromObject(recent);
+    return recent && Tiny.fromObject(recent, this.factory.getDeck());
   }
 
   save() {

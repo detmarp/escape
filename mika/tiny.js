@@ -1,42 +1,15 @@
 import TinyBoard from './tinyboard.js';
-//import TinyDeck from './tinydeck.js';
 import TinyScore from './tinyscore.js';
 import TinySpecial from './tinyspecial.js';
 
 export default class Tiny {
-  // Static factory reference for shared deck
-  static _factory = null;
-
-  /**
-   * Set the factory to use for all new Tiny instances
-   * @param {TinyFactory} factory - The factory instance
-   */
-  static setFactory(factory) {
-    Tiny._factory = factory;
-  }
-
-  /**
-   * Get the current factory
-   * @returns {TinyFactory|null}
-   */
-  static getFactory() {
-    return Tiny._factory;
-  }
-
   constructor(seed, rules, sharedDeck = null) {
     this.rules = rules ? Object.assign({}, rules) : {};
     this.board = new TinyBoard(this);
 
-    // Priority order for deck:
-    // 1. Explicitly passed sharedDeck parameter
-    // 2. Factory's shared deck (if factory is set)
-    // 3. Create new deck (fallback)
+    // Use the shared deck if provided
     if (sharedDeck) {
       this.deck = sharedDeck;
-    } else if (Tiny._factory && Tiny._factory.isInitialized()) {
-      this.deck = Tiny._factory.getDeck();
-    } else {
-      //this.deck = new TinyDeck();
     }
 
     this.special = new TinySpecial(this);
@@ -78,7 +51,7 @@ export default class Tiny {
     if (!this.gameOver) {
       if (this._countCells(cell => cell.building || cell.resource) >= 16) {
         this.gameOver = true;
-        this.timeStamp = Date.now();
+        //this.timeStamp = Date.now();
       }
     }
 
@@ -111,8 +84,8 @@ export default class Tiny {
     };
   }
 
-  static fromObject(obj = {}) {
-    const instance = new Tiny();
+  static fromObject(obj = {}, sharedDeck = null) {
+    const instance = new Tiny(null, null, sharedDeck);
     instance.gameSeed = parseInt(obj.gameSeed, 10);
     instance.randomSeed = parseInt(obj.randomSeed, 10) || instance.gameSeed;
     instance.special.specials = obj.specials || [];
@@ -441,7 +414,6 @@ export default class Tiny {
     }
     return card;
   }
-
 
   lookupResource(name) {
     // Returns a resource string, or null

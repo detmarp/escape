@@ -1,14 +1,9 @@
+import TinyRandom from './tinyrandom.js';
+
 export default class TinyBot {
   constructor(tiny) {
     this.tiny = tiny;
-  }
-
-  _random(range) {
-    return Math.floor(Math.random() * range);
-  }
-
-  _randomChoose(list) {
-    return list[this._random(list.length)];
+    this.random = new TinyRandom();
   }
 
   makeMove() {
@@ -18,8 +13,8 @@ export default class TinyBot {
 
     let placements = this.tiny.getBuildingPlacements();
     if (placements.length > 0) {
-      let placement = placements[this._random(placements.length)];
-      let cell = this._randomChoose(placement.resourceIndexes);
+      let placement = this.random.choose(placements);
+      let cell = this.random.choose(placement.resourceIndexes);
       this.tiny.doCard(cell, placement);
       return;
     }
@@ -31,7 +26,7 @@ export default class TinyBot {
 
     let moves = this.tiny.canDoResource();
     if (moves && moves.length > 0) {
-      let can = this._randomChoose(moves);
+      let can = this.random.choose(moves);
       this.tiny.doResource(can.position, can.resource);
       return;
     }

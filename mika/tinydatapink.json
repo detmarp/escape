@@ -1,2 +1,70 @@
 [
+  {
+    "name": "Architect's Guild",
+    "short": "arch",
+    "category": "pink",
+    "shape": [
+      "--c",
+      "-yg",
+      "br-"
+    ],
+    "special": {
+      "name": "replaceBuilding",
+      "count": 2
+    },
+    "max": 1,
+    "score": {
+      "value": 1
+    },
+    "built": {
+      "action": "replace",
+      "max": 2
+    },
+    "text": "1🪙. When constructed, replace up to 2 buildings in your town with any other building."
+  },
+  {
+    "name": "Pink 2",
+    "short": "pink2",
+    "category": "pink",
+    "shape": [
+      "--c",
+      "-yg",
+      "br-"
+    ],
+    "text": "Pink 2."
+  },
+  {
+    "name": "Pink 3",
+    "short": "pink3",
+    "category": "pink",
+    "shape": [
+      "--c",
+      "-yg",
+      "br-"
+    ],
+    "text": "Pink 3."
+  },
+  {
+    "name": "Pink 4",
+    "short": "pink4",
+    "category": "pink",
+    "shape": [
+      "--c",
+      "-yg",
+      "br-"
+    ],
+    "text": "Pink 4."
+  },
+  {
+    "name": "Pink 5",
+    "short": "pink5",
+    "category": "pink",
+    "shape": [
+      "--c",
+      "-yg",
+      "br-"
+    ],
+    "text": "Pink 5."
+  }
+
 ]

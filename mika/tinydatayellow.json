@@ -1,2 +1,26 @@
 [
+  {
+    "category": "yellow",
+    "name": "Theater",
+    "short": "thtr",
+    "shape": [
+      "-g-",
+      "bcb"
+    ],
+    "score": {
+      "value": 1,
+      "condition": "unique-row-column"
+    },
+    "text": "1🪙 for each other unique building type in the same row and column as 🟨."
+  },
+  {
+    "category": "yellow",
+    "name": "Tailor",
+    "short": "tail",
+    "shape": [
+      "-y-",
+      "gcg"
+    ],
+    "text": "1🪙 + 1🪙 for each 🟨 in the 4 center squares in your town."
+  }
 ]

@@ -18,7 +18,7 @@ export default class UiMain {
       this.program.gotoMode('settings');
     });
 
-    let history = new TinyHistory(this.program.saveData.data.history);
+    let history = new TinyHistory(this.program.saveData.data.history, this.program.factory.getDeck());
 
     let daily = history.getDailyGames(15);
 
@@ -318,7 +318,7 @@ export default class UiMain {
   }
 
   _onGameButton(entry) {
-    let history = new TinyHistory(this.program.saveData.data.history);
+    let history = new TinyHistory(this.program.saveData.data.history, this.program.factory.getDeck());
     let tiny = history.tinyFromObject(entry);
     this.program.newGame(tiny);
 
