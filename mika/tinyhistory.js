@@ -62,21 +62,26 @@ export default class TinyHistory {
 
   tinyFromObject(entry) {
     // Return Tiny from this entry, even if gameOver.  Or create new.
-    if (entry) {
-      if (entry.saved) {
-        return Tiny.fromObject(entry.saved);
-      }
-      if (entry.seed) {
-        let list = this.originalHistory;
-        let index = this._findBySeed(list, entry.seed);
-        if (index >= 0) {
-          const foundEntry = list[index];
-          if (foundEntry && foundEntry.saved) {
-            return Tiny.fromObject(foundEntry.saved);
-          }
+    try {
+      if (entry) {
+        if (entry.saved) {
+          return Tiny.fromObject(entry.saved);
         }
-        return new Tiny(entry.seed);
+        if (entry.seed) {
+          let list = this.originalHistory;
+          let index = this._findBySeed(list, entry.seed);
+          if (index >= 0) {
+            const foundEntry = list[index];
+            if (foundEntry && foundEntry.saved) {
+              return Tiny.fromObject(foundEntry.saved);
+            }
+          }
+          return new Tiny(entry.seed);
+        }
       }
+    } catch (err) {
+      // If Tiny.fromObject throws, behave as if entry was null
+      console.warn('Failed to restore game from object, creating new game:', err.message);
     }
     return new Tiny();
   }

@@ -6,13 +6,17 @@ import uiPreGame from './uipregame.js';
 import Tiny from './tiny.js';
 import SaveData from './savedata.js';
 import TinyHistory from './tinyhistory.js';
+import TinyFactory from './tinyfactory.js';
 
 export default class Program {
   constructor(parent) {
     this.parent = parent;
   }
 
-  run() {
+  async run() {
+    await TinyFactory.initialize();
+    Tiny.setFactory(TinyFactory);
+
     this.saveData = new SaveData();
     //this.saveData._debugClear();
     if (this.saveData.data.logsavedata) {

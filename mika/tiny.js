@@ -1,13 +1,44 @@
 import TinyBoard from './tinyboard.js';
-import TinyDeck from './tinydeck.js';
+//import TinyDeck from './tinydeck.js';
 import TinyScore from './tinyscore.js';
 import TinySpecial from './tinyspecial.js';
 
 export default class Tiny {
-  constructor(seed, rules) {
+  // Static factory reference for shared deck
+  static _factory = null;
+
+  /**
+   * Set the factory to use for all new Tiny instances
+   * @param {TinyFactory} factory - The factory instance
+   */
+  static setFactory(factory) {
+    Tiny._factory = factory;
+  }
+
+  /**
+   * Get the current factory
+   * @returns {TinyFactory|null}
+   */
+  static getFactory() {
+    return Tiny._factory;
+  }
+
+  constructor(seed, rules, sharedDeck = null) {
     this.rules = rules ? Object.assign({}, rules) : {};
     this.board = new TinyBoard(this);
-    this.deck = new TinyDeck();
+
+    // Priority order for deck:
+    // 1. Explicitly passed sharedDeck parameter
+    // 2. Factory's shared deck (if factory is set)
+    // 3. Create new deck (fallback)
+    if (sharedDeck) {
+      this.deck = sharedDeck;
+    } else if (Tiny._factory && Tiny._factory.isInitialized()) {
+      this.deck = Tiny._factory.getDeck();
+    } else {
+      //this.deck = new TinyDeck();
+    }
+
     this.special = new TinySpecial(this);
     this.score = new TinyScore(this);
     this.timeStamp = Date.now();
