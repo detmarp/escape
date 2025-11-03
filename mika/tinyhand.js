@@ -18,4 +18,21 @@ export default class TinyHand {
 
 
   }
+
+  lookupCardCode(name) {
+    return null;
+  }
+
+  lookupResourceCode(name) {
+    return null;
+    // Returns a resource string, or null
+    // name can be a full name, or a resource code letter
+    const resources = this.hand.resourceList;
+    if (resources.includes(name)) {
+      // found exact name
+      return name;
+    }
+    // lookup by letter code
+    return this.hand.resourceMap[name];
+  }
 }

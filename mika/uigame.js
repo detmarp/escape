@@ -20,7 +20,7 @@ export default class UiGame {
   }
 
   refresh() {
-    if (this.editEnabled) {
+        if (this.editEnabled) {
       this.resources = ['wood', 'brick', 'wheat', 'stone', 'glass'];
     }
     else {
@@ -437,7 +437,7 @@ export default class UiGame {
     });
 
     if (this.program.saveData.data.previewresources) {
-      for (const item2 of this.tiny.resources.drawPile) {
+      for (const item2 of this.tiny.hand.resources.drawPile) {
         const iconColor2 = this.upParts.getMeeple(item2).color;
         const svg2 = icons.makeCube(iconColor2);
         svg2.style.width = '1.8em';

@@ -12,23 +12,39 @@ export default class TinyDeck {
   }
 
   handFromSeed(seed) {
-    this.random = new TinyRandom(seed);
+    let random = new TinyRandom(seed);
     let hand = new TinyHand();
     hand.seed = seed;
     hand.cards = [];
     hand.pinks = [];
     for (const categoryItem of this.categoryList) {
       if (categoryItem.category === 'pink') {
-        hand.pinks = this.random.sample(categoryItem.cards, 2);
+        hand.pinks = random.sample(categoryItem.cards, 2);
       } else {
-        const chosen = this.random.choose(categoryItem.cards);
+        const chosen = random.choose(categoryItem.cards);
         if (chosen) {
           hand.cards.push(chosen);
         }
       }
     }
-    hand.cards.push(this.random.choose(hand.pinks));
-    hand.resources = this.random.shuffle([...this.resourceList, ...this.resourceList, ...this.resourceList]);
+    hand.cards.push(random.choose(hand.pinks));
+    hand.resourceDeck = random.shuffle([...this.resourceList, ...this.resourceList, ...this.resourceList]);
+    hand.resources = {
+      row: hand.resourceDeck.slice(0, 3),
+      drawPile: hand.resourceDeck.slice(3),
+      picked: null,
+    };
+    hand.categoryMap = {};
+    for (const card of hand.cards) {
+      hand.categoryMap[card.category] = card;
+    }
+    hand.shortMap = {};
+    for (const card of hand.cards) {
+      hand.shortMap[card.short] = card;
+    }
+    hand.resourceList = this.resourceList;
+    hand.resourceMap = this.resourceMap;
+    hand.deckHash = this.hash;
     return hand;
   }
 
@@ -38,6 +54,17 @@ export default class TinyDeck {
   }
 
   handFromSaveData(saveData) {
+    // Try to reconstruct hand from savedata
+    // Might be imperfect
+    let seed = saveData.gameSeed || 0;
+    let hand = this.handFromSeed(seed);
+    hand.resources = saveData.resources;
+    try {
+
+    } catch (e) {
+      console.error('Error reconstructing hand from savedata:', e);
+    }
+    return hand;
   }
 
   _ingest(cardData) {
@@ -48,11 +75,14 @@ export default class TinyDeck {
 
     let sortedKeys = Object.keys(tempMap).sort();
     let result = [];
+    let appended = '';
     for (let i = 0; i < sortedKeys.length; i++) {
       let card = tempMap[sortedKeys[i]];
       card.id = i;
       result.push(card);
+      appended += `${card.short}|`;
     }
+    this.hash = this._simpleHash(appended);
 
     return result;
   }
@@ -79,6 +109,14 @@ export default class TinyDeck {
     });
   }
 
+  _simpleHash(str) {
+    let hash = 5381;
+    for (let i = 0; i < str.length; i++) {
+      hash = ((hash << 5) + hash) + str.charCodeAt(i);
+    }
+    return hash >>> 0;
+  }
+
   _debugDump() {
     console.log('TinyDeck Debug Dump:');
     console.log('Card count:', this.cards.length);
@@ -100,6 +138,7 @@ export default class TinyDeck {
         seed: hand.seed,
         cards: hand.cards.map(c => [c.short, c.category]),
         pinks: hand.pinks.map(c => c.short),
+        resourceDeck: hand.resourceDeck,
         resources: hand.resources,
       };
       console.log(`  ${JSON.stringify(info)}:`);

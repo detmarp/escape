@@ -39,7 +39,7 @@ export default class Program {
 
   newGame(tiny) {
     // Init with this tiny, or make a new one
-    this.tiny = tiny || new Tiny(null, null, this.factory.getDeck());
+    this.tiny = tiny || this.factory.tinyFromRandom();
     this.save();
   }
 
@@ -67,7 +67,7 @@ export default class Program {
 
   saveCurrent(tiny) {
     this.saveData.data = this.saveData.data || {};
-    let history = new TinyHistory(this.saveData.data.history, this.factory.getDeck());
+    let history = new TinyHistory(this.factory, this.saveData.data.history);
     let data = history.saveGame(tiny);
     this.saveData.data.history = data;
     this.save();
@@ -85,7 +85,7 @@ export default class Program {
       }
     }
 
-    return recent && Tiny.fromObject(recent, this.factory.getDeck());
+    return recent && this.factory.tinyFromSaveData(recent);
   }
 
   save() {

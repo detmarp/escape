@@ -1,8 +1,8 @@
 import Tiny from './tiny.js';
 
 export default class TinyHistory {
-  constructor(history, sharedDeck = null) {
-    this.sharedDeck = sharedDeck;
+  constructor(factory, history) {
+    this.factory = factory;
     let normalized = this._normalize(history);
     this.originalHistory = normalized.slice();
     this.otherHistory = normalized.slice();
@@ -54,7 +54,7 @@ export default class TinyHistory {
 
   tinyFromSeed(seed) {
     // Return latest in-progress game with this seed, or create new
-    return new Tiny(seed, null, this.sharedDeck);
+    return this.factory.tinyFromSeed(seed);
   }
 
   tinyFromTimestamp(timeStamp) {
@@ -63,28 +63,23 @@ export default class TinyHistory {
 
   tinyFromObject(entry) {
     // Return Tiny from this entry, even if gameOver.  Or create new.
-    try {
-      if (entry) {
-        if (entry.saved) {
-          return Tiny.fromObject(entry.saved, this.sharedDeck);
-        }
-        if (entry.seed) {
-          let list = this.originalHistory;
-          let index = this._findBySeed(list, entry.seed);
-          if (index >= 0) {
-            const foundEntry = list[index];
-            if (foundEntry && foundEntry.saved) {
-              return Tiny.fromObject(foundEntry.saved, this.sharedDeck);
-            }
-          }
-          return new Tiny(entry.seed, null, this.sharedDeck);
-        }
+    if (entry) {
+      if (entry.saved) {
+        return this.factory.tinyFromSaveData(entry.saved);
       }
-    } catch (err) {
-      // If Tiny.fromObject throws, behave as if entry was null
-      console.warn('Failed to restore game from object, creating new game:', err.message);
+      if (entry.seed) {
+        let list = this.originalHistory;
+        let index = this._findBySeed(list, entry.seed);
+        if (index >= 0) {
+          const foundEntry = list[index];
+          if (foundEntry && foundEntry.saved) {
+            return this.factory.tinyFromSaveData(foundEntry.saved);
+          }
+        }
+        return this.factory.tinyFromSeed(entry.seed);
+      }
     }
-    return new Tiny(null, null, this.sharedDeck);
+    return this.factory.tinyFromRandom();
   }
 
   _findBySeed(list, seed) {
@@ -128,8 +123,8 @@ export default class TinyHistory {
     for (const entry of this.originalHistory) {
       byTime[entry.timeStamp] = entry;
     }
-    if (tiny){
-      byTime[tiny.timeStamp] = tiny.toObject();
+    if (tiny) {
+      byTime[tiny.timeStamp] = this.factory.tinyToSaveData(tiny);
     }
     let list = Object.values(byTime);
 

@@ -52,18 +52,92 @@ export default class TinyFactory {
   }
 
   tinyFromRandom() {
-    let tiny = new Tiny();
+    let hand = this.deck.handFromRandom();
+    let tiny = new Tiny(hand);
     return tiny;
   }
 
   tinyFromSeed(seed) {
-    let tiny = new Tiny();
+    let hand = this.deck.handFromSeed(seed);
+    let tiny = new Tiny(hand);
     return tiny;
   }
 
-  tinyFromSavedata(saveData) {
-    let tiny = new Tiny();
+  tinyFromSaveData(saveData) {
+    // can return null if invalid
+    console.log('');
+    console.log('-X-X-X-X-X-X- ttt');
+    console.log(`${JSON.stringify(saveData)}`);
+
+    let hand = this.deck.handFromSaveData(saveData);
+    let tiny = new Tiny(hand);
+
+    tiny.gameSeed = parseInt(saveData.gameSeed, 10);
+    tiny.timeStamp = parseInt(saveData.timeStamp, 10) || 0;
+    tiny.started = saveData.started;
+    tiny.gameOver = saveData.gameOver;
+    tiny.specials = saveData.specials || [];
+
+    saveData.cells.forEach((cell, i) => {
+      cell.forEach(contents => {
+        let building = tiny.hand.categoryMap[contents];
+        if (building) {
+          tiny.board.cells[i].building = building;
+        }
+        else {
+          building = tiny.hand.shortMap[contents];
+          if (building) {
+            tiny.board.cells[i].building = building;
+          }
+          else {
+            let resource = tiny.hand.resourceMap[contents];
+            if (resource) {
+              tiny.board.cells[i].resource = resource;
+            }
+            else if (tiny.hand.resourceList.includes(contents)) {
+              tiny.board.cells[i].resource = contents;
+            }
+          }
+        }
+      });
+    });
+
+    // if (obj.resources) {
+    //   instance.resources = obj.resources;
+    // }
+
+    // instance._refresh();
+    tiny._refresh();
+
     return tiny;
+  }
+
+  tinyToSaveData(tiny) {
+    let cells = [];
+    tiny.board.cells.forEach(cell => {
+      let c = [];
+      if (cell.building) {
+        c.push(cell.building.category);
+      }
+      if (cell.resource) {
+        c.push(cell.resource);
+      }
+      cells.push(c);
+    });
+
+    let data = {
+      gameSeed: tiny.hand.seed,
+      timeStamp: tiny.timeStamp,
+      started: tiny.started,
+      gameOver: tiny.gameOver,
+      cells,
+      specials: tiny.special.specials || undefined,
+      points: tiny.score.displayScore,
+      resources: tiny.hand.resources,
+      deckHash: tiny.hand.deckHash,
+    };
+
+    return data;
   }
 
 
@@ -101,14 +175,5 @@ export default class TinyFactory {
       // Pass the shared deck to Tiny constructor
       return new Tiny(seed, rules, this._deck);
     });
-  }
-
-  /**
-   * Reset the factory (useful for testing)
-   */
-  reset() {
-    this._initialized = false;
-    this._cardData = null;
-    this._deck = null;
   }
 }

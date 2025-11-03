@@ -22,11 +22,11 @@ export default class UiSettings {
     this._addSettingsToggle('Show bot button', 'botbutton');
     this._addSettingsToggle('Log SaveData', 'logsavedata');
     this._addText('Data');
-    this._addButton('Clear *ALL* saved data', () => {
-      this._clearData();
-    });
     this._addButton('Clear game history', () => {
       this._clearOnlyHistory();
+    });
+    this._addButton('Clear *ALL* saved data', () => {
+      this._clearData();
     });
   }
 
