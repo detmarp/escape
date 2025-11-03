@@ -18,7 +18,7 @@ export default class UiParts {
       gray: { color: '#bbb', label: 'Gray', type: 'building' },
       pink: { color: '#ff55ff', label: 'Pink', type: 'building' },
 
-      default: { color: '#f0f', label: 'Default' }
+      default: { color: '#faf', label: 'Default' }
     };
 
     this.alias = {

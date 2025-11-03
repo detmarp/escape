@@ -1,9 +1,11 @@
-import uiGame from './uigame.js';
+import Icons from './icons.js';
+import UiParts from './uiparts.js';
 
 export default class UiGame {
   constructor(parent, program) {
     this.parent = parent;
     this.program = program;
+    this.hand = this.program.tiny.hand;
     this.render();
   }
 
@@ -16,33 +18,25 @@ export default class UiGame {
     this._addButton('Play', this._onPlay);
 
     // First row: 2 cards
-    const row1 = document.createElement('div');
-    row1.style.display = 'flex';
-    row1.style.gap = '0.5em';
-    row1.style.marginBottom = '0.5em';
-    row1.appendChild(this._makeCard({}));
-    row1.appendChild(this._makeCard({}));
-    this.parent.appendChild(row1);
+    if (this.hand.pinks) {
+      const row1 = document.createElement('div');
+      row1.style.display = 'flex';
+      row1.style.gap = '0.5em';
+      row1.style.marginBottom = '0.5em';
+      this.parent.appendChild(row1);
+      this.hand.pinks.forEach((card, i) => {
+        row1.appendChild(this._makeCard(card, () => { this._choose(i); }, this.chosen === i));
+      });
+    }
 
-    // Second row: 4 cards
     const row2 = document.createElement('div');
     row2.style.display = 'flex';
     row2.style.gap = '0.5em';
     row2.style.marginBottom = '0.5em';
-    row2.appendChild(this._makeCard({}));
-    row2.appendChild(this._makeCard({}));
-    row2.appendChild(this._makeCard({}));
-    row2.appendChild(this._makeCard({}));
     this.parent.appendChild(row2);
-
-    // Third row: 3 cards
-    const row3 = document.createElement('div');
-    row3.style.display = 'flex';
-    row3.style.gap = '0.5em';
-    row3.appendChild(this._makeCard({}));
-    row3.appendChild(this._makeCard({}));
-    row3.appendChild(this._makeCard({}));
-    this.parent.appendChild(row3);
+    this.hand.cards.forEach((card, i) => {
+      row2.appendChild(this._makeCard(card));
+    });
   }
 
   _addText(text) {
@@ -76,24 +70,59 @@ export default class UiGame {
     this.program.gotoMode('gameboard');
   }
 
-  _makeCard(card) {
+  _choose(i) {
+    this.chosen = i;
+    this.render();
+  }
+
+  _makeCard(card, onPick, picked) {
     const outer = document.createElement('div');
-    outer.style.width = '8em';
-    outer.style.height = '12em';
+
+    if (typeof onPick === 'function') {
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = picked || false;
+      checkbox.addEventListener('change', () => onPick(card));
+      outer.appendChild(checkbox);
+    }
+
+    let color = (new UiParts()).getMeeple(card.category).color;
+
+    //outer.style.width = '8em';
+    //outer.style.height = '12em';
     outer.style.display = 'flex';
     outer.style.alignItems = 'center';
     outer.style.justifyContent = 'center';
-    outer.style.flexShrink = '0';
-    outer.style.border = '3px solid gray';
+    //outer.style.flexShrink = '0';
+    outer.style.border = `3px solid ${color}`;
 
     const inner = document.createElement('div');
     inner.style.width = 'calc(100% - .2em)';
     inner.style.height = 'calc(100% - .2em)';
     inner.style.border = '1px solid black';
-    inner.style.display = 'flex';
-    inner.style.alignItems = 'center';
-    inner.style.justifyContent = 'center';
-    inner.textContent = 'I am a card';
+    inner.style.padding = '0.5em';
+
+    let name = card.name;
+    let category = card.category;
+    let text = card.text;
+    let shape = (new Icons()).makePattern(card.shape);
+    shape.style.width = '3em';
+    shape.style.height = '3em';
+
+    const nameEl = document.createElement('div');
+    nameEl.textContent = name;
+    nameEl.style.fontWeight = 'bold';
+    inner.appendChild(nameEl);
+
+    const categoryEl = document.createElement('div');
+    categoryEl.textContent = category;
+    inner.appendChild(categoryEl);
+
+    inner.appendChild(shape);
+
+    const textEl = document.createElement('div');
+    textEl.textContent = text;
+    inner.appendChild(textEl);
 
     outer.appendChild(inner);
     return outer;
