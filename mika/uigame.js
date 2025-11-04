@@ -184,7 +184,7 @@ export default class UiGame {
 
   _makeScore() {
     let score = this.tiny.calculateScore();
-    let text = JSON.stringify(score, null, 2);
+    let text = `${score}, ${JSON.stringify(this.tiny.score.categories)}`;
     this._addText(text);
   }
 

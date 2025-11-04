@@ -7,6 +7,7 @@
       "rrc"
     ],
     "score": {
+      "custom": true,
       "lookup": "tavern"
     },
     "text": "{coin} based on your constructed {green}."
@@ -20,6 +21,7 @@
       "gcg"
     ],
     "score": {
+      "custom": true,
       "value": 1,
       "condition": "fed-blue"
     },

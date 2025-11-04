@@ -14,6 +14,7 @@
     },
     "max": 1,
     "score": {
+      "custom": true,
       "value": 1
     },
     "built": {
@@ -31,6 +32,9 @@
       "-yg",
       "br-"
     ],
+    "score": {
+      "custom": true
+    },
     "text": "Pink 2."
   },
   {
@@ -42,6 +46,9 @@
       "-yg",
       "br-"
     ],
+    "score": {
+      "custom": true
+    },
     "text": "Pink 3."
   },
   {
@@ -53,6 +60,9 @@
       "-yg",
       "br-"
     ],
+    "score": {
+      "custom": true
+    },
     "text": "Pink 4."
   },
   {
@@ -64,6 +74,9 @@
       "-yg",
       "br-"
     ],
+    "score": {
+      "custom": true
+    },
     "text": "Pink 5."
   }
 

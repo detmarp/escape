@@ -44,6 +44,7 @@ export default class TinyDeck {
     }
     hand.resourceList = this.resourceList;
     hand.resourceMap = this.resourceMap;
+    hand.deck = this;
     hand.deckHash = this.hash;
     return hand;
   }
@@ -99,7 +100,8 @@ export default class TinyDeck {
   }
 
   _makeCategoryList() {
-    return this.categories.map(category => {
+    // Array of { category, cards: [...] }
+    let list = this.categories.map(category => {
       const categoryCards = Object.values(this.categoryMap[category]);
       categoryCards.sort((a, b) => a.id - b.id);
       return {
@@ -107,6 +109,16 @@ export default class TinyDeck {
         cards: categoryCards
       };
     });
+
+    // add a 1 of 3 label to each card
+    list.forEach((category, c) => {
+      category.cards.forEach((card, i) => {
+        card.categoryIndex = c;
+        card.inCategoryIndex = i;
+      });
+    });
+
+    return list;
   }
 
   _simpleHash(str) {

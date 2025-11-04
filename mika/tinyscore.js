@@ -1,26 +1,38 @@
 export default class TinyScore {
   constructor(tiny) {
     this.tiny = tiny;
+    this._clear();
+  }
+
+  _clear() {
     this.penalty = 0;
     this.rawScore = 0;
     this.displayScore = 0;
     this.finalScore = 0;
     this.categories = {};
+    this.scratch = {};
   }
 
   calculate() {
-    this.rawScore = 0;
-    this.penalty = 0;
-    this.displayScore = 0;
-    this.finalScore = 0;
+    this._clear();
+
+    // Prescan
+    this.tiny.hand.cards.forEach(card => {
+      if (card.score.prescan) {
+        this._tryScoreCard(card, { prescan: true });
+      }
+    });
+
+    this.tiny.hand.cards.forEach(card => {
+      let params = {};
+      let score = this._tryScoreCard(card, params);
+      this.categories[card.category] = score ?? 0;
+    });
 
     this.penalty = -1 * this._countCells(cell => !cell.building);
 
-    let canFeed = this._findBuildingsByCategory('red').length * 4;
-    this.categories.red = 0;
-
     let blueCount = this._findBuildingsByCategory('blue').length;
-    let fedCount = Math.min(canFeed, blueCount);
+    let fedCount = Math.min(this.scratch.canFeed, blueCount);
     this.categories.blue = 3 * fedCount;
 
     this.categories.pink = 1 * this._findBuildingsByCategory('pink').length;
@@ -71,6 +83,7 @@ export default class TinyScore {
       finalScore: this.finalScore,
       displayScore: this.displayScore,
       categories: this.categories,
+      scratch: this.scratch,
     };
     console.log(`sss: ${JSON.stringify(debug)}`);
   }
@@ -105,6 +118,35 @@ export default class TinyScore {
       }
     });
     return count;
+  }
+
+  _tryScoreCard(card, params = {}) {
+    let methodName = `score_${card.short}`;
+    if (typeof this[methodName] === 'function') {
+      let score = this[methodName](card, params);
+      if (score != null) {
+        return score;
+      }
+    }
+    methodName = `score_${card.category}`;
+    if (typeof this[methodName] === 'function') {
+      let score = this[methodName](card, params);
+      if (score != null) {
+        return score;
+      }
+    }
+  }
+
+  score_farm(card, params) {
+    if (params.prescan) {
+      this.scratch.canFeed = this._findBuildingsByCategory('red').length * 4;
+      return;
+    }
+    this.categories.red = 0;
+  }
+
+  score_black(card, params) {
+    console.log(`xxx black ${card.short} ${JSON.stringify(params)}`);
   }
 
 }

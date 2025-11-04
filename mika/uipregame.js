@@ -25,7 +25,20 @@ export default class UiGame {
       row1.style.marginBottom = '0.5em';
       this.parent.appendChild(row1);
       this.hand.pinks.forEach((card, i) => {
-        row1.appendChild(this._makeCard(card, () => { this._choose(i); }, this.chosen === i));
+        let pickerOnClick = () => {
+          // Pink card checkbox click
+          this._choose(i);
+          // actually set chosen pink card in hand
+          this.hand.cards = this.hand.cards.filter(c => c.category !== 'pink');
+          this.hand.cards.push(card);
+          this.render();
+        }
+        row1.appendChild(this._makeCard(
+          card,
+          pickerOnClick,
+          pickerOnClick,
+          this.chosen === i
+        ));
       });
     }
 
@@ -35,7 +48,18 @@ export default class UiGame {
     row2.style.marginBottom = '0.5em';
     this.parent.appendChild(row2);
     this.hand.cards.forEach((card, i) => {
-      row2.appendChild(this._makeCard(card));
+      row2.appendChild(this._makeCard(card, () => {
+        // card on-click
+        // HACK
+        // Swap out card for the next in the category
+        let length = this.hand.deck.categoryList[card.categoryIndex].cards.length;
+        let nextIndex = (card.inCategoryIndex + 1) % length;
+        let nextCard = this.hand.deck.categoryList[card.categoryIndex].cards[nextIndex];
+        if (nextCard) {
+          this.hand.cards[i] = nextCard;
+          this.render();
+        }
+      }));
     });
   }
 
@@ -75,7 +99,7 @@ export default class UiGame {
     this.render();
   }
 
-  _makeCard(card, onPick, picked) {
+  _makeCard(card, onClick, onPick, picked) {
     const outer = document.createElement('div');
 
     if (typeof onPick === 'function') {
@@ -97,6 +121,7 @@ export default class UiGame {
     outer.style.border = `3px solid ${color}`;
 
     const inner = document.createElement('div');
+    outer.appendChild(inner);
     inner.style.width = 'calc(100% - .2em)';
     inner.style.height = 'calc(100% - .2em)';
     inner.style.border = '1px solid black';
@@ -108,6 +133,7 @@ export default class UiGame {
     let shape = (new Icons()).makePattern(card.shape);
     shape.style.width = '3em';
     shape.style.height = '3em';
+    let ofText = `${card.inCategoryIndex + 1} of ${this.hand.deck.categoryList[card.categoryIndex].cards.length}`;
 
     const nameEl = document.createElement('div');
     nameEl.textContent = name;
@@ -118,13 +144,18 @@ export default class UiGame {
     categoryEl.textContent = category;
     inner.appendChild(categoryEl);
 
+    const ofEl = document.createElement('div');
+    ofEl.textContent = ofText;
+    inner.appendChild(ofEl);
     inner.appendChild(shape);
 
     const textEl = document.createElement('div');
     textEl.textContent = text;
     inner.appendChild(textEl);
-
-    outer.appendChild(inner);
+    if (typeof onClick === 'function') {
+      inner.addEventListener('click', onClick.bind(this));
+      inner.style.cursor = 'pointer';
+    }
     return outer;
   }
 }

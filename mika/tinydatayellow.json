@@ -8,19 +8,28 @@
       "bcb"
     ],
     "score": {
-      "value": 1,
-      "condition": "unique-row-column"
+      "custom": true,
+      "select": "row-column",
+      "unique": true,
+      "value": 1
     },
     "text": "1🪙 for each other unique building type in the same row and column as 🟨."
   },
-  {
+    {
     "category": "yellow",
     "name": "Tailor",
-    "short": "tail",
+    "short": "tlor",
     "shape": [
       "-y-",
       "gcg"
     ],
+    "score": {
+      "custom": true,
+      "base": 1,
+      "select": "center-squares",
+      "category": "yellow",
+      "value": 1
+    },
     "text": "1🪙 + 1🪙 for each 🟨 in the 4 center squares in your town."
   }
 ]
