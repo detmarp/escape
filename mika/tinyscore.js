@@ -35,22 +35,6 @@ export default class TinyScore {
 
     this.categories.gray = this._findBuildingsByCategory('gray').length * 2;
 
-    this.categories.yellow = 0;
-    this._findBuildingsByCategory('yellow').forEach(yellow => {
-      // For each yellow,
-      let unique = new Set();
-      this._findBuildings(b => {
-        // count unique types in same row or column
-        return (
-          b.index !== yellow.index &&
-          (b.x === yellow.x || b.y === yellow.y)
-        );
-      }).forEach(b => {
-        unique.add(b.category);
-      });
-      this.categories.yellow += 1 * unique.size;
-    });
-
     let greenCount = this._findBuildingsByCategory('green').length;
     const greenTable = [2, 5, 9, 14, 20];
     this.categories.green = greenTable[Math.min(greenCount, greenTable.length) - 1] || 0;
@@ -171,6 +155,34 @@ export default class TinyScore {
 
   score_black(card, params) {
     console.log(`xxx black ${card.short} ${JSON.stringify(params)}`);
+  }
+
+  score_thtr(card) {
+      let theaters = this._findBuildingsByCategory(card.category);
+      let points = 0;
+      theaters.forEach(theater => {
+        let sameRowCol = this._findBuildings(b => {
+            return (b.index % 4 === theater.index % 4 || Math.floor(b.index / 4) === Math.floor(theater.index / 4)) && b.index !== theater.index
+        });
+        let set = new Set(sameRowCol.map(item => item.category));
+        points += set.size;
+      });
+      return points;
+  }
+
+  score_tlor(card) {
+    let count = 0;
+    let centerCount = 0;
+    this.tiny.board.cells.forEach(cell => {
+      if (cell.building && cell.building.category === 'yellow') {
+        count++;
+        if (cell.index === 5 || cell.index === 6 || cell.index === 9 || cell.index === 10) {
+          centerCount++;
+        }
+      }
+    });
+    let points = count * (1 + centerCount);
+    return points;
   }
 
   score_well(card) {

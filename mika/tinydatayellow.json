@@ -24,11 +24,6 @@
       "gcg"
     ],
     "score": {
-      "custom": true,
-      "base": 1,
-      "select": "center-squares",
-      "category": "yellow",
-      "value": 1
     },
     "text": "1🪙 + 1🪙 for each 🟨 in the 4 center squares in your town."
   }

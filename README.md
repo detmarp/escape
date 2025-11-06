@@ -17,3 +17,4 @@
 - [Juno](juno/)
 - [Kira](kira/)
 - [Mika](mika/)
+- [Noni](noni/)

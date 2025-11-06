@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Noni</title>
+  <style>
+    /* === Base Resets === */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overscroll-behavior: none;
+      touch-action: manipulation;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      color: var(--text);
+      background: var(--bg);
+      box-sizing: border-box;
+    }
+
+    /* === Theme (Dark Mode auto support) === */
+    :root {
+      --bg: #ffffff;
+      --text: #111111;
+      --primary: #2563eb;
+      --radius: 0.75rem;
+      --space: 1.25rem;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f0f0f;
+        --text: #fafafa;
+        --primary: #3b82f6;
+      }
+    }
+
+    /* === Layout Helpers === */
+    .container {
+      width: min(90%, 800px);
+      margin-inline: auto;
+      padding-block: calc(var(--space) * 2);
+    }
+
+    /* === Typography === */
+    h1, h2 {
+      line-height: 1.2;
+      margin-bottom: var(--space);
+    }
+
+    /* === Button === */
+    .button {
+      display: inline-block;
+      margin-top: var(--space);
+      padding: 0.75rem 1.25rem;
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      border-radius: var(--radius);
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .button:hover {
+      filter: brightness(1.1);
+    }
+
+    /* === Minor polish === */
+    section {
+      background: rgba(0,0,0,0.05);
+      border-radius: var(--radius);
+      padding: var(--space);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      section {
+        background: rgba(255,255,255,0.05);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+  </main>
+  <script src="main.js"></script>
+</body>
+</html>
