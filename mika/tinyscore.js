@@ -10,7 +10,9 @@ export default class TinyScore {
     this.displayScore = 0;
     this.finalScore = 0;
     this.categories = {};
-    this.scratch = {};
+    this.scratch = {
+      penalty: -1,
+    };
   }
 
   calculate() {
@@ -29,17 +31,7 @@ export default class TinyScore {
       this.categories[card.category] = score ?? 0;
     });
 
-    this.penalty = -1 * this._countCells(cell => !cell.building);
-
-    let blueCount = this._findBuildingsByCategory('blue').length;
-    let fedCount = Math.min(this.scratch.canFeed, blueCount);
-    this.categories.blue = 3 * fedCount;
-
-    this.categories.pink = 1 * this._findBuildingsByCategory('pink').length;
-
-    this.categories.black = 0;
-
-    this.categories.orange = this._findBuildingsByCategory('orange').length * fedCount;
+    this.penalty = this.scratch.penalty * this._countCells(cell => !cell.building);
 
     this.categories.gray = this._findBuildingsByCategory('gray').length * 2;
 
@@ -86,6 +78,20 @@ export default class TinyScore {
       scratch: this.scratch,
     };
     console.log(`sss: ${JSON.stringify(debug)}`);
+  }
+
+  _findAdjacent(cellIndex) {
+    let adjacent = [];
+    console.log(`aaa adjacent to ${cellIndex}`);
+    this._findBuildings(b => {
+      return (
+        Math.abs(b.index % 4 - cellIndex % 4) + Math.abs(Math.floor(b.index / 4) - Math.floor(cellIndex / 4)) === 1
+      );
+    }).forEach(b => {
+      console.log(`aaa a${b.index}`);
+      adjacent.push(b);
+    });
+    return adjacent;
   }
 
   _findBuildings(predicate) {
@@ -135,18 +141,61 @@ export default class TinyScore {
         return score;
       }
     }
+
+    let score2 = this.score_automatic(card, params);
+    if (score2 != null) {
+      return score2;
+    }
   }
 
   score_farm(card, params) {
     if (params.prescan) {
-      this.scratch.canFeed = this._findBuildingsByCategory('red').length * 4;
+      let farms = this._findBuildingsByCategory('red').length;
+      this.scratch.canFeed = farms * 4;
+      this.scratch.fed = Math.min(this.scratch.canFeed || 0, this.scratch.feedable || 0);
       return;
     }
     this.categories.red = 0;
   }
 
+  score_cott(card, params) {
+    if (params.prescan) {
+      let count = this._findBuildingsByCategory(card.category).length;
+      this.scratch.feedable = count;
+      this.scratch.fed = Math.min(this.scratch.canFeed || 0, this.scratch.feedable || 0);
+      return;
+    }
+    let points = this.scratch.fed * card.score.points;
+    return points;
+  }
+
   score_black(card, params) {
     console.log(`xxx black ${card.short} ${JSON.stringify(params)}`);
+  }
+
+  score_well(card) {
+    let grays = this._findBuildingsByCategory(card.category);
+    let points = 0;
+    grays.forEach(gray => {
+      let adjacent = this._findAdjacent(gray.index);
+      points += adjacent.length;
+    });
+    return points;
+  }
+
+  score_automatic(card, params) {
+    if (params.prescan) {
+      return;
+    }
+    let count = this._findBuildingsByCategory(card.category).length;
+    let points = (card.score.points || 0) * count;
+
+    if (count) {
+      if (card.score.scratch) {
+        Object.assign(this.scratch, card.score.scratch);
+      }
+    }
+    return points;
   }
 
 }

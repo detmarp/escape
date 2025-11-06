@@ -24,32 +24,36 @@
     "text": "1🪙. When constructed, replace up to 2 buildings in your town with any other building."
   },
   {
-    "name": "Pink 2",
-    "short": "pink2",
+    "name": "Cathedral of Caterina",
+    "short": "cath",
     "category": "pink",
     "shape": [
-      "--c",
-      "-yg",
-      "br-"
+      "-y",
+      "gc"
     ],
     "score": {
-      "custom": true
+      "scratch": {
+        "penalty": 0
+      },
+      "points": 2
     },
-    "text": "Pink 2."
+    "text": "2🪙. Empty squares in your town are  worth 0🪙."
   },
   {
-    "name": "Pink 3",
-    "short": "pink3",
+    "name": "Obelisk of the Crescent",
+    "short": "obsk",
     "category": "pink",
     "shape": [
-      "--c",
-      "-yg",
-      "br-"
+      "y--",
+      "rcr"
     ],
     "score": {
-      "custom": true
+      "points": 0,
+      "scratch": {
+        "anywhere": true
+      }
     },
-    "text": "Pink 3."
+    "text": "You may place all future buildings on any empty square in your town."
   },
   {
     "name": "Pink 4",

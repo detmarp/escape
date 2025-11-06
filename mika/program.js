@@ -14,6 +14,15 @@ export default class Program {
     this.factory = new TinyFactory();
   }
 
+  static clearSavedData() {
+    try {
+      localStorage.removeItem('saveData');
+      console.log('Saved data cleared successfully');
+    } catch (err) {
+      console.warn('Failed to clear saved data:', err);
+    }
+  }
+
   async run() {
     await this.factory.initialize();
 

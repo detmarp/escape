@@ -1,2 +1,29 @@
 [
+  {
+    "category": "gray",
+    "name": "Shed",
+    "short": "shed",
+    "shape": [
+      "bg"
+    ],
+    "anywhere": true,
+    "score": {
+      "points": 1
+    },
+    "text": "1🪙. May be constructed on any empty square in your town."
+  },
+  {
+    "category": "gray",
+    "name": "Well",
+    "short": "well",
+    "shape": [
+      "bg"
+    ],
+    "score": {
+      "custom": true,
+      "value": 1,
+      "condition": "adjacent-blue"
+    },
+    "text": "1🪙 for each adjacent 🟦."
+  }
 ]

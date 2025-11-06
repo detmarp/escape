@@ -184,7 +184,7 @@ export default class UiGame {
 
   _makeScore() {
     let score = this.tiny.calculateScore();
-    let text = `${score}, ${JSON.stringify(this.tiny.score.categories)}`;
+    let text = `${score}🪙, ${JSON.stringify(this.tiny.score.categories)} ${JSON.stringify(this.tiny.score.scratch)}`;
     this._addText(text);
   }
 
@@ -313,7 +313,7 @@ export default class UiGame {
         if (p.card.category === card.category) {
           // this placement is for this building
           if (this.cardPlacementIndex === repeatFilter) {
-            if (p.resourceIndexes.indexOf(index) !== -1) {
+            if (p.placementIndexes.indexOf(index) !== -1) {
               this.selectedPlacement = p;
               return true;
             }
@@ -484,7 +484,7 @@ export default class UiGame {
 
       if (this.selectedPlacement) {
         if (this.selectedCell != null) {
-          if (this.selectedPlacement.resourceIndexes.indexOf(this.selectedCell) !== -1) {
+          if (this.selectedPlacement.placementIndexes.indexOf(this.selectedCell) !== -1) {
             this.canAcceptCard = {
               cell: this.selectedCell,
               cardIndex: this.selectedCard,
@@ -709,7 +709,7 @@ export default class UiGame {
     let placements = this.tiny.getBuildingPlacements();
     for (let p of placements) {
       if (p.card.category === card.category) {
-        if (p.resourceIndexes.indexOf(cellIndex) !== -1) {
+        if (p.placementIndexes.indexOf(cellIndex) !== -1) {
           result.push(p);
         }
       }

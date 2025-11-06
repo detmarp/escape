@@ -109,8 +109,8 @@ export default class Tiny {
       return;
     }
 
-    for (let i=0; i < placement.resourceIndexes.length; i++) {
-      const idx = placement.resourceIndexes[i];
+    for (let i=0; i < placement.placementIndexes.length; i++) {
+      const idx = placement.placementIndexes[i];
       this.board.cells[idx].resource = null;
       this.board.cells[idx].building = null;
     }
@@ -181,8 +181,16 @@ export default class Tiny {
               let placement = {
                 card: card,
                 rotation: r,
-                resourceIndexes: resourceIndexes
+                resourceIndexes: resourceIndexes,
+                placementIndexes: resourceIndexes.slice(),
               };
+              if (card.anywhere || this.score.scratch.anywhere) {
+                this.board.cells.forEach((cell, i) => {
+                  if (!cell.building && !cell.resource) {
+                    placement.placementIndexes.push(i);
+                  }
+                });
+              }
               placements.push(placement);
             }
           }

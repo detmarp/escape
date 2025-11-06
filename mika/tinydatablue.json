@@ -1,2 +1,17 @@
 [
+  {
+    "category": "blue",
+    "name": "Cottage 🌾",
+    "short": "cott",
+    "shape": [
+      "-y",
+      "rc"
+    ],
+    "score": {
+      "prescan": true,
+      "points": 3,
+      "condition": "fed"
+    },
+    "text": "3🪙 if this building is fed."
+  }
 ]
