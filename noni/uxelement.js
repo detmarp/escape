@@ -5,9 +5,9 @@ export default class UxElement {
 
   testFill(parent, params = {}) {
     parent ||= this.container;
+    let div = this._div(parent);
     let radius = params.radius || 0;
 
-    let div = document.createElement('div');
     div.style.width = '100%';
     div.style.height = '100%';
     let hue = Math.random() * 360;
@@ -32,19 +32,20 @@ export default class UxElement {
         `${parent.aspect *600}`,
       ].join('\n');
     };
-    parent.appendChild(div);
+
     div.update();
     return div;
   }
 
   box(parent, params = {}) {
-    parent ||= this.container;
+    let div = this._div(parent);
+
     let x = params.x || 0;
     let y = params.y || 0;
     let width = params.width || 100;
     let height = params.height || 100;
     let radius = params.radius || 0;
-    let div = document.createElement('div');
+
     div.style.position = 'absolute';
     div.style.left = `${x}px`;
     div.style.top = `${y}px`;
@@ -55,6 +56,29 @@ export default class UxElement {
     if (radius) {
       div.style.borderRadius = `${radius}px`;
     }
+
+    return div;
+  }
+
+  text(parent, params = {}) {
+    let div = this._div(parent);
+    div.textContent = params.text || '';
+    return div;
+  }
+
+  button(parent, params = {}) {
+    let div = document.createElement('button');
+    parent ||= this.container;
+    parent.appendChild(div);
+    div.className = 'button';
+    div.textContent = params.text || 'Button';
+    div.onclick = params.onClick || (() => {});
+    return div;
+  }
+
+  _div(parent) {
+    let div = document.createElement('div');
+    parent ||= this.container;
     parent.appendChild(div);
     return div;
   }

@@ -1,11 +1,12 @@
 import Container from './container.js';
-import ScreenTest from './screentest.js';
+import GoToScreen from './gotoscreen.js';
 import UxElement from './uxelement.js';
 
 export default class Program {
   constructor(parent) {
     this.parent = parent;
     this.container = new Container(this.parent);
+    this.goto = new GoToScreen(this);
   }
 
   async run() {
@@ -15,14 +16,13 @@ export default class Program {
 
     this.outer = (new UxElement(this.container.outer)).testFill(undefined, { });
 
-    this.screenTest = new ScreenTest(this.container);
-    this.screenTest.run();
+    this.goto.to('main');
 
     this._onResize();
   }
 
   _onResize() {
-    this.screenTest.update();
+    this.goto.update();
     this.outer.update();
   }
 }

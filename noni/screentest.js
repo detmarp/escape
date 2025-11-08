@@ -1,8 +1,9 @@
 import UxElement from './uxelement.js';
 
 export default class ScreenTest {
-  constructor(container) {
-    this.container = container;
+  constructor(program) {
+    this.program = program;
+    this.container = program.container;
   }
 
   run() {
