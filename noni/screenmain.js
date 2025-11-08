@@ -14,17 +14,31 @@ export default class ScreenMain {
 
   update() {
     this.parent.innerHTML = '';
-    let fill = this.uxe.testFill();
-    fill.innerHTML = '';
 
-    this.uxe.text(fill, { text: 'Main Screen', });
+    this.box = this.uxe.box(this.parent, {
+      fill: true,
+      row: false,
+      radius: this.container.u(20),
+      background: '#f5f5dc',
+      border: '#000000',
+    });
 
-    this._goto(fill, 'Pregame', 'pregame');
-    this._goto(fill, 'Game', 'game');
-    this._goto(fill, 'Editor', 'editor');
-    this._goto(fill, 'Credits', 'credits');
-    //this._goto(fill, 'Test', 'test');
-    this._goto(fill, 'Settings', 'settings');
+    this.uxe.text(this.box, { text: 'Main Screen', });
+
+    this.daily = this._gamesBox('Game of the day');
+    this._gameButton(this.daily);
+    this._gameButton(this.daily);
+    this._gameButton(this.daily);
+    this.other = this._gamesBox('Other games');
+    this._gameButton(this.other);
+    this._gameButton(this.other);
+    this._gameButton(this.other);
+
+    this._goto(this.box, 'Pregame', 'pregame');
+    this._goto(this.box, 'Game', 'game');
+    this._goto(this.box, 'Editor', 'editor');
+    this._goto(this.box, 'Credits', 'credits');
+    this._goto(this.box, 'Settings', 'settings');
   }
 
   _goto(parent, label, screen) {
@@ -32,6 +46,36 @@ export default class ScreenMain {
       text: label,
       onClick: () => { this.program.goto.to(screen); },
     });
+  }
 
+  _gamesBox(label) {
+    let outer = this.uxe.box(this.box, {
+      fill: true,
+      row: false,
+      radius: this.container.u(10),
+      background: '#ffffff',
+      border: '#cccccc',
+    });
+
+    this.uxe.text(outer, { text: label });
+
+    let inner = this.uxe.box(outer, {
+      fill: true,
+      row: false,
+    });
+
+    return inner;
+  }
+
+  _gameButton(parent) {
+    let box = this.uxe.box(parent, {
+      background: '#e0e0e0',
+      border: '#999999',
+      radius: this.container.u(5),
+    });
+
+    this.uxe.text(box, { text: 'Game' });
+
+    return box;
   }
 }

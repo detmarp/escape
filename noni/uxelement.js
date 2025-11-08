@@ -39,24 +39,8 @@ export default class UxElement {
 
   box(parent, params = {}) {
     let div = this._div(parent);
-
-    let x = params.x || 0;
-    let y = params.y || 0;
-    let width = params.width || 100;
-    let height = params.height || 100;
-    let radius = params.radius || 0;
-
-    div.style.position = 'absolute';
-    div.style.left = `${x}px`;
-    div.style.top = `${y}px`;
-    div.style.width = `${width}px`;
-    div.style.height = `${height}px`;
-    div.style.backgroundColor = 'transparent';
-    div.style.border = '1px solid grey';
-    if (radius) {
-      div.style.borderRadius = `${radius}px`;
-    }
-
+    this._colors(div, params);
+    this._packing(div, params);
     return div;
   }
 
@@ -81,5 +65,43 @@ export default class UxElement {
     parent ||= this.container;
     parent.appendChild(div);
     return div;
+  }
+
+  _colors(div, params = {}) {
+    if (params.background) {
+      div.style.backgroundColor = params.background;
+    }
+    if (params.border) {
+      div.style.border = `${params.borderWidth || 1}px solid ${params.border}`;
+    }
+    if (params.radius) {
+      div.style.borderRadius = `${params.radius}px`;
+    }
+    if (params.textColor) {
+      div.style.color = params.textColor;
+    }
+  }
+
+  _packing(div, params = {}) {
+    let row = params.row || false;
+    if (row) {
+      div.style.display = 'flex';
+      div.style.flexDirection = 'row';
+      div.style.alignItems = 'flex-start';
+      div.style.justifyContent = 'flex-start';
+      div.style.flexWrap = 'nowrap';
+      div.style.overflow = 'hidden';
+
+      // Make children shrink if needed
+      Array.from(div.children).forEach(child => {
+        child.style.flexShrink = '1';
+        child.style.minWidth = '0';
+      });
+    } else {
+      div.style.display = 'flex';
+      div.style.flexDirection = 'column';
+      div.style.alignItems = 'flex-start';
+      div.style.justifyContent = 'flex-start';
+    }
   }
 }

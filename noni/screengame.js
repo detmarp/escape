@@ -14,13 +14,21 @@ export default class ScreenMain {
 
   update() {
     this.parent.innerHTML = '';
-    let fill = this.uxe.testFill();
-    fill.innerHTML = '';
+    this.box = this.uxe.box(this.parent, {
+      fill: true,
+      row: false,
+      background: '#b0c0d0',
+    });
+    this.box.innerHTML = '';
 
-    this.uxe.text(fill, { text: 'Game Screen', });
-    this.uxe.button(fill, {
+    this.uxe.text(this.box, { text: 'Game', });
+    this.uxe.button(this.box, {
       text: 'Main',
       onClick: () => { this.program.goto.to('main'); },
+    });
+
+    this.uxe.text(this.box, {
+      text: this.program.tiny ? `${JSON.stringify(Object.keys(this.program.tiny))}` : 'null',
     });
   }
 }

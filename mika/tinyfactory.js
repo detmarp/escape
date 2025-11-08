@@ -30,8 +30,13 @@ export default class TinyFactory {
       'tinydatagray.json',
       'tinydatapink.json',
     ];
+
+    // Resolve paths relative to this module's location
+    const baseUrl = new URL('.', import.meta.url);
+
     const loadPromises = dataFiles.map(async (filename) => {
-      const response = await fetch(filename);
+      const url = new URL(filename, baseUrl);
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Failed to load card data from ${filename}`);
       }

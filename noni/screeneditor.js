@@ -14,11 +14,15 @@ export default class ScreenMain {
 
   update() {
     this.parent.innerHTML = '';
-    let fill = this.uxe.testFill();
-    fill.innerHTML = '';
+    this.box = this.uxe.box(this.parent, {
+      fill: true,
+      row: false,
+      background: '#60e070',
+    });
+    this.box.innerHTML = '';
 
-    this.uxe.text(fill, { text: 'Editor Screen', });
-    this.uxe.button(fill, {
+    this.uxe.text(this.box, { text: 'Editor', });
+    this.uxe.button(this.box, {
       text: 'Main',
       onClick: () => { this.program.goto.to('main'); },
     });
