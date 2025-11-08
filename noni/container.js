@@ -1,7 +1,20 @@
+/*
+Container is a general purpose layout and input handler for a UI.
+It fills the window with a .outer element, and centers a .inner element within
+it, with aspect ration bounds.
+
+It also handles pointer input (mouse + touch) and detects taps and drags --
+a simple single-finger gesture system.
+*/
 export default class Container {
   constructor(parent) {
     this.parent = parent;
     this.baseSize = 600;
+    this.assumeTall = true; // Set to true to always use tall layout (simpler)
+    this.marginPercent = 0.98; // How much of viewport to use (0.98 = 2% margin)
+    this.isPointerDown = false;
+    this.dragThreshold = 5; // pixels to move before considering it a drag
+    this.tapTimeThreshold = 300; // ms to consider it a tap
   }
 
   run() {
@@ -17,7 +30,119 @@ export default class Container {
 
     window.addEventListener('resize', () => this._updateLayout());
     this._updateLayout();
+    this._setupInputHandlers();
     return this.outer;
+  }
+
+  _setupInputHandlers() {
+    // Unified mouse + touch handlers on document (captures everywhere)
+    // Coordinates will be relative to inner container
+    document.addEventListener('mousedown', (e) => this._handleDown(e));
+    document.addEventListener('mousemove', (e) => this._handleMove(e));
+    document.addEventListener('mouseup', (e) => this._handleUp(e));
+
+    document.addEventListener('touchstart', (e) => this._handleDown(e), { passive: false });
+    document.addEventListener('touchmove', (e) => this._handleMove(e), { passive: false });
+    document.addEventListener('touchend', (e) => this._handleUp(e));
+    document.addEventListener('touchcancel', (e) => this._handleCancel(e));
+  }
+
+  _getPointerPosition(e) {
+    // Get the first touch or mouse position
+    // Use changedTouches for touchend events (touches array is empty)
+    let clientX, clientY;
+    if (e.touches && e.touches.length > 0) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else if (e.changedTouches && e.changedTouches.length > 0) {
+      clientX = e.changedTouches[0].clientX;
+      clientY = e.changedTouches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+
+    // Get position relative to inner container
+    const rect = this.inner.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    // Convert to logical coordinates (based on baseSize) and round to integers
+    const logicalX = Math.round((x / rect.width) * (rect.width / this.scale));
+    const logicalY = Math.round((y / rect.height) * (rect.height / this.scale));
+
+    return { x: logicalX, y: logicalY, rawX: x, rawY: y };
+  }
+
+  _isInteractiveElement(target) {
+    // Check if the target is a button, input, or other interactive HTML element
+    const tagName = target.tagName.toLowerCase();
+    return ['button', 'input', 'select', 'textarea', 'a'].includes(tagName);
+  }
+
+  _handleDown(e) {
+    // Ignore if clicking on interactive elements
+    if (this._isInteractiveElement(e.target)) return;
+
+    // Prevent default for touch to avoid scrolling
+    if (e.touches) e.preventDefault();
+
+    // Only handle single touch/click
+    if (e.touches && e.touches.length > 1) return;
+
+    const pos = this._getPointerPosition(e);
+    this.isPointerDown = true;
+    this.pointerStartPos = pos;
+    this.pointerStartTime = Date.now();
+    this.hasDragged = false;
+
+    this._onDown([pos.x, pos.y]);
+  }
+
+  _handleMove(e) {
+    if (!this.isPointerDown) return;
+
+    // Prevent default for touch to avoid scrolling
+    if (e.touches) e.preventDefault();
+
+    const pos = this._getPointerPosition(e);
+    const dx = pos.rawX - this.pointerStartPos.rawX;
+    const dy = pos.rawY - this.pointerStartPos.rawY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    // Check if we've moved enough to consider it a drag
+    if (!this.hasDragged && distance > this.dragThreshold) {
+      this.hasDragged = true;
+    }
+
+    if (this.hasDragged) {
+      this._onDrag([this.pointerStartPos.x, this.pointerStartPos.y], [pos.x, pos.y]);
+    }
+  }
+
+  _handleUp(e) {
+    if (!this.isPointerDown) return;
+
+    const pos = this._getPointerPosition(e);
+    const duration = Date.now() - this.pointerStartTime;
+
+    this._onUp([pos.x, pos.y]);
+
+    // Check if this was a tap (quick and no significant drag)
+    if (!this.hasDragged && duration < this.tapTimeThreshold) {
+      this._onTap([pos.x, pos.y]);
+    }
+
+    this.isPointerDown = false;
+    this.hasDragged = false;
+  }
+
+  _handleCancel(e) {
+    if (!this.isPointerDown) return;
+
+    console.log('CANCELLED');
+    this.isPointerDown = false;
+    this.hasDragged = false;
   }
 
   clear() {
@@ -28,21 +153,22 @@ export default class Container {
   _updateLayout() {
     const vw = this.parent.clientWidth;
     const vh = this.parent.clientHeight;
-    const isWide = vw > vh;
+    const isWide = !this.assumeTall && (vw > vh);
 
     let w, h;
+    const m = this.marginPercent;
     if (isWide) {
       // Wide: height=600, width between 600*1.33 and 600*2
-      h = Math.min(vh * 0.9, vw * 0.9 / 1.33);
-      w = Math.max(h * 1.33, Math.min(h * 2, vw * 0.9));
+      h = Math.min(vh * m, vw * m / 1.33);
+      w = Math.max(h * 1.33, Math.min(h * 2, vw * m));
       this.scale = h / this.baseSize;
       this.orientation = 'wide';
       this.outer.aspect = vw / vh;
       this.inner.aspect = w / h;
     } else {
       // Tall: width=600, height between 600*1.33 and 600*2
-      w = Math.min(vw * 0.9, vh * 0.9 / 1.33);
-      h = Math.max(w * 1.33, Math.min(w * 2, vh * 0.9));
+      w = Math.min(vw * m, vh * m / 1.33);
+      h = Math.max(w * 1.33, Math.min(w * 2, vh * m));
       this.scale = w / this.baseSize;
       this.orientation = 'tall';
       this.outer.aspect = vh / vw;
@@ -60,5 +186,22 @@ export default class Container {
   // Helper to convert logical units to pixels
   u(units) {
     return units * this.scale;
+  }
+
+  // Input event callbacks (override these in your code)
+  _onDown(pos) {
+    console.log(`DOWN: (${pos[0]}, ${pos[1]})`);
+  }
+
+  _onDrag(from, to) {
+    console.log(`DRAG: (${from[0]}, ${from[1]}) - (${to[0]}, ${to[1]})`);
+  }
+
+  _onUp(pos) {
+    console.log(`UP: (${pos[0]}, ${pos[1]})`);
+  }
+
+  _onTap(pos) {
+    console.log(`TAP: (${pos[0]}, ${pos[1]})`);
   }
 }

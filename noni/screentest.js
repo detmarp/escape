@@ -8,8 +8,8 @@ export default class ScreenTest {
   run() {
     this.container.clear();
 
-    this.outer = (new UxElement(this.container.outer)).testFill();
-    this.inner = (new UxElement(this.container.inner)).testFill();
+    this.outer = (new UxElement(this.container.outer)).testFill(undefined, { });
+    this.inner = (new UxElement(this.container.inner)).testFill(undefined, { radius: this.container.u(10) });
 
     this.update();
   }

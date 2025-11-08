@@ -3,7 +3,7 @@ export default class UxElement {
     this.container = container;
   }
 
-  testFill(parent = this.container) {
+  testFill(parent = this.container, params = {}) {
     let div = document.createElement('div');
     div.style.width = '100%';
     div.style.height = '100%';
@@ -11,6 +11,9 @@ export default class UxElement {
     let dark = (hue >= 200 || hue <= 30);
     div.style.backgroundColor = `hsl(${hue}, 100%, 50%)`;
     div.style.border = '1px solid grey';
+    if (params.radius !== undefined) {
+      div.style.borderRadius = `${params.radius}px`;
+    }
     div.style.color = dark ? 'white' : 'black';
     div.style.display = 'flex';
     div.style.alignItems = 'flex-start';
