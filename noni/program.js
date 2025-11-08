@@ -1,5 +1,6 @@
 import Container from './container.js';
 import ScreenTest from './screentest.js';
+import UxElement from './uxelement.js';
 
 export default class Program {
   constructor(parent) {
@@ -12,6 +13,8 @@ export default class Program {
 
     this.container.onResize = () => this._onResize();
 
+    this.outer = (new UxElement(this.container.outer)).testFill(undefined, { });
+
     this.screenTest = new ScreenTest(this.container);
     this.screenTest.run();
 
@@ -20,5 +23,6 @@ export default class Program {
 
   _onResize() {
     this.screenTest.update();
+    this.outer.update();
   }
 }

@@ -11,9 +11,8 @@ export default class ScreenTest {
 
   update() {
     // Clear and rebuild everything on each update
-    this.container.clear();
+    this.container.inner.innerHTML = '';
 
-    this.outer = (new UxElement(this.container.outer)).testFill(undefined, { });
     this.inner = (new UxElement(this.container.inner)).testFill(undefined, { radius: this.container.u(10) });
 
     (new UxElement(this.container.inner)).box(null, {
