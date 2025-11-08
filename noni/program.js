@@ -1,4 +1,5 @@
 import Container from './container.js';
+import ScreenTest from './screentest.js';
 
 export default class Program {
   constructor(parent) {
@@ -9,22 +10,15 @@ export default class Program {
   async run() {
     this.container.run();
 
-    this.div = document.createElement('div');
-    this.container.div.appendChild(this.div);
-
-    this.div.style.width = '100%';
-    this.div.style.height = '100%';
-    this.div.style.margin = '0';
-    this.div.style.padding = '0';
-    this.div.style.boxSizing = 'border-box';
-    this.div.innerText = 'Noni Program Running';
-
     this.container.onResize = () => this._onResize();
+
+    this.screenTest = new ScreenTest(this.container);
+    this.screenTest.run();
 
     this._onResize();
   }
 
   _onResize() {
-    this.div.innerText = `Width: ${this.parent.clientWidth}, Height: ${this.parent.clientHeight}`;
+    this.screenTest.update();
   }
 }
