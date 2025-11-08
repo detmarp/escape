@@ -39,8 +39,13 @@ export default class UxElement {
 
   box(parent, params = {}) {
     let div = this._div(parent);
+    div.style.position = 'relative';
+    this._size(div, params);
     this._colors(div, params);
     this._packing(div, params);
+    if (params.text) {
+      div.textContent = params.text;
+    }
     return div;
   }
 
@@ -58,6 +63,14 @@ export default class UxElement {
     div.textContent = params.text || 'Button';
     div.onclick = params.onClick || (() => {});
     return div;
+  }
+
+  _size(div, params = {}) {
+    let fill = params.fill || false;
+    if (fill) {
+      div.style.width = '100%';
+      div.style.height = '100%';
+    }
   }
 
   _div(parent) {

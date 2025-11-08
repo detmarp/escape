@@ -47,6 +47,14 @@ export default class Container {
     document.addEventListener('touchcancel', (e) => this._handleCancel(e));
   }
 
+  _handleHover(e) {
+    // Desktop-only hover tracking for debugging
+    if (!e.touches) {
+      const pos = this._getPointerPosition(e);
+      this._onHover([pos.x, pos.y]);
+    }
+  }
+
   _getPointerPosition(e) {
     // Get the first touch or mouse position
     // Use changedTouches for touchend events (touches array is empty)
@@ -103,6 +111,11 @@ export default class Container {
   }
 
   _handleMove(e) {
+    // Track hover position (desktop only, for debugging)
+    if (!this.isPointerDown && !e.touches) {
+      this._handleHover(e);
+    }
+
     if (!this.isPointerDown) return;
 
     // Don't prevent default if scrolling is enabled
@@ -222,5 +235,9 @@ export default class Container {
 
   _onTap(pos) {
     console.log(`TAP: (${pos[0]}, ${pos[1]})`);
+  }
+
+  _onHover(pos) {
+    console.log(`HOVER: (${pos[0]}, ${pos[1]})`);
   }
 }

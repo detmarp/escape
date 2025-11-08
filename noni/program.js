@@ -1,3 +1,4 @@
+import Background from './background.js';
 import SaveData from './savedata.js';
 import TinyHistory from '../mika/tinyhistory.js';
 import TinyFactory from '../mika/tinyfactory.js';
@@ -26,13 +27,14 @@ export default class Program {
 
     this.container.onResize = () => this._onResize();
 
-    this.outer = (new UxElement(this.container.outer)).testFill(undefined, { });
+    this.background = new Background(this.container.outer);
 
     this.goto.to('main');
     //this.goto.to('settings');
     //this.goto.to('credits');
     this.newGame();
     //this.goto.to('pregame');
+    this.goto.to('game');
 
     this._onResize();
   }
@@ -52,6 +54,6 @@ export default class Program {
 
   _onResize() {
     this.goto.update();
-    this.outer.update();
+    this.background.update();
   }
 }
