@@ -6,10 +6,9 @@ export default class ScreenTest {
   }
 
   run() {
-    this.container.outer.innerHTML = '';
-    this.outer = (new UxElement(this.container.outer)).testFill();
+    this.container.clear();
 
-    this.container.inner.innerHTML = '';
+    this.outer = (new UxElement(this.container.outer)).testFill();
     this.inner = (new UxElement(this.container.inner)).testFill();
 
     this.update();

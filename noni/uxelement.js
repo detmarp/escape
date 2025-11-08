@@ -17,8 +17,9 @@ export default class UxElement {
     div.style.justifyContent = 'flex-start';
     div.style.padding = '8px';
     div.style.boxSizing = 'border-box';
+    div.style.whiteSpace = 'pre-wrap';
     div.update = function() {
-      this.textContent = `${this.offsetWidth} x ${this.offsetHeight}`;
+      this.textContent = `${this.offsetWidth} x ${this.offsetHeight}\nWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW\n${parent.aspect?.toFixed(3) ?? parent.aspect}`;
     };
     parent.appendChild(div);
     div.update();
