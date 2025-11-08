@@ -84,6 +84,9 @@ export default class Container {
     // Ignore if clicking on interactive elements
     if (this._isInteractiveElement(e.target)) return;
 
+    // Don't prevent default if scrolling is enabled (for settings screen)
+    if (this.scrollingEnabled) return;
+
     // Prevent default for touch to avoid scrolling
     if (e.touches) e.preventDefault();
 
@@ -101,6 +104,9 @@ export default class Container {
 
   _handleMove(e) {
     if (!this.isPointerDown) return;
+
+    // Don't prevent default if scrolling is enabled
+    if (this.scrollingEnabled) return;
 
     // Prevent default for touch to avoid scrolling
     if (e.touches) e.preventDefault();
@@ -150,6 +156,19 @@ export default class Container {
     this.inner.innerHTML = '';
   }
 
+  // Enable/disable scrolling on inner container
+  setScrollable(scrollable) {
+    if (scrollable) {
+      this.inner.style.overflowY = 'auto';
+      this.inner.style.overflowX = 'hidden';
+      // Allow native scrolling on touch devices for settings screen
+      this.scrollingEnabled = true;
+    } else {
+      this.inner.style.overflow = 'hidden';
+      this.scrollingEnabled = false;
+    }
+  }
+
   _updateLayout() {
     const vw = this.parent.clientWidth;
     const vh = this.parent.clientHeight;
@@ -167,7 +186,7 @@ export default class Container {
       this.inner.aspect = w / h;
     } else {
       // Tall: width=600, height between 600*1.33 and 600*2
-      w = Math.min(vw * m, vh * m / 1.33);
+      w = Math.min(vw * m, vh * m * 3 / 4);
       h = Math.max(w * 1.33, Math.min(w * 2, vh * m));
       this.scale = w / this.baseSize;
       this.orientation = 'tall';
