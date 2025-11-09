@@ -71,6 +71,15 @@ export default class UxElement {
       div.style.width = '100%';
       div.style.height = '100%';
     }
+    if (params.rect) {
+      // rect is [x, y, w, h] in logical units
+      let rect = params.rect;
+      div.style.position = 'absolute';
+      div.style.left = `calc(var(--scale) * ${rect[0]})`;
+      div.style.top = `calc(var(--scale) * ${rect[1]})`;
+      div.style.width = `calc(var(--scale) * ${rect[2]})`;
+      div.style.height = `calc(var(--scale) * ${rect[3]})`;
+    }
   }
 
   _div(parent) {

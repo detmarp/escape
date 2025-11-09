@@ -87,9 +87,13 @@ export default class ScreenMain {
 
   _makePieces() {
     this.pieces = new Pieces(this.parent);
-    this.pieces.addPiece();
-    this.pieces.addPiece();
-    this.pieces.addPiece();
-    this.pieces.addPiece();
+    this.pieces.addPiece([10, 10, 80, 80]);
+    this.pieces.addPiece([100, 100, 80, 80]);
+    this.pieces.addPiece([520, 520, 80, 80]);
+    this.pieces.addPiece([300, 300, 80, 80]);
+  }
+
+  onFinger(action, pos, pos2) {
+    this.pieces.onFinger(action, pos, pos2);
   }
 }

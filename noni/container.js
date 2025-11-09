@@ -51,7 +51,7 @@ export default class Container {
     // Desktop-only hover tracking for debugging
     if (!e.touches) {
       const pos = this._getPointerPosition(e);
-      this._onHover([pos.x, pos.y]);
+      this._onFinger('hover', [pos.x, pos.y]);
     }
   }
 
@@ -107,7 +107,7 @@ export default class Container {
     this.pointerStartTime = Date.now();
     this.hasDragged = false;
 
-    this._onDown([pos.x, pos.y]);
+    this._onFinger('down', [pos.x, pos.y]);
   }
 
   _handleMove(e) {
@@ -135,7 +135,7 @@ export default class Container {
     }
 
     if (this.hasDragged) {
-      this._onDrag([this.pointerStartPos.x, this.pointerStartPos.y], [pos.x, pos.y]);
+      this._onFinger('drag', [this.pointerStartPos.x, this.pointerStartPos.y], [pos.x, pos.y]);
     }
   }
 
@@ -145,11 +145,11 @@ export default class Container {
     const pos = this._getPointerPosition(e);
     const duration = Date.now() - this.pointerStartTime;
 
-    this._onUp([pos.x, pos.y]);
+    this._onFinger('up', [pos.x, pos.y]);
 
     // Check if this was a tap (quick and no significant drag)
     if (!this.hasDragged && duration < this.tapTimeThreshold) {
-      this._onTap([pos.x, pos.y]);
+      this._onFinger('tap', [pos.x, pos.y]);
     }
 
     this.isPointerDown = false;
@@ -209,7 +209,9 @@ export default class Container {
 
     this.inner.style.width = `${w}px`;
     this.inner.style.height = `${h}px`;
-    this.inner.style.setProperty('--u', `${this.scale}px`);
+    this.inner.style.setProperty('--scale', `${this.scale}px`);
+    this.inner.style.setProperty('--width', this.baseSize);
+    this.inner.style.setProperty('--height', Math.round(h / this.scale));
     this.inner.style.fontSize = `${this.scale * 18}px`;
 
     if (this.onResize) this.onResize();
@@ -220,24 +222,9 @@ export default class Container {
     return units * this.scale;
   }
 
-  // Input event callbacks (override these in your code)
-  _onDown(pos) {
-    console.log(`DOWN: (${pos[0]}, ${pos[1]})`);
-  }
-
-  _onDrag(from, to) {
-    console.log(`DRAG: (${from[0]}, ${from[1]}) - (${to[0]}, ${to[1]})`);
-  }
-
-  _onUp(pos) {
-    console.log(`UP: (${pos[0]}, ${pos[1]})`);
-  }
-
-  _onTap(pos) {
-    console.log(`TAP: (${pos[0]}, ${pos[1]})`);
-  }
-
-  _onHover(pos) {
-    console.log(`HOVER: (${pos[0]}, ${pos[1]})`);
+  _onFinger(action, pos, pos2) {
+    if (this.onFinger) {
+      this.onFinger(action, pos, pos2);
+    }
   }
 }

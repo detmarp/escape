@@ -36,8 +36,14 @@ export default class GoToScreen {
     }
 
     if (screen) {
+      this.program.container.onFinger = null;
       this.screen = screen;
       this.screen.run();
+      if (this.screen.onFinger) {
+        this.program.container.onFinger = (action, pos, pos2) => {
+          this.screen.onFinger(action, pos, pos2);
+        };
+      }
     }
   }
 
