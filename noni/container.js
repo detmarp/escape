@@ -9,8 +9,8 @@ a simple single-finger gesture system.
 export default class Container {
   constructor(parent) {
     this.parent = parent;
-    this.baseSize = 600;
-    this.assumeTall = true; // Set to true to always use tall layout (simpler)
+    this.logicalWidth = 540;   // Fixed logical width
+    this.logicalHeight = 960;  // Fixed logical height (9:16 aspect ratio)
     this.marginPercent = 0.98; // How much of viewport to use (0.98 = 2% margin)
     this.isPointerDown = false;
     this.dragThreshold = 5; // pixels to move before considering it a drag
@@ -75,9 +75,9 @@ export default class Container {
     const x = clientX - rect.left;
     const y = clientY - rect.top;
 
-    // Convert to logical coordinates (based on baseSize) and round to integers
-    const logicalX = Math.round((x / rect.width) * (rect.width / this.scale));
-    const logicalY = Math.round((y / rect.height) * (rect.height / this.scale));
+    // Convert to logical coordinates (540×960 space) and round to integers
+    const logicalX = Math.round((x / rect.width) * this.logicalWidth);
+    const logicalY = Math.round((y / rect.height) * this.logicalHeight);
 
     return { x: logicalX, y: logicalY, rawX: x, rawY: y };
   }
@@ -185,34 +185,31 @@ export default class Container {
   _updateLayout() {
     const vw = this.parent.clientWidth;
     const vh = this.parent.clientHeight;
-    const isWide = !this.assumeTall && (vw > vh);
+    const m = this.marginPercent;
+
+    // Fixed 540×960 aspect ratio (9:16)
+    const targetAspect = this.logicalWidth / this.logicalHeight;
+    const viewportAspect = vw / vh;
 
     let w, h;
-    const m = this.marginPercent;
-    if (isWide) {
-      // Wide: height=600, width between 600*1.33 and 600*2
-      h = Math.min(vh * m, vw * m / 1.33);
-      w = Math.max(h * 1.33, Math.min(h * 2, vw * m));
-      this.scale = h / this.baseSize;
-      this.orientation = 'wide';
-      this.outer.aspect = vw / vh;
-      this.inner.aspect = w / h;
+    if (viewportAspect > targetAspect) {
+      // Viewport is wider - constrain by height
+      h = vh * m;
+      w = h * targetAspect;
     } else {
-      // Tall: width=600, height between 600*1.33 and 600*2
-      w = Math.min(vw * m, vh * m * 3 / 4);
-      h = Math.max(w * 1.33, Math.min(w * 2, vh * m));
-      this.scale = w / this.baseSize;
-      this.orientation = 'tall';
-      this.outer.aspect = vh / vw;
-      this.inner.aspect = h / w;
+      // Viewport is taller - constrain by width
+      w = vw * m;
+      h = w / targetAspect;
     }
-    this.inner.h = h / this.scale;
+
+    // Scale is based on width (could also use height, they're proportional)
+    this.scale = w / this.logicalWidth;
 
     this.inner.style.width = `${w}px`;
     this.inner.style.height = `${h}px`;
     this.inner.style.setProperty('--scale', this.scale);
-    this.inner.style.setProperty('--width', this.baseSize);
-    this.inner.style.setProperty('--height', Math.round(h / this.scale));
+    this.inner.style.setProperty('--width', this.logicalWidth);
+    this.inner.style.setProperty('--height', this.logicalHeight);
     this.inner.style.fontSize = `${this.scale * 18}px`;
 
     if (this.onResize) this.onResize();

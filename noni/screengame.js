@@ -24,45 +24,68 @@ export default class ScreenMain {
     this._makeHeader();
     this._makeBoardArea();
     this._makeControls();
+    this._makeBins();
     this._makeCards();
     this._makePieces();
   }
 
   _makeHeader() {
     let header = this.uxe.box(this.box, {
-      rect: [0, 0, 600, 50],
+      rect: [0, 0, 540, 48],
       border: '#000000',
+      row: true,
     });
     this.uxe.button(header, {
-      text: 'Main',
+      text: '<',
       onClick: () => { this.program.goto.to('main'); },
     });
     this.uxe.text(header, { text: 'Game', });
+    this.uxe.text(header, { text: 'Score: 0', });
+    this.uxe.text(header, { text: 'game id', });
 
   }
 
   _makeBoardArea() {
     let boardRow = this.uxe.box(this.box, {
-      rect: [0, 80, 600, 400],
+      rect: [0, 54, 540, 400],
       row: true,
+      //border: '#00ff00',
+    });
+    let infoArea = this.uxe.box(boardRow, {
+      rect: [8, 0, 54, 400],
+
       border: '#000000',
+      text: 'info',
     });
     let board = this.uxe.box(boardRow, {
+      rect: [70, 0, 400, 400],
       border: '#000000',
       text: 'board',
     });
     let scoreArea = this.uxe.box(boardRow, {
+      rect: [478, 0, 54, 400],
       border: '#000000',
       text: 'score',
     });
   }
 
   _makeControls() {
-    let h = this.container.inner.h;
-    let space = h - 500;
-    let half = space / 2;
+    let y = 464;
+    let controlRow = this.uxe.box(this.box, {
+      rect: [0, y, 540, 48],
+      border: '#000000',
+      row: true,
+    });
+    this.uxe.button(controlRow, { text: 'Button 1' });
+    this.uxe.button(controlRow, { text: 'Button 2' });
+    this.uxe.button(controlRow, { text: 'Button 3' });
+    this.uxe.button(controlRow, { text: 'Button 4' });
+  }
+
+  _makeBins() {
+    let y = 464 + 48 + 8;
     let controls = this.uxe.box(this.box, {
-      rect: [0, 500, 600, half],
+      rect: [0, y, 540, 224],
       border: '#000000',
       text: 'controls',
       row: true,
@@ -82,12 +105,9 @@ export default class ScreenMain {
   }
 
   _makeCards() {
-    let h = this.container.inner.h;
-    let space = h - 500;
-    let half = space / 2;
-
+    let y = 464 + 48 + 8 + 224 + 8
     let cardArea = this.uxe.box(this.box, {
-      rect: [0, 500 + half, 600, half],
+      rect: [0, y, 540, 208],
       border: '#000000',
     });
 
@@ -101,12 +121,12 @@ export default class ScreenMain {
     // First row: 5 pieces distributed across 600px width
     for (let i = 0; i < 5; i++) {
       let x = (600 / 5) * i + (600 / 5 - 80) / 2; // Center each piece in its slot
-      this.pieces.addPiece([x, 200, 80, 80]);
+      this.pieces.addPiece([x, 500, 80, 80]);
     }
     // Second row: 8 pieces distributed across 600px width
     for (let i = 0; i < 8; i++) {
       let x = (600 / 8) * i + (600 / 8 - 80) / 2; // Center each piece in its slot
-      this.pieces.addPiece([x, 400, 80, 80]);
+      this.pieces.addPiece([x, 600, 80, 80]);
     }
   }
 
