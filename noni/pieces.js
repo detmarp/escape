@@ -1,40 +1,47 @@
-import UxElement from './uxelement.js';
+import PieceUx from './pieceux.js';
 
 export default class Pieces {
   constructor(parent) {
     this.parent = parent;
+    this.pieceUx = new PieceUx(this.parent);
+    this.spots = [];
     this.pieces = [];
-    this.uxe = new UxElement(this.parent);
-    this.id = 0;
+    this.spotId = 0;
+    this.pieceId = 0;
     this.dragging = null;
+    this.highlightedSpot = null;
+    this.currentSpot = null;
+    this.currentPiece = null;
+  }
 
-    this.div = this.uxe.box(this.parent, {
-    });
-    this.div.style.position = 'absolute';
-    this.div.style.left = '0px';
-    this.div.style.top = '0px';
-    this.div.style.width = '100%';
-    this.div.style.height = '100%';
-    this.div.style.pointerEvents = 'none'; // Let clicks pass through to elements below
+  addSpot(rect) {
+    // rect is [x, y, w, h] in logical units
+    let spot = this.pieceUx.makeSpot(this.spotId++, rect);
+    spot.position = rect;
+    spot.index = this.spots.length;
+    this.spots.push(spot);
+    return spot;
   }
 
   addPiece(rect) {
     // rect is [x, y, w, h] in logical units
-    let piece = this.uxe.box(this.div, {
-      rect: rect,
-      border: '#999999',
-      borderWidth: 4,
-      radius: 8,
-    });
-    piece.style.backgroundColor = '#ff0000';
-    //piece.style.pointerEvents = 'auto'; // Re-enable pointer events for the piece itself
-    piece.id = this.id++;
-    piece.textContent = `Piece ${piece.id}`;
+    let piece = this.pieceUx.makePiece(this.pieceId++, rect);
     piece.position = rect;
-
     piece.index = this.pieces.length;
     this.pieces.push(piece);
     return piece;
+  }
+
+  _findSpot(pos) {
+    // Find spot at logical position pos = [x, y] - returns last match (top-most)
+    let found = null;
+    for (let spot of this.spots) {
+      let [x, y, w, h] = spot.position;
+      if (pos[0] >= x && pos[0] < x + w && pos[1] >= y && pos[1] < y + h) {
+        found = spot;
+      }
+    }
+    return found;
   }
 
   _find(pos) {
@@ -49,11 +56,60 @@ export default class Pieces {
     return found;
   }
 
-  _highlight(pieceIndex, color) {
-    color ||= '#999999';
-    for (let i = 0; i < this.pieces.length; i++) {
-      this.pieces[i].style.borderColor = (i === pieceIndex) ? color : '#999999';
+  _highlightSpot(spotIndex, level) {
+    // level: undefined = normal, 1 = highlighted (blue), 2 = current (white)
+    if (level !== undefined) {
+      this.highlightedSpot = spotIndex;
+    } else {
+      this.highlightedSpot = null;
     }
+
+    // Update all spot styles
+    for (let i = 0; i < this.spots.length; i++) {
+      let state = 'normal';
+      if (i === this.currentSpot) {
+        state = 'current';
+      } else if (i === this.highlightedSpot) {
+        state = 'highlighted';
+      }
+      this.pieceUx.updateSpotStyle(this.spots[i], state);
+    }
+  }
+
+  _highlightPiece(pieceIndex, level) {
+    // level: undefined = normal, 1 = hover, 2 = active, 3 = current
+    for (let i = 0; i < this.pieces.length; i++) {
+      let isCurrentPiece = (this.currentPiece !== null && this.pieces[i].index === this.currentPiece);
+      let defaultLevel = isCurrentPiece ? 3 : 0;
+      let finalLevel = (i === pieceIndex && level !== undefined) ? level : defaultLevel;
+      this.pieceUx.updatePieceStyle(this.pieces[i], finalLevel);
+    }
+  }
+
+  _setCurrentPiece(pieceIndex) {
+    this.currentPiece = pieceIndex;
+    this._highlightPiece(); // Refresh all piece highlights
+  }
+
+  _setCurrentSpot(spotIndex) {
+    this.currentSpot = spotIndex;
+    // Refresh spot highlights to show current state
+    for (let i = 0; i < this.spots.length; i++) {
+      let state = 'normal';
+      if (i === this.currentSpot) {
+        state = 'current';
+      } else if (i === this.highlightedSpot) {
+        state = 'highlighted';
+      }
+      this.pieceUx.updateSpotStyle(this.spots[i], state);
+    }
+  }
+
+  _clearCurrent() {
+    this.currentPiece = null;
+    this.currentSpot = null;
+    this._highlightPiece(); // Refresh piece highlights
+    this._highlightSpot(); // Refresh spot highlights
   }
 
   _moveToTop(pieceIndex) {
@@ -69,7 +125,7 @@ export default class Pieces {
     }
 
     // Move DOM element to end (so it renders on top)
-    this.div.appendChild(piece);
+    this.pieceUx.movePieceToTop(piece);
   }
 
   onFinger(action, pos, pos2) {
@@ -81,16 +137,42 @@ export default class Pieces {
         let [x, y, w, h] = this.dragging.startPosition;
         let dx = pos2[0] - pos[0];
         let dy = pos2[1] - pos[1];
-        this.dragging.piece.style.left = `calc(var(--scale) * ${x + dx}px)`;
-        this.dragging.piece.style.top = `calc(var(--scale) * ${y + dy}px)`;
+        this.pieceUx.updatePiecePosition(this.dragging.piece, x + dx, y + dy);
+
+        // Highlight spot when dragging over it
+        let currentPos = [x + dx + w/2, y + dy + h/2]; // Use center of piece
+        let spot = this._findSpot(currentPos);
+        if (spot) {
+          this._highlightSpot(spot.index, 1);
+        } else {
+          this._highlightSpot();
+        }
       }
       else if (action === 'up') {
         // Drop the piece
         let [x, y, w, h] = this.dragging.startPosition;
         let dx = pos[0] - this.dragging.startPos[0];
         let dy = pos[1] - this.dragging.startPos[1];
-        this.dragging.piece.position = [x + dx, y + dy, w, h];
-        this._highlight();
+        let newX = x + dx;
+        let newY = y + dy;
+        this.dragging.piece.position = [newX, newY, w, h];
+
+        // Check if dropped into a spot
+        let centerPos = [newX + w/2, newY + h/2];
+        let droppedSpot = this._findSpot(centerPos);
+
+        if (droppedSpot) {
+          // Dropped into a spot - make both the spot and piece current
+          this._setCurrentSpot(droppedSpot.index);
+          this._setCurrentPiece(this.dragging.piece.index);
+        } else {
+          // Dropped outside any spot - make the piece current, clear spot
+          this._setCurrentPiece(this.dragging.piece.index);
+          this.currentSpot = null;
+        }
+
+        this._highlightPiece();
+        this._highlightSpot(); // Clear hover highlight
         this.dragging = null;
       }
     }
@@ -98,22 +180,43 @@ export default class Pieces {
       if (action === 'hover') {
         let p = this._find(pos);
         if (p == null) {
-          this._highlight();
+          this._highlightPiece();
+          // Highlight spot on hover if no piece is found
+          let spot = this._findSpot(pos);
+          if (spot) {
+            this._highlightSpot(spot.index, 1);
+          } else {
+            this._highlightSpot();
+          }
         }
         else {
-          this._highlight(p.index, '#ffff00');
+          this._highlightPiece(p.index, 1);
         }
       }
       else if (action === 'down') {
         let p = this._find(pos);
         if (p != null) {
-          this._highlight(p.index, '#00ff00');
+          // Tapped on a piece - make it current
+          this._setCurrentPiece(p.index);
+          this.currentSpot = null;
+          this._highlightPiece(p.index, 2);
           this._moveToTop(p.index);
           this.dragging = {
             piece: p,
             startPos: pos,
             startPosition: [...p.position], // Copy the position array
           };
+        } else {
+          // Check if tapped on a spot
+          let spot = this._findSpot(pos);
+          if (spot) {
+            // Tapped on a spot - make it current
+            this._setCurrentSpot(spot.index);
+            this.currentPiece = null;
+          } else {
+            // Tapped outside any piece or spot - clear current
+            this._clearCurrent();
+          }
         }
       }
     }

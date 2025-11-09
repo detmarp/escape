@@ -14,12 +14,14 @@ export default class ScreenMain {
   }
 
   update() {
-    this.parent.innerHTML = '';1
+    this.parent.innerHTML = '';
     this.box = this.uxe.box(this.parent, {
       fill: true,
       row: false,
       background: '#b0c0d0',
     });
+
+    this.pieces = new Pieces(this.parent);
 
     this._makeHeader();
     this._makeBoardArea();
@@ -87,21 +89,14 @@ export default class ScreenMain {
     let controls = this.uxe.box(this.box, {
       rect: [0, y, 540, 224],
       border: '#000000',
-      text: 'controls',
       row: true,
     });
-    let box1 = this.uxe.box(controls, {
-      border: '#000000',
-      text: 'box1',
-    });
-    let box2 = this.uxe.box(controls, {
-      border: '#000000',
-      text: 'box2',
-    });
-    let box3 = this.uxe.box(controls, {
-      border: '#000000',
-      text: 'box3',
-    });
+
+    let controlsY = 464 + 48 + 8;
+    this.pieces.addSpot([0, controlsY, 180, 224]);
+    this.pieces.addSpot([180, controlsY, 100, 224]);
+    this.pieces.addSpot([280, controlsY, 260, 224]);
+
   }
 
   _makeCards() {
@@ -117,16 +112,28 @@ export default class ScreenMain {
   }
 
   _makePieces() {
-    this.pieces = new Pieces(this.parent);
     // First row: 5 pieces distributed across 600px width
+    let y1 = 800;
     for (let i = 0; i < 5; i++) {
       let x = (600 / 5) * i + (600 / 5 - 80) / 2; // Center each piece in its slot
-      this.pieces.addPiece([x, 500, 80, 80]);
+      this.pieces.addPiece([x, y1, 80, 80]);
     }
     // Second row: 8 pieces distributed across 600px width
+    let y2 = 850;
     for (let i = 0; i < 8; i++) {
       let x = (600 / 8) * i + (600 / 8 - 80) / 2; // Center each piece in its slot
-      this.pieces.addPiece([x, 600, 80, 80]);
+      this.pieces.addPiece([x, y2, 80, 80]);
+    }
+
+    // spots for the board
+    let start = [70, 54];
+    let size = [100, 100];
+    for (let i = 0; i < 16; i++) {
+      let col = i % 4;
+      let row = Math.floor(i / 4);
+      let x = start[0] + col * size[0];
+      let y = start[1] + row * size[1];
+      this.pieces.addSpot([x, y, size[0], size[1]]);
     }
   }
 
