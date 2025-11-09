@@ -26,7 +26,8 @@ export default class Container {
 
     this.inner = document.createElement('div');
     this.parent.appendChild(this.inner);
-    this.inner.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); box-sizing:border-box';
+    // Use margin auto for perfect centering on Safari iOS - avoids transform subpixel issues
+    this.inner.style.cssText = 'position:absolute; top:0; left:0; right:0; bottom:0; margin:auto; box-sizing:border-box';
 
     window.addEventListener('resize', () => this._updateLayout());
     this._updateLayout();

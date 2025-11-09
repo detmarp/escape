@@ -18,11 +18,20 @@
       padding: 0;
       width: 100%;
       height: 100%;
+      /* Fix for Safari iOS viewport height (address bar issues) */
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
       overflow: hidden;
       overscroll-behavior: none;
       touch-action: pan-x pan-y;
       -webkit-user-select: none;
       user-select: none;
+      /* Prevent Safari iOS from adding extra space */
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
     }
 
     body {
@@ -63,6 +72,15 @@
       padding-block: calc(var(--space) * 2);
     }
 
+    /* Main container for full viewport (Safari iOS fix) */
+    main.container {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      position: relative;
+    }
+
     /* === Typography === */
     h1, h2 {
       line-height: 1.2;
@@ -70,9 +88,21 @@
     }
 
     /* === Button === */
+    button,
     .button {
+      /* Remove all default browser styling */
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+
+      /* Reset all spacing */
+      margin: 0;
+      padding: 0;
+      border: none;
+      outline: none;
+
+      /* Apply custom styling */
       display: inline-block;
-      /* margin-top: var(--space); */
       padding: 0.75rem 1.25rem;
       background: var(--primary);
       color: white;
@@ -80,19 +110,34 @@
       border-radius: var(--radius);
       font-weight: 600;
       transition: all 0.2s;
-      border: none;
       cursor: pointer;
+
+      /* Prevent text selection and touch highlighting */
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+
+      /* Ensure consistent font rendering */
+      font-family: inherit;
+      font-size: inherit;
+      line-height: inherit;
     }
 
+    button:hover,
     .button:hover {
       filter: brightness(1.1);
     }
 
+    button:active,
+    .button:active {
+      filter: brightness(0.9);
+    }
+
     /* Buttons inside .inner scale with --scale */
-    [style*="--scale"] .button,
-    [style*="--scale"] button {
+    [style*="--scale"] button,
+    [style*="--scale"] .button {
+      margin: 0; /* Explicitly reset margin in scaled contexts */
       padding: calc(var(--scale) * 12px) calc(var(--scale) * 20px);
-      /* margin-top: calc(var(--scale) * 8px); */
       border-radius: calc(var(--scale) * 8px);
       font-size: inherit; /* Use parent's scaled font-size */
     }
