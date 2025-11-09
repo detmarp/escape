@@ -26,8 +26,7 @@ export default class Container {
 
     this.inner = document.createElement('div');
     this.parent.appendChild(this.inner);
-    // Use margin auto for perfect centering on Safari iOS - avoids transform subpixel issues
-    this.inner.style.cssText = 'position:absolute; top:0; left:0; right:0; bottom:0; margin:auto; box-sizing:border-box';
+    this.inner.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); box-sizing:border-box';
 
     window.addEventListener('resize', () => this._updateLayout());
     this._updateLayout();
@@ -184,8 +183,10 @@ export default class Container {
   }
 
   _updateLayout() {
-    const vw = this.parent.clientWidth;
-    const vh = this.parent.clientHeight;
+    // Use window.innerWidth/innerHeight for ACTUAL visible viewport
+    // This excludes browser chrome (address bar on iOS, nav buttons on Android)
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
     const m = this.marginPercent;
 
     // Fixed 540×960 aspect ratio (9:16)

@@ -18,20 +18,11 @@
       padding: 0;
       width: 100%;
       height: 100%;
-      /* Fix for Safari iOS viewport height (address bar issues) */
-      min-height: 100vh;
-      min-height: -webkit-fill-available;
       overflow: hidden;
       overscroll-behavior: none;
       touch-action: pan-x pan-y;
       -webkit-user-select: none;
       user-select: none;
-      /* Prevent Safari iOS from adding extra space */
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
     }
 
     body {
@@ -70,15 +61,6 @@
       width: min(90%, 800px);
       margin-inline: auto;
       padding-block: calc(var(--space) * 2);
-    }
-
-    /* Main container for full viewport (Safari iOS fix) */
-    main.container {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      position: relative;
     }
 
     /* === Typography === */
