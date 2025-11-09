@@ -5,7 +5,8 @@ export default class Background {
     this.parent = parent;
     this.uxe = new UxElement(this.parent);
     this.img = new Image();
-    this.img.src = './data/bg1.png';
+    //this.img.src = './data/bg1.png';
+    this.img.src = './data/bg2.jpg';
     this.update();
   }
 
@@ -15,7 +16,7 @@ export default class Background {
       fill: true,
       background: '#f08080',
     });
-    const tileSize = 80;
+    const tileSize = 512;
     const cols = Math.ceil(this.parent.clientWidth / tileSize);
     const rows = Math.ceil(this.parent.clientHeight / tileSize);
 
