@@ -206,6 +206,7 @@ export default class Container {
       this.outer.aspect = vh / vw;
       this.inner.aspect = h / w;
     }
+    this.inner.h = h / this.scale;
 
     this.inner.style.width = `${w}px`;
     this.inner.style.height = `${h}px`;

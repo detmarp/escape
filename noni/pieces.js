@@ -9,8 +9,6 @@ export default class Pieces {
     this.dragging = null;
 
     this.div = this.uxe.box(this.parent, {
-      border: '#00ff00',
-      text: 'pieces',
     });
     this.div.style.position = 'absolute';
     this.div.style.left = '0px';
@@ -75,7 +73,7 @@ export default class Pieces {
   }
 
   onFinger(action, pos, pos2) {
-    console.log(`ppp ${action} at (${pos[0]}, ${pos[1]})${pos2 ? ` to (${pos2[0]}, ${pos2[1]})` : ''}`);
+    //console.log(`ppp ${action} at (${pos[0]}, ${pos[1]})${pos2 ? ` to (${pos2[0]}, ${pos2[1]})` : ''}`);
 
     if (this.dragging) {
       if (action === 'drag' && pos2) {

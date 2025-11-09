@@ -30,18 +30,20 @@ export default class ScreenMain {
 
   _makeHeader() {
     let header = this.uxe.box(this.box, {
+      rect: [0, 0, 600, 50],
       border: '#000000',
     });
-    this.uxe.text(header, { text: 'Game', });
     this.uxe.button(header, {
       text: 'Main',
       onClick: () => { this.program.goto.to('main'); },
     });
+    this.uxe.text(header, { text: 'Game', });
 
   }
 
   _makeBoardArea() {
     let boardRow = this.uxe.box(this.box, {
+      rect: [0, 80, 600, 400],
       row: true,
       border: '#000000',
     });
@@ -56,7 +58,11 @@ export default class ScreenMain {
   }
 
   _makeControls() {
+    let h = this.container.inner.h;
+    let space = h - 500;
+    let half = space / 2;
     let controls = this.uxe.box(this.box, {
+      rect: [0, 500, 600, half],
       border: '#000000',
       text: 'controls',
       row: true,
@@ -76,7 +82,12 @@ export default class ScreenMain {
   }
 
   _makeCards() {
+    let h = this.container.inner.h;
+    let space = h - 500;
+    let half = space / 2;
+
     let cardArea = this.uxe.box(this.box, {
+      rect: [0, 500 + half, 600, half],
       border: '#000000',
     });
 
