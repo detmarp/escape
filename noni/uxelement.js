@@ -75,10 +75,10 @@ export default class UxElement {
       // rect is [x, y, w, h] in logical units
       let rect = params.rect;
       div.style.position = 'absolute';
-      div.style.left = `calc(var(--scale) * ${rect[0]})`;
-      div.style.top = `calc(var(--scale) * ${rect[1]})`;
-      div.style.width = `calc(var(--scale) * ${rect[2]})`;
-      div.style.height = `calc(var(--scale) * ${rect[3]})`;
+      div.style.left = `calc(var(--scale) * ${rect[0]}px)`;
+      div.style.top = `calc(var(--scale) * ${rect[1]}px)`;
+      div.style.width = `calc(var(--scale) * ${rect[2]}px)`;
+      div.style.height = `calc(var(--scale) * ${rect[3]}px)`;
     }
   }
 
@@ -94,10 +94,10 @@ export default class UxElement {
       div.style.backgroundColor = params.background;
     }
     if (params.border) {
-      div.style.border = `${params.borderWidth || 1}px solid ${params.border}`;
+      div.style.border = `calc(var(--scale) * ${params.borderWidth || 1}px) solid ${params.border}`;
     }
     if (params.radius) {
-      div.style.borderRadius = `${params.radius}px`;
+      div.style.borderRadius = `calc(var(--scale) * ${params.radius}px)`;
     }
     if (params.textColor) {
       div.style.color = params.textColor;

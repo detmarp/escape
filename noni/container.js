@@ -209,7 +209,7 @@ export default class Container {
 
     this.inner.style.width = `${w}px`;
     this.inner.style.height = `${h}px`;
-    this.inner.style.setProperty('--scale', `${this.scale}px`);
+    this.inner.style.setProperty('--scale', this.scale);
     this.inner.style.setProperty('--width', this.baseSize);
     this.inner.style.setProperty('--height', Math.round(h / this.scale));
     this.inner.style.fontSize = `${this.scale * 18}px`;

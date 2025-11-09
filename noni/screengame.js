@@ -14,7 +14,7 @@ export default class ScreenMain {
   }
 
   update() {
-    this.parent.innerHTML = '';
+    this.parent.innerHTML = '';1
     this.box = this.uxe.box(this.parent, {
       fill: true,
       row: false,
@@ -22,9 +22,9 @@ export default class ScreenMain {
     });
 
     this._makeHeader();
-    //this._makeBoardArea();
-    //this._makeControls();
-    //this._makeCards();
+    this._makeBoardArea();
+    this._makeControls();
+    this._makeCards();
     this._makePieces();
   }
 
@@ -87,10 +87,16 @@ export default class ScreenMain {
 
   _makePieces() {
     this.pieces = new Pieces(this.parent);
-    this.pieces.addPiece([10, 10, 80, 80]);
-    this.pieces.addPiece([100, 100, 80, 80]);
-    this.pieces.addPiece([520, 520, 80, 80]);
-    this.pieces.addPiece([300, 300, 80, 80]);
+    // First row: 5 pieces distributed across 600px width
+    for (let i = 0; i < 5; i++) {
+      let x = (600 / 5) * i + (600 / 5 - 80) / 2; // Center each piece in its slot
+      this.pieces.addPiece([x, 200, 80, 80]);
+    }
+    // Second row: 8 pieces distributed across 600px width
+    for (let i = 0; i < 8; i++) {
+      let x = (600 / 8) * i + (600 / 8 - 80) / 2; // Center each piece in its slot
+      this.pieces.addPiece([x, 400, 80, 80]);
+    }
   }
 
   onFinger(action, pos, pos2) {
