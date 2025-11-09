@@ -48,7 +48,7 @@ export default class GoToScreen {
   }
 
   update() {
-    if (this.screen) {
+    if (this.screen && this.screen.update) {
       this.screen.update();
     }
   }

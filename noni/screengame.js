@@ -1,19 +1,17 @@
 import Pieces from './pieces.js';
+import TinyBot from '../mika/tinybot.js';
 import UxElement from './uxelement.js';
 
 export default class ScreenMain {
   constructor(program) {
     this.program = program;
+    this.tiny = program.tiny;
     this.container = program.container;
     this.parent = this.container.inner;
     this.uxe = new UxElement(this.parent);
   }
 
   run() {
-    this.update();
-  }
-
-  update() {
     this.parent.innerHTML = '';
     this.box = this.uxe.box(this.parent, {
       fill: true,
@@ -29,6 +27,8 @@ export default class ScreenMain {
     this._makeBins();
     this._makeCards();
     this._makePieces();
+
+    this.refresh();
   }
 
   _makeHeader() {
@@ -55,14 +55,12 @@ export default class ScreenMain {
     });
     let infoArea = this.uxe.box(boardRow, {
       rect: [8, 0, 54, 400],
-
       border: '#000000',
       text: 'info',
     });
     let board = this.uxe.box(boardRow, {
       rect: [70, 0, 400, 400],
-      border: '#000000',
-      text: 'board',
+      //border: '#000000',
     });
     let scoreArea = this.uxe.box(boardRow, {
       rect: [478, 0, 54, 400],
@@ -78,13 +76,30 @@ export default class ScreenMain {
       border: '#000000',
       row: true,
     });
-    this.uxe.button(controlRow, { text: 'Button 1' });
+    this.uxe.button(controlRow, { text: 'Button 1', onClick: () => {
+      let bot = new TinyBot(this.tiny);
+      bot.makeMove();
+      this.refresh();
+    }});
     this.uxe.button(controlRow, { text: 'Button 2' });
     this.uxe.button(controlRow, { text: 'Button 3' });
     this.uxe.button(controlRow, { text: 'Button 4' });
   }
 
   _makeBins() {
+    // spots for the board
+    let start = [70, 54];
+    let size = [100, 100];
+    this.cellSpots = [];
+    for (let i = 0; i < 16; i++) {
+      let col = i % 4;
+      let row = Math.floor(i / 4);
+      let x = start[0] + col * size[0];
+      let y = start[1] + row * size[1];
+      let spot = this.pieces.addSpot([x, y, size[0], size[1]]);
+      this.cellSpots.push(spot);
+    }
+
     let y = 464 + 48 + 8;
     let controls = this.uxe.box(this.box, {
       rect: [0, y, 540, 224],
@@ -93,10 +108,8 @@ export default class ScreenMain {
     });
 
     let controlsY = 464 + 48 + 8;
-    this.pieces.addSpot([0, controlsY, 180, 224]);
-    this.pieces.addSpot([180, controlsY, 100, 224]);
-    this.pieces.addSpot([280, controlsY, 260, 224]);
-
+    this.resourceBin = this.pieces.addSpot([0, controlsY, 240, 224]);
+    this.buildingBin = this.pieces.addSpot([240, controlsY, 300, 224]);
   }
 
   _makeCards() {
@@ -112,28 +125,35 @@ export default class ScreenMain {
   }
 
   _makePieces() {
-    // First row: 5 pieces distributed across 600px width
-    let y1 = 800;
+    // 5 pieces randomly in resourceBin
+    let [rx, ry, rw, rh] = this.resourceBin.position;
     for (let i = 0; i < 5; i++) {
-      let x = (600 / 5) * i + (600 / 5 - 80) / 2; // Center each piece in its slot
-      this.pieces.addPiece([x, y1, 80, 80]);
-    }
-    // Second row: 8 pieces distributed across 600px width
-    let y2 = 850;
-    for (let i = 0; i < 8; i++) {
-      let x = (600 / 8) * i + (600 / 8 - 80) / 2; // Center each piece in its slot
-      this.pieces.addPiece([x, y2, 80, 80]);
+      let x = rx + Math.random() * (rw - 80);
+      let y = ry + Math.random() * (rh - 80);
+      this.pieces.addPiece([x, y, 80, 80]);
     }
 
-    // spots for the board
-    let start = [70, 54];
-    let size = [100, 100];
+    // 8 pieces randomly in buildingBin
+    let [bx, by, bw, bh] = this.buildingBin.position;
+    for (let i = 0; i < 8; i++) {
+      let x = bx + Math.random() * (bw - 80);
+      let y = by + Math.random() * (bh - 80);
+      this.pieces.addPiece([x, y, 80, 80]);
+    }
+  }
+
+  refresh() {
     for (let i = 0; i < 16; i++) {
-      let col = i % 4;
-      let row = Math.floor(i / 4);
-      let x = start[0] + col * size[0];
-      let y = start[1] + row * size[1];
-      this.pieces.addSpot([x, y, size[0], size[1]]);
+      let cell = this.tiny.board.cells[i];
+      let parts = [];
+      if (cell.building) {
+        parts.push(cell.building);
+      }
+      if (cell.resource) {
+        parts.push(cell.resource);
+      }
+      let text = parts.join('\n');
+      this.cellSpots[i].innerText = text;
     }
   }
 
