@@ -1,0 +1,16 @@
+[
+  {
+    "category": "red",
+    "name": "Farm",
+    "short": "farm",
+    "shape": [
+      "yy",
+      "bb"
+    ],
+    "score": {
+      "prescan": true,
+      "custom": true
+    },
+    "text": "Feeds 4 🌾 buildings anywhere in your town."
+  }
+]

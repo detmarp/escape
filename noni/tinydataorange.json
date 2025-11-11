@@ -1,0 +1,30 @@
+[
+  {
+    "category": "green",
+    "name": "Tavern",
+    "short": "tavrn",
+    "shape": [
+      "rrc"
+    ],
+    "score": {
+      "custom": true,
+      "lookup": "tavern"
+    },
+    "text": "{coin} based on your constructed {green}."
+  },
+  {
+    "category": "orange",
+    "name": "Chapel",
+    "short": "chapl",
+    "shape": [
+      "--c",
+      "gcg"
+    ],
+    "score": {
+      "custom": true,
+      "value": 1,
+      "condition": "fed-blue"
+    },
+    "text": "1{coin} for each fed {blue}."
+  }
+]

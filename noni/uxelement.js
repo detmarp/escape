@@ -80,6 +80,12 @@ export default class UxElement {
       div.style.width = `calc(var(--scale) * ${rect[2]}px)`;
       div.style.height = `calc(var(--scale) * ${rect[3]}px)`;
     }
+    else if (params.size) {
+      // size is [w, h] in logical units
+      let size = params.size;
+      div.style.width = `calc(var(--scale) * ${size[0]}px)`;
+      div.style.height = `calc(var(--scale) * ${size[1]}px)`;
+    }
   }
 
   _div(parent) {

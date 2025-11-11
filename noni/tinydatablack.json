@@ -1,0 +1,22 @@
+[
+  {
+    "category": "black",
+    "name": "Factory",
+    "short": "fact",
+    "special": {
+      "name": "addResource",
+      "special": {
+        "name": "swapResource",
+        "permanent": true
+      }
+    },
+    "shape": [
+      "b---",
+      "rggr"
+    ],
+    "score": {
+      "points": 0
+    },
+    "text": "When constructed, place 1 of the 5 resources on ⬛. When another player names this resource, you may place a different resource instead."
+  }
+]

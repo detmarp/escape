@@ -1,5 +1,5 @@
 import Pieces from './pieces.js';
-import TinyBot from '../mika/tinybot.js';
+import TinyBot from './tinybot.js';
 import UxElement from './uxelement.js';
 
 export default class ScreenMain {
@@ -9,6 +9,7 @@ export default class ScreenMain {
     this.container = program.container;
     this.parent = this.container.inner;
     this.uxe = new UxElement(this.parent);
+    this.editMode = false;
   }
 
   run() {
@@ -51,13 +52,24 @@ export default class ScreenMain {
     let boardRow = this.uxe.box(this.box, {
       rect: [0, 54, 540, 400],
       row: true,
-      //border: '#00ff00',
     });
-    let infoArea = this.uxe.box(boardRow, {
+    this.infoArea = this.uxe.box(boardRow, {
       rect: [8, 0, 54, 400],
       border: '#000000',
-      text: 'info',
     });
+    this.infoArea.style.display = 'flex';
+    this.infoArea.style.flexDirection = 'column';
+    this.infoArea.style.alignItems = 'center';
+    this.infoArea.style.gap = `${4 * this.uxe.scale}px`;
+    if (true) {
+      this.editButton = this.uxe.box(this.infoArea, {
+        size: [48, 40],
+        border: '#000000',
+        radius: 4,
+        text: 'Edit',
+      });
+    }
+
     let board = this.uxe.box(boardRow, {
       rect: [70, 0, 400, 400],
       //border: '#000000',
@@ -159,5 +171,9 @@ export default class ScreenMain {
 
   onFinger(action, pos, pos2) {
     this.pieces.onFinger(action, pos, pos2);
+  }
+
+  _setEditMode(editMode) {
+    this.editMode = editMode;
   }
 }
