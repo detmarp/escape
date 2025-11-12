@@ -209,10 +209,11 @@ export default class Pieces {
   _highlightPiece(pieceIndex, level) {
     // level: undefined = normal, 1 = hover, 2 = active, 3 = current
     for (let i = 0; i < this.pieces.length; i++) {
-      let isCurrentPiece = (this.currentPiece !== null && this.pieces[i].index === this.currentPiece);
+      let piece = this.pieces[i];
+      let isCurrentPiece = (this.currentPiece !== null && piece.id === this.currentPiece);
       let defaultLevel = isCurrentPiece ? 3 : 0;
-      let finalLevel = (i === pieceIndex && level !== undefined) ? level : defaultLevel;
-      this.pieceUx.updatePieceStyle(this.pieces[i], finalLevel);
+      let finalLevel = (piece.id === pieceIndex && level !== undefined) ? level : defaultLevel;
+      this.pieceUx.updatePieceStyle(piece, finalLevel);
     }
   }
 
@@ -346,7 +347,7 @@ export default class Pieces {
           let [w, h] = p.size;
           this.pieceUx.updatePiecePosition(p, cx - w/2, cy - h/2);
           this._setCurrentSpot(droppedSpot.index);
-          this._setCurrentPiece(p.index);
+          this._setCurrentPiece(p.id);
           modifiedPieces.add(p);
         } else if (p.fromSpot && p.fromSpot.autoreturn) {
           this.sendTo(p, p.fromSpot);
@@ -372,16 +373,16 @@ export default class Pieces {
             this._highlightSpot();
           }
         } else {
-          this._highlightPiece(p.index, 1);
+          this._highlightPiece(p.id, 1);
         }
       } else if (action === 'down') {
         let p = this._find(pos);
         if (p != null) {
           this._onTap(p);
-          this._setCurrentPiece(p.index);
+          this._setCurrentPiece(p.id);
           this.currentSpot = null;
-          this._highlightPiece(p.index, 2);
-          this._moveToTop(p.index);
+          this._highlightPiece(p.id, 2);
+          this._moveToTop(this.pieces.indexOf(p));
           // Do NOT clear spot or set fromSpot yet; only do so on first movement
           this.dragging = {
             piece: p,
