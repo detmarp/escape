@@ -92,4 +92,11 @@ export default class PieceUx {
     // Move DOM element to end (so it renders on top)
     this.pieceDiv.appendChild(piece);
   }
+
+  removePiece(piece) {
+    // Remove piece from DOM
+    if (piece.parentNode) {
+      piece.parentNode.removeChild(piece);
+    }
+  }
 }

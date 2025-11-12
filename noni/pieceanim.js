@@ -8,6 +8,9 @@ export default class PieceAnim {
     lines.push(`id: ${piece.id}`);
     if (piece.spot) {
       lines.push(`spot: ${piece.spot.id}`);
+      if (piece.spot.nopickup) {
+        lines.push(`(nopickup)`);
+      }
     }
     if (piece.fromSpot) {
       lines.push(`from: ${piece.fromSpot.id}`);
