@@ -266,14 +266,21 @@ export default class Pieces {
 
     if (this.dragging) {
       if (action === 'drag' && pos2) {
-        // Check if position has actually changed
         let dx = pos2[0] - this.dragging.startPos[0];
         let dy = pos2[1] - this.dragging.startPos[1];
 
         if (!this.dragging.active && (dx !== 0 || dy !== 0)) {
-          // Position changed - start dragging
+          // Only now, on first movement, start dragging
+          let p = this.dragging.piece;
+          if (p.spot && p.spot.nopickup) {
+            // nopickup: start drag visually, but do not clear .spot or set .fromSpot
+          } else {
+            p.fromSpot = p.spot;
+            p.spot = null;
+            modifiedPieces.add(p);
+          }
           this.dragging.active = true;
-          this._onDrag(this.dragging.piece);
+          this._onDrag(p);
         }
 
         if (!this.dragging.active) {
@@ -285,13 +292,10 @@ export default class Pieces {
         let [cx, cy] = this.dragging.startPosition;
         let [w, h] = this.dragging.piece.size;
         let newCx = cx + dx;
-        let newCy = cy + dy;        // Update piece's logical position
+        let newCy = cy + dy;
         this.dragging.piece.position = [newCx, newCy];
 
-        // Convert center to top-left for rendering
         this.pieceUx.updatePiecePosition(this.dragging.piece, newCx - w/2, newCy - h/2);
-
-        // Mark piece for text update
         modifiedPieces.add(this.dragging.piece);
 
         // Highlight spot when dragging over it (use center position)
@@ -303,7 +307,6 @@ export default class Pieces {
         }
       }
       else if (action === 'up') {
-        // Check if this was actually a drag or just a tap
         if (!this.dragging.active) {
           // Never moved far enough to be a drag - treat as tap only
           this.dragging = null;
@@ -317,94 +320,81 @@ export default class Pieces {
         let newCx = cx + dx;
         let newCy = cy + dy;
         this.dragging.piece.position = [newCx, newCy];
-
-        // Mark piece for text update
         modifiedPieces.add(this.dragging.piece);
+
+        // If the piece's spot is still set and spot.nopickup, snap back to real spot
+        let p = this.dragging.piece;
+        if (p.spot && p.spot.nopickup) {
+          this.sendTo(p, p.spot);
+          modifiedPieces.add(p);
+          this._highlightPiece();
+          this._highlightSpot();
+          this.dragging = null;
+          return;
+        }
 
         // Check if dropped into a spot (using center position)
         let droppedSpot = this._findSpot([newCx, newCy]);
-
-        // Check if the drop is valid
-        let canDrop = droppedSpot ? this._okToDrop(this.dragging.piece, droppedSpot) : false;
+        let canDrop = droppedSpot ? this._okToDrop(p, droppedSpot) : false;
 
         if (canDrop) {
-          // Valid drop - assign piece to the new spot
-          this.dragging.piece.spot = droppedSpot;
-          this.dragging.piece.fromSpot = null;
-
-          // Clamp position to fit within the spot
-          let clampedPosition = this.pieceAnim._clampToSpot(this.dragging.piece);
-          this.dragging.piece.position = clampedPosition;
-
-          // Update visual position
+          p.spot = droppedSpot;
+          p.fromSpot = null;
+          let clampedPosition = this.pieceAnim._clampToSpot(p);
+          p.position = clampedPosition;
           let [cx, cy] = clampedPosition;
-          let [w, h] = this.dragging.piece.size;
-          this.pieceUx.updatePiecePosition(this.dragging.piece, cx - w/2, cy - h/2);
-
+          let [w, h] = p.size;
+          this.pieceUx.updatePiecePosition(p, cx - w/2, cy - h/2);
           this._setCurrentSpot(droppedSpot.index);
-          this._setCurrentPiece(this.dragging.piece.index);
-          modifiedPieces.add(this.dragging.piece);
-        } else if (this.dragging.piece.fromSpot && this.dragging.piece.fromSpot.autoreturn) {
-          // Invalid drop and fromSpot has autoreturn - send piece back
-          this.sendTo(this.dragging.piece, this.dragging.piece.fromSpot);
-          modifiedPieces.add(this.dragging.piece);
+          this._setCurrentPiece(p.index);
+          modifiedPieces.add(p);
+        } else if (p.fromSpot && p.fromSpot.autoreturn) {
+          this.sendTo(p, p.fromSpot);
+          modifiedPieces.add(p);
         } else {
-          // Invalid drop, no autoreturn - kill the piece
-          this.kill(this.dragging.piece);
+          this.kill(p);
         }
 
-        this._onDrop(this.dragging.piece, droppedSpot);
-
+        this._onDrop(p, droppedSpot);
         this._highlightPiece();
-        this._highlightSpot(); // Clear hover highlight
+        this._highlightSpot();
         this.dragging = null;
       }
-    }
-    else {
+    } else {
       if (action === 'hover') {
         let p = this._find(pos);
         if (p == null) {
           this._highlightPiece();
-          // Highlight spot on hover if no piece is found
           let spot = this._findSpot(pos);
           if (spot) {
             this._highlightSpot(spot.index, 1);
           } else {
             this._highlightSpot();
           }
-        }
-        else {
+        } else {
           this._highlightPiece(p.index, 1);
         }
-      }
-      else if (action === 'down') {
+      } else if (action === 'down') {
         let p = this._find(pos);
         if (p != null) {
-          // Tapped on a piece - notify owner and start drag
           this._onTap(p);
           this._setCurrentPiece(p.index);
           this.currentSpot = null;
           this._highlightPiece(p.index, 2);
           this._moveToTop(p.index);
-          // Track where the piece came from, then clear its spot
-          p.fromSpot = p.spot;
-          p.spot = null;
-          modifiedPieces.add(p);
+          // Do NOT clear spot or set fromSpot yet; only do so on first movement
           this.dragging = {
             piece: p,
             startPos: pos,
-            startPosition: [...p.position], // Copy the center position array
-            active: false, // Not actively dragging until moved beyond threshold
+            startPosition: [...p.position],
+            active: false,
           };
         } else {
-          // Check if tapped on a spot
           let spot = this._findSpot(pos);
           if (spot) {
-            // Tapped on a spot - make it current
             this._setCurrentSpot(spot.index);
             this.currentPiece = null;
           } else {
-            // Tapped outside any piece or spot - clear current
             this._clearCurrent();
           }
         }
