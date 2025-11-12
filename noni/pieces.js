@@ -2,8 +2,9 @@ import PieceAnim from './pieceAnim.js';
 import PieceUx from './pieceux.js';
 
 export default class Pieces {
-  constructor(parent) {
+  constructor(parent, owner = null) {
     this.parent = parent;
+    this.owner = owner;
     this.pieceUx = new PieceUx(this.parent);
     this.spots = [];
     this.pieces = [];
@@ -83,25 +84,60 @@ export default class Pieces {
   }
 
   sendTo(piece, spot) {
-    // TODO start sending this piece to this spot
+    // Send piece back to a spot (for auto-return)
+    if (!spot) return;
+
+    // Generate random position within the spot
+    let position = this.pieceAnim._randomPoint(spot);
+
+    // Clamp position to fit within spot
+    piece.spot = spot;
+    let clampedPosition = this.pieceAnim._clampToSpot(piece);
+    piece.position = clampedPosition;
+
+    // Update visual position
+    let [cx, cy] = clampedPosition;
+    let [w, h] = piece.size;
+    this.pieceUx.updatePiecePosition(piece, cx - w/2, cy - h/2);
+
+    // Update text
+    this.pieceAnim._updateText(piece);
   }
 
   _okToDrop(piece, spot) {
-    // TODO, return truthy if this piece (which is being dragged) can land here
+    // Check if piece can be dropped on spot
+    if (this.owner?.canPieceDrop) {
+      return this.owner.canPieceDrop(piece, spot);
+    }
+    return true; // default allow
   }
 
-  _onDrag(piece, spot) {
+  _onDrag(piece) {
     // Called when a drag begins
-    console.log('eee Drag started for piece:', piece.id);
+    if (this.owner?.onPieceDragStart) {
+      this.owner.onPieceDragStart(piece);
+    }
   }
 
   _onDrop(piece, spot) {
-    // TODO called when a piece is dropped
-    console.log('eee Drag ended for piece:', piece.id);
+    // Called when a piece is dropped
+    if (this.owner?.onPieceDrop) {
+      this.owner.onPieceDrop(piece, spot);
+    }
+  }
+
+  _onTap(piece) {
+    // Called when a piece is tapped (without dragging)
+    if (this.owner?.onPieceTap) {
+      this.owner.onPieceTap(piece);
+    }
   }
 
   _onKill(piece) {
-    // TODO we are killing this piece
+    // Called when a piece is killed
+    if (this.owner?.onPieceKill) {
+      this.owner.onPieceKill(piece);
+    }
   }
 
 
@@ -207,6 +243,9 @@ export default class Pieces {
   onFinger(action, pos, pos2) {
     //console.log(`ppp ${action} at (${pos[0]}, ${pos[1]})${pos2 ? ` to (${pos2[0]}, ${pos2[1]})` : ''}`);
 
+    // Track pieces that need text updates
+    let modifiedPieces = new Set();
+
     if (this.dragging) {
       if (action === 'drag' && pos2) {
         // Update piece position while dragging
@@ -216,8 +255,15 @@ export default class Pieces {
         let dy = pos2[1] - pos[1];
         let newCx = cx + dx;
         let newCy = cy + dy;
+
+        // Update piece's logical position
+        this.dragging.piece.position = [newCx, newCy];
+
         // Convert center to top-left for rendering
         this.pieceUx.updatePiecePosition(this.dragging.piece, newCx - w/2, newCy - h/2);
+
+        // Mark piece for text update
+        modifiedPieces.add(this.dragging.piece);
 
         // Highlight spot when dragging over it (use center position)
         let spot = this._findSpot([newCx, newCy]);
@@ -236,17 +282,47 @@ export default class Pieces {
         let newCy = cy + dy;
         this.dragging.piece.position = [newCx, newCy];
 
+        // Mark piece for text update
+        modifiedPieces.add(this.dragging.piece);
+
         // Check if dropped into a spot (using center position)
         let droppedSpot = this._findSpot([newCx, newCy]);
 
-        if (droppedSpot) {
-          // Dropped into a spot - make both the spot and piece current
+        // Check if the drop is valid
+        let canDrop = droppedSpot ? this._okToDrop(this.dragging.piece, droppedSpot) : false;
+
+        if (canDrop) {
+          // Valid drop - assign piece to the new spot
+          this.dragging.piece.spot = droppedSpot;
+          this.dragging.piece.fromSpot = null;
+
+          // Clamp position to fit within the spot
+          let clampedPosition = this.pieceAnim._clampToSpot(this.dragging.piece);
+          this.dragging.piece.position = clampedPosition;
+
+          // Update visual position
+          let [cx, cy] = clampedPosition;
+          let [w, h] = this.dragging.piece.size;
+          this.pieceUx.updatePiecePosition(this.dragging.piece, cx - w/2, cy - h/2);
+
           this._setCurrentSpot(droppedSpot.index);
           this._setCurrentPiece(this.dragging.piece.index);
+          modifiedPieces.add(this.dragging.piece);
+        } else if (this.dragging.piece.fromSpot && this.dragging.piece.fromSpot.autoreturn) {
+          // Invalid drop and fromSpot has autoreturn - send piece back
+          this.sendTo(this.dragging.piece, this.dragging.piece.fromSpot);
+          modifiedPieces.add(this.dragging.piece);
         } else {
-          // Dropped outside any spot - make the piece current, clear spot
-          this._setCurrentPiece(this.dragging.piece.index);
-          this.currentSpot = null;
+          // Invalid drop, no autoreturn - leave piece where it was dropped
+          if (droppedSpot) {
+            // Dropped into a spot (but not allowed) - make both the spot and piece current
+            this._setCurrentSpot(droppedSpot.index);
+            this._setCurrentPiece(this.dragging.piece.index);
+          } else {
+            // Dropped outside any spot - make the piece current, clear spot
+            this._setCurrentPiece(this.dragging.piece.index);
+            this.currentSpot = null;
+          }
         }
 
         this._onDrop(this.dragging.piece, droppedSpot);
@@ -276,17 +352,22 @@ export default class Pieces {
       else if (action === 'down') {
         let p = this._find(pos);
         if (p != null) {
-          // Tapped on a piece - make it current
+          // Tapped on a piece - notify owner and start drag
+          this._onTap(p);
           this._setCurrentPiece(p.index);
           this.currentSpot = null;
           this._highlightPiece(p.index, 2);
           this._moveToTop(p.index);
+          // Track where the piece came from, then clear its spot
+          p.fromSpot = p.spot;
+          p.spot = null;
+          modifiedPieces.add(p);
           this.dragging = {
             piece: p,
             startPos: pos,
             startPosition: [...p.position], // Copy the center position array
           };
-          this._onDrag(p, p.spot);
+          this._onDrag(p);
         } else {
           // Check if tapped on a spot
           let spot = this._findSpot(pos);
@@ -300,6 +381,11 @@ export default class Pieces {
           }
         }
       }
+    }
+
+    // Update text for all modified pieces at the end
+    for (let piece of modifiedPieces) {
+      this.pieceAnim._updateText(piece);
     }
   }
 }

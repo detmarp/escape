@@ -4,13 +4,18 @@ export default class PieceAnim {
   }
 
   _updateText(piece) {
-    // for now, set text contents, with newslines,
-    // id: piece id
-    // if .spot then show that id,
-    // show position[]
-    const spot = piece.spot ? `spot: ${piece.spot.id}` : '';
-    const pos = piece.position ? `pos: [${piece.position.join(', ')}]` : '';
-    piece.textContent = `id: ${piece.id}\n${spot}\n${pos}`;
+    let lines = [];
+    lines.push(`id: ${piece.id}`);
+    if (piece.spot) {
+      lines.push(`spot: ${piece.spot.id}`);
+    }
+    if (piece.fromSpot) {
+      lines.push(`from: ${piece.fromSpot.id}`);
+    }
+    if (piece.position) {
+      lines.push(`pos: [${piece.position.join(', ')}]`);
+    }
+    piece.textContent = lines.filter(line => line).join('\n');
   }
 
   _clampToSpot(piece) {

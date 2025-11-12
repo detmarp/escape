@@ -21,7 +21,7 @@ export default class ScreenMain {
       background: '#b0c0d0',
     });
 
-    this.pieces = new Pieces(this.parent);
+    this.pieces = new Pieces(this.parent, this);
 
     this._makeHeader();
     this._makeBoardArea();
@@ -110,6 +110,8 @@ export default class ScreenMain {
       let x = start[0] + col * size[0];
       let y = start[1] + row * size[1];
       let spot = this.pieces.addSpot([x, y, size[0], size[1]]);
+      spot.cell = i;
+      spot.nopickup = (i < 4);
       this.cellSpots.push(spot);
     }
 
@@ -122,7 +124,9 @@ export default class ScreenMain {
 
     let controlsY = 464 + 48 + 8;
     this.resourceBin = this.pieces.addSpot([0, controlsY, 240, 224]);
+    this.resourceBin.autoreturn = true;
     this.buildingBin = this.pieces.addSpot([240, controlsY, 300, 224]);
+    this.buildingBin.autoreturn = true;
   }
 
   _makeCards() {
@@ -184,5 +188,27 @@ export default class ScreenMain {
 
   _setEditMode(editMode) {
     this.editMode = editMode;
+  }
+
+  // Piece delegate methods
+  canPieceDrop(piece, spot) {
+    console.log('canPieceDrop:', piece.id, spot ? spot.id : 'null');
+    return spot.cell != null;
+  }
+
+  onPieceTap(piece) {
+    console.log('onPieceTap:', piece.id);
+  }
+
+  onPieceDragStart(piece) {
+    console.log('onPieceDragStart:', piece.id);
+  }
+
+  onPieceDrop(piece, spot) {
+    console.log('onPieceDrop:', piece.id, spot ? spot.id : 'null');
+  }
+
+  onPieceKill(piece) {
+    console.log('onPieceKill:', piece.id);
   }
 }
