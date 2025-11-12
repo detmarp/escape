@@ -43,6 +43,7 @@ export default class UxElement {
     this._size(div, params);
     this._colors(div, params);
     this._packing(div, params);
+    div.style.whiteSpace = 'pre-wrap';
     if (params.text) {
       div.textContent = params.text;
     }

@@ -1,6 +1,7 @@
 import Pieces from './pieces.js';
 import TinyBot from './tinybot.js';
 import UxElement from './uxelement.js';
+import Meeples from './meeples.js';
 
 export default class ScreenMain {
   constructor(program) {
@@ -137,20 +138,28 @@ export default class ScreenMain {
   }
 
   _makePieces() {
+    let meeples = new Meeples();
+
     // 5 pieces randomly in resourceBin
-    let [rx, ry, rw, rh] = this.resourceBin.position;
-    for (let i = 0; i < 5; i++) {
-      let x = rx + Math.random() * (rw - 80);
-      let y = ry + Math.random() * (rh - 80);
-      this.pieces.addPiece([x, y, 80, 80]);
+    let resources = this.program.factory.deck.resourceList;
+    for (let resource of resources) {
+      let meeple = meeples.getMeeple(resource);
+      let params = {
+        color: meeple.color,
+        textColor: meeple.textColor,
+      };
+      this.pieces.newPiece(this.resourceBin.id, params);
     }
 
     // 8 pieces randomly in buildingBin
-    let [bx, by, bw, bh] = this.buildingBin.position;
-    for (let i = 0; i < 8; i++) {
-      let x = bx + Math.random() * (bw - 80);
-      let y = by + Math.random() * (bh - 80);
-      this.pieces.addPiece([x, y, 80, 80]);
+    let buildings = this.program.factory.deck.categories;
+    for (let building of buildings) {
+      let meeple = meeples.getMeeple(building);
+      let params = {
+        color: meeple.color,
+        textColor: meeple.textColor,
+      };
+      this.pieces.newPiece(this.buildingBin.id, params);
     }
   }
 

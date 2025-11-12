@@ -1,3 +1,4 @@
+import PieceAnim from './pieceAnim.js';
 import PieceUx from './pieceux.js';
 
 export default class Pieces {
@@ -6,6 +7,9 @@ export default class Pieces {
     this.pieceUx = new PieceUx(this.parent);
     this.spots = [];
     this.pieces = [];
+    this.spotMap = {};
+    this.pieceAnim = new PieceAnim(this);
+    this.pieceMap = {};
     this.spotId = 0;
     this.pieceId = 0;
     this.dragging = null;
@@ -15,28 +19,97 @@ export default class Pieces {
   }
 
   addSpot(rect) {
-    // rect is [x, y, w, h] in logical units
-    let spot = this.pieceUx.makeSpot(this.spotId++, rect);
-    spot.position = rect;
+    // rect is [x, y, w, h] in logical units - spots keep rect as their definition
+    let id = this.spotId++;
+    let spot = this.pieceUx.makeSpot(id, rect);
+    spot.rect = rect;
     spot.index = this.spots.length;
+    spot.pieces = [];
     this.spots.push(spot);
+    this.spotMap[id] = spot;
     return spot;
   }
 
-  addPiece(rect) {
-    // rect is [x, y, w, h] in logical units
-    let piece = this.pieceUx.makePiece(this.pieceId++, rect);
-    piece.position = rect;
+  addPiece(size, position = [0, 0]) {
+    // size is [w, h], position is [x, y] center point in logical units
+    let id = this.pieceId++;
+    let [w, h] = size;
+    let [cx, cy] = position;
+    // Calculate rect for initial rendering
+    let rect = [cx - w/2, cy - h/2, w, h];
+    let piece = this.pieceUx.makePiece(id, rect);
+    // Pieces store position [x, y] and size [w, h] as core properties
+    piece.position = position;
+    piece.size = size;
     piece.index = this.pieces.length;
     this.pieces.push(piece);
+    this.pieceMap[id] = piece;
     return piece;
   }
+
+  newPiece(spotId, params = {}) {
+    let spot = this.spotMap[spotId];
+    let size = params.size || [80, 80];
+    let position = this.pieceAnim._randomPoint(spot);
+    let piece = this.addPiece(size, position);
+    piece.spot = spot;
+
+    // Clamp position and update rendering
+    let clampedPosition = this.pieceAnim._clampToSpot(piece);
+    piece.position = clampedPosition;
+    let [cx, cy] = clampedPosition;
+    let [w, h] = size;
+    this.pieceUx.updatePiecePosition(piece, cx - w/2, cy - h/2);
+
+    if (params.color) {
+      piece.style.backgroundColor = params.color;
+    }
+    if (params.textColor) {
+      piece.style.color = params.textColor;
+    }
+    this.pieceAnim._updateText(piece);
+    return piece;
+  }
+
+  _getPieceRect(piece) {
+    // Calculate rect [x, y, w, h] from position and size
+    let [cx, cy] = piece.position;
+    let [w, h] = piece.size;
+    return [cx - w/2, cy - h/2, w, h];
+  }
+
+  kill(piece) {
+    // TODO set a piece to die; make it immediately logically gone
+  }
+
+  sendTo(piece, spot) {
+    // TODO start sending this piece to this spot
+  }
+
+  _okToDrop(piece, spot) {
+    // TODO, return truthy if this piece (which is being dragged) can land here
+  }
+
+  _onDrag(piece, spot) {
+    // Called when a drag begins
+    console.log('eee Drag started for piece:', piece.id);
+  }
+
+  _onDrop(piece, spot) {
+    // TODO called when a piece is dropped
+    console.log('eee Drag ended for piece:', piece.id);
+  }
+
+  _onKill(piece) {
+    // TODO we are killing this piece
+  }
+
 
   _findSpot(pos) {
     // Find spot at logical position pos = [x, y] - returns last match (top-most)
     let found = null;
     for (let spot of this.spots) {
-      let [x, y, w, h] = spot.position;
+      let [x, y, w, h] = spot.rect;
       if (pos[0] >= x && pos[0] < x + w && pos[1] >= y && pos[1] < y + h) {
         found = spot;
       }
@@ -48,7 +121,10 @@ export default class Pieces {
     // Find piece at logical position pos = [x, y] - returns last match (top-most)
     let found = null;
     for (let piece of this.pieces) {
-      let [x, y, w, h] = piece.position;
+      let [cx, cy] = piece.position; // Center position
+      let [w, h] = piece.size;
+      let x = cx - w/2;
+      let y = cy - h/2;
       if (pos[0] >= x && pos[0] < x + w && pos[1] >= y && pos[1] < y + h) {
         found = piece;
       }
@@ -134,14 +210,17 @@ export default class Pieces {
     if (this.dragging) {
       if (action === 'drag' && pos2) {
         // Update piece position while dragging
-        let [x, y, w, h] = this.dragging.startPosition;
+        let [cx, cy] = this.dragging.startPosition;
+        let [w, h] = this.dragging.piece.size;
         let dx = pos2[0] - pos[0];
         let dy = pos2[1] - pos[1];
-        this.pieceUx.updatePiecePosition(this.dragging.piece, x + dx, y + dy);
+        let newCx = cx + dx;
+        let newCy = cy + dy;
+        // Convert center to top-left for rendering
+        this.pieceUx.updatePiecePosition(this.dragging.piece, newCx - w/2, newCy - h/2);
 
-        // Highlight spot when dragging over it
-        let currentPos = [x + dx + w/2, y + dy + h/2]; // Use center of piece
-        let spot = this._findSpot(currentPos);
+        // Highlight spot when dragging over it (use center position)
+        let spot = this._findSpot([newCx, newCy]);
         if (spot) {
           this._highlightSpot(spot.index, 1);
         } else {
@@ -150,16 +229,15 @@ export default class Pieces {
       }
       else if (action === 'up') {
         // Drop the piece
-        let [x, y, w, h] = this.dragging.startPosition;
+        let [cx, cy] = this.dragging.startPosition;
         let dx = pos[0] - this.dragging.startPos[0];
         let dy = pos[1] - this.dragging.startPos[1];
-        let newX = x + dx;
-        let newY = y + dy;
-        this.dragging.piece.position = [newX, newY, w, h];
+        let newCx = cx + dx;
+        let newCy = cy + dy;
+        this.dragging.piece.position = [newCx, newCy];
 
-        // Check if dropped into a spot
-        let centerPos = [newX + w/2, newY + h/2];
-        let droppedSpot = this._findSpot(centerPos);
+        // Check if dropped into a spot (using center position)
+        let droppedSpot = this._findSpot([newCx, newCy]);
 
         if (droppedSpot) {
           // Dropped into a spot - make both the spot and piece current
@@ -170,6 +248,8 @@ export default class Pieces {
           this._setCurrentPiece(this.dragging.piece.index);
           this.currentSpot = null;
         }
+
+        this._onDrop(this.dragging.piece, droppedSpot);
 
         this._highlightPiece();
         this._highlightSpot(); // Clear hover highlight
@@ -204,8 +284,9 @@ export default class Pieces {
           this.dragging = {
             piece: p,
             startPos: pos,
-            startPosition: [...p.position], // Copy the position array
+            startPosition: [...p.position], // Copy the center position array
           };
+          this._onDrag(p, p.spot);
         } else {
           // Check if tapped on a spot
           let spot = this._findSpot(pos);

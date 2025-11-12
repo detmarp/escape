@@ -48,8 +48,11 @@ export default class PieceUx {
     });
     piece.style.backgroundColor = '#ff0000';
     piece.style.pointerEvents = 'auto'; // Pieces block clicks to elements below
+    piece.style.whiteSpace = 'pre';
     piece.id = id;
-    piece.textContent = `Piece ${id}`;
+    piece.style.fontSize = 'calc(var(--scale) * 12px)';
+    piece.style.lineHeight = '1';
+    piece.style.overflow = 'visible';
     return piece;
   }
 
