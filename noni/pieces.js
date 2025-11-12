@@ -1,4 +1,4 @@
-import PieceAnim from './pieceAnim.js';
+import PieceAnim from './pieceanim.js';
 import PieceUx from './pieceux.js';
 
 export default class Pieces {
