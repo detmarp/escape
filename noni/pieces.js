@@ -382,10 +382,12 @@ export default class Pieces {
           this._setCurrentSpot(droppedSpot.index);
           this._setCurrentPiece(p.id);
           modifiedPieces.add(p);
-        } else if (p.fromSpot && p.fromSpot.autoreturn) {
+        } else if (p.fromSpot) {
+          droppedSpot = p.fromSpot;
           this.sendTo(p, p.fromSpot);
           modifiedPieces.add(p);
         } else {
+          droppedSpot = null;
           this.kill(p);
         }
 

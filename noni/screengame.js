@@ -100,6 +100,7 @@ export default class ScreenMain {
   }
 
   _refreshControls() {
+    console.log('eee tiny.undo:', JSON.stringify(this.tiny.command.undos));
     this.controlRow.innerHTML = '';
     this.uxe.button(this.controlRow, { text: 'Bot', onClick: () => {
       let bot = new TinyBot(this.tiny);
@@ -133,7 +134,6 @@ export default class ScreenMain {
       let y = start[1] + row * size[1];
       let spot = this.pieces.addSpot([x, y, size[0], size[1]]);
       spot.cellIndex = i;
-      spot.nopickup = (i < 4);
       this.cellSpots.push(spot);
     }
 
@@ -283,18 +283,17 @@ export default class ScreenMain {
   }
 
   onPieceDragStart(piece) {
-    console.log('onPieceDragStart:', piece.id);
-    console.log(`${piece.fromSpot} ${piece.fromSpot && piece.fromSpot.cellIndex}`);
-    console.log(`${this.tiny.pending}`);
     if (piece.fromSpot && piece.fromSpot.cellIndex != null && this.tiny.pending) {
       // this is a little indirect, but the idea is to undo the pending resource placement
       this.tiny.command.undo();
+      // Also fake the home spot as the resource bin
+      piece.fromSpot = this.resourceBin;
     }
     this._refresh()
   }
 
   onPieceDrop(piece, spot) {
-    //console.log('onPieceDrop:', piece.id, spot ? spot.id : 'null');
+    console.log('ddd onPieceDrop:', piece.id, spot ? spot.id : 'null');
     if (spot && spot.cellIndex != null) {
       if (piece.resource) {
         let command = `resource ${piece.resource} ${spot.cellIndex}`;
