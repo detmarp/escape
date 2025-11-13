@@ -8,15 +8,15 @@ export default class PieceAnim {
     lines.push(`id: ${piece.id}`);
     if (piece.spot) {
       lines.push(`spot: ${piece.spot.id}`);
-      if (piece.spot.nopickup) {
-        lines.push(`(nopickup)`);
-      }
     }
     if (piece.fromSpot) {
       lines.push(`from: ${piece.fromSpot.id}`);
     }
     if (piece.position) {
       lines.push(`pos: [${piece.position.join(', ')}]`);
+    }
+    if (piece.nopickup) {
+      lines.push(`(nopickup)`);
     }
     piece.textContent = lines.filter(line => line).join('\n');
   }

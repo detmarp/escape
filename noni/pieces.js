@@ -289,7 +289,7 @@ export default class Pieces {
         if (!this.dragging.active && (dx !== 0 || dy !== 0)) {
           // Only now, on first movement, start dragging
           let p = this.dragging.piece;
-          if (p.spot && p.spot.nopickup) {
+          if (p.nopickup) {
             // nopickup: start drag visually, but do not clear .spot or set .fromSpot
           } else {
             p.fromSpot = p.spot;
@@ -358,7 +358,7 @@ export default class Pieces {
 
         // If the piece's spot is still set and spot.nopickup, snap back to real spot
         let p = this.dragging.piece;
-        if (p.spot && p.spot.nopickup) {
+        if (p.nopickup) {
           this.sendTo(p, p.spot);
           modifiedPieces.add(p);
           this._highlightPiece();

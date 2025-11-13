@@ -100,7 +100,6 @@ export default class ScreenMain {
   }
 
   _refreshControls() {
-    console.log('eee tiny.undo:', JSON.stringify(this.tiny.command.undos));
     this.controlRow.innerHTML = '';
     this.uxe.button(this.controlRow, { text: 'Bot', onClick: () => {
       let bot = new TinyBot(this.tiny);
@@ -117,6 +116,7 @@ export default class ScreenMain {
       this.uxe.button(this.controlRow, { text: 'End turn', onClick: () => {
         this.tiny.command.do('endturn');
         this._updateResourceBin();
+        this._updatePiecesOnBoard();
         this._refresh();
       }});
     }
@@ -196,6 +196,21 @@ export default class ScreenMain {
         piece.resource = meeple.name;
       }
     });
+  }
+
+  _updatePiecesOnBoard() {
+    // If there are currently no undos, then fix any pieces in a cell.
+    if (this.tiny.command.undos.length === 0) {
+      for (let piece of this.pieces.pieces) {
+        if (piece.spot && piece.spot.cellIndex != null) {
+            piece.nopickup = true;
+            console.log('www 000');
+        } else {
+          piece.nopickup = false;
+            console.log('www 111');
+        }
+      }
+    }
   }
 
   _updateResourceBin() {

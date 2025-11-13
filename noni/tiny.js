@@ -44,16 +44,28 @@ export default class Tiny {
   }
 
   endTurn() {
-    if (this.hand.resources.picked) {
-      this.hand.resources.drawPile.push(this.hand.resources.picked);
-      this.hand.resources.picked = null;
-      const next = this.hand.resources.drawPile.splice(0, 1);
-      this.hand.resources.row.push(next[0]);
-    }
-
+    console.log(JSON.stringify(this.pending));
+    this._updateHandResources();
     this.pending = null;
 
     this._refresh();
+  }
+
+  _updateHandResources() {
+    // At the end of a resource placement in a turn, move the current resources
+if (this.pending && typeof this.pending.handIndex === 'number') {
+  // Remove the picked resource from row
+  const picked = this.hand.resources.row.splice(this.pending.handIndex, 1)[0];
+  // Push it to the end of drawPile
+  this.hand.resources.drawPile.push(picked);
+  // Pop the 0th item from drawPile and push onto row
+  const next = this.hand.resources.drawPile.splice(0, 1);
+  if (next.length > 0) {
+    this.hand.resources.row.push(next[0]);
+  }
+  // Clear picked
+  this.hand.resources.picked = null;
+}
   }
 
   getResources() {
@@ -112,14 +124,6 @@ export default class Tiny {
       handIndex: handResourceIndex < 0 ? null : handResourceIndex,
     };
     this._refresh();
-  }
-
-  nextHandResources() {
-    const i = this.hand.resources.row.indexOf(resource);
-    if (i !== -1) {
-      this.hand.resources.row.splice(i, 1);
-    }
-    this.hand.resources.picked = resource;
   }
 
   doCard(position, placement) {
