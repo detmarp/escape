@@ -51,7 +51,13 @@ export default class ScreenMain {
   _goto(parent, label, screen) {
     this.uxe.button(parent, {
       text: label,
-      onClick: () => { this.program.goto.to(screen); },
+      onClick: () => {
+        if (!this.program.tiny) {
+          // TODO This is a HACK for the tiny creation flow
+          this.program.newGame();
+        }
+        this.program.goto.to(screen);
+      },
     });
   }
 
