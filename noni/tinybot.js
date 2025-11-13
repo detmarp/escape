@@ -19,7 +19,7 @@ export default class TinyBot {
       return;
     }
 
-    if (this.tiny.doneResource) {
+    if (this.tiny.pending) {
       this.tiny.endTurn();
       return;
     }

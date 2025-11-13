@@ -25,6 +25,19 @@ export default class ScreenMain {
 
     this.uxe.text(this.box, { text: 'Main Screen', });
 
+    this._goto(this.box, 'Pregame 🛠️', 'pregame');
+    this._goto(this.box, 'Game 🪙', 'game');
+    this._goto(this.box, 'Editor ✏️', 'editor');
+    this._goto(this.box, 'Credits 📜', 'credits');
+    this._goto(this.box, 'Settings ⚙️', 'settings');
+
+    if (this.program.saveData.data.quickstart) {
+      this.uxe.button(this.box, {
+        text: 'Quick start 🚀',
+        onClick: () => { this._onQuickStart(); },
+      });
+    }
+
     this.daily = this._gamesBox('Game of the day');
     this._gameButton(this.daily);
     this._gameButton(this.daily);
@@ -33,12 +46,6 @@ export default class ScreenMain {
     this._gameButton(this.other);
     this._gameButton(this.other);
     this._gameButton(this.other);
-
-    this._goto(this.box, 'Pregame', 'pregame');
-    this._goto(this.box, 'Game', 'game');
-    this._goto(this.box, 'Editor', 'editor');
-    this._goto(this.box, 'Credits', 'credits');
-    this._goto(this.box, 'Settings', 'settings');
   }
 
   _goto(parent, label, screen) {
@@ -77,5 +84,10 @@ export default class ScreenMain {
     this.uxe.text(box, { text: 'Game' });
 
     return box;
+  }
+
+  _onQuickStart() {
+    this.program.newGame();
+    this.program.goto.to('game');
   }
 }

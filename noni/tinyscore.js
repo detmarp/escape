@@ -61,12 +61,11 @@ export default class TinyScore {
       categories: this.categories,
       scratch: this.scratch,
     };
-    console.log(`sss: ${JSON.stringify(debug)}`);
+    //console.log(`sss score: ${JSON.stringify(debug)}`);
   }
 
   _findAdjacent(cellIndex) {
     let adjacent = [];
-    console.log(`aaa adjacent to ${cellIndex}`);
     this._findBuildings(b => {
       return (
         Math.abs(b.index % 4 - cellIndex % 4) + Math.abs(Math.floor(b.index / 4) - Math.floor(cellIndex / 4)) === 1
@@ -154,7 +153,7 @@ export default class TinyScore {
   }
 
   score_black(card, params) {
-    console.log(`xxx black ${card.short} ${JSON.stringify(params)}`);
+//    console.log(`xxx black ${card.short} ${JSON.stringify(params)}`);
   }
 
   score_thtr(card) {

@@ -3,6 +3,7 @@ import PieceUx from './pieceux.js';
 
 export default class Pieces {
   constructor(parent, owner = null) {
+  this.lastDragSpot = null;
     this.parent = parent;
     this.owner = owner;
     this.pieceUx = new PieceUx(this.parent);
@@ -53,7 +54,7 @@ export default class Pieces {
     let size = params.size || [80, 80];
     let position = this.pieceAnim._randomPoint(spot);
     let piece = this.addPiece(size, position);
-    piece.spot = spot;
+    this._setPieceSpot(piece, spot);
 
     // Clamp position and update rendering
     let clampedPosition = this.pieceAnim._clampToSpot(piece);
@@ -108,7 +109,7 @@ export default class Pieces {
   let position = this.pieceAnim._randomPoint(spot);
 
   // Clamp position to fit within spot
-  piece.spot = spot;
+  this._setPieceSpot(piece, spot);
   piece.fromSpot = null;
   let clampedPosition = this.pieceAnim._clampToSpot(piece);
   piece.position = clampedPosition;
@@ -259,6 +260,21 @@ export default class Pieces {
     this.pieceUx.movePieceToTop(piece);
   }
 
+  _setPieceSpot(piece, spot) {
+    if (piece.spot !== spot) {
+      if (piece.spot && piece.spot.pieces) {
+        const idx = piece.spot.pieces.indexOf(piece);
+        if (idx !== -1) {
+          piece.spot.pieces.splice(idx, 1);
+        }
+      }
+      piece.spot = spot;
+      if (spot && spot.pieces) {
+        spot.pieces.push(piece);
+      }
+    }
+  }
+
   onFinger(action, pos, pos2) {
     //console.log(`ppp ${action} at (${pos[0]}, ${pos[1]})${pos2 ? ` to (${pos2[0]}, ${pos2[1]})` : ''}`);
 
@@ -277,7 +293,7 @@ export default class Pieces {
             // nopickup: start drag visually, but do not clear .spot or set .fromSpot
           } else {
             p.fromSpot = p.spot;
-            p.spot = null;
+            this._setPieceSpot(p, null);
             modifiedPieces.add(p);
           }
           this.dragging.active = true;
@@ -306,6 +322,23 @@ export default class Pieces {
         } else {
           this._highlightSpot();
         }
+
+          // Call okToDrop (owner.canPieceDrop) when entering/exiting a spot
+          if (spot !== this.lastDragSpot) {
+            if (this.owner && typeof this.owner.canPieceDrop === 'function') {
+              let canDrop = this._okToDrop(this.dragging.piece, spot);
+              // Optionally, notify owner of enter/exit (customize as needed)
+              if (spot) {
+                if (this.owner.onDragEnterSpot) {
+                  this.owner.onDragEnterSpot(this.dragging.piece, spot, canDrop);
+                }
+              }
+              if (this.lastDragSpot && this.owner.onDragExitSpot) {
+                this.owner.onDragExitSpot(this.dragging.piece, this.lastDragSpot);
+              }
+            }
+            this.lastDragSpot = spot;
+          }
       }
       else if (action === 'up') {
         if (!this.dragging.active) {
@@ -339,7 +372,7 @@ export default class Pieces {
         let canDrop = droppedSpot ? this._okToDrop(p, droppedSpot) : false;
 
         if (canDrop) {
-          p.spot = droppedSpot;
+          this._setPieceSpot(p, droppedSpot)  ;
           p.fromSpot = null;
           let clampedPosition = this.pieceAnim._clampToSpot(p);
           p.position = clampedPosition;

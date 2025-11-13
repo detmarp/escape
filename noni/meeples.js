@@ -34,6 +34,7 @@ export default class Meeples {
     }
     const meeple = this.meeples[name] || this.meeples.default;
     const result = { ...meeple };
+    result.name = name;
     result.textColor = this._textColor(result.color);
     return result;
   }

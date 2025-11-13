@@ -4,7 +4,6 @@ import TinyHistory from './tinyhistory.js';
 import TinyFactory from './tinyfactory.js';
 import Container from './container.js';
 import GoToScreen from './gotoscreen.js';
-import UxElement from './uxelement.js';
 
 export default class Program {
   constructor(parent) {
@@ -23,6 +22,8 @@ export default class Program {
 
     await this.factory.initialize();
 
+    this.currentGame = this._getCurrentFromHistory();
+
     this.container.run();
 
     this.container.onResize = () => this._onResize();
@@ -30,11 +31,18 @@ export default class Program {
     this.background = new Background(this.container.outer);
 
     this.goto.to('main');
-    //this.goto.to('settings');
-    //this.goto.to('credits');
-    this.newGame();
-    //this.goto.to('pregame');
-    this.goto.to('game');
+
+    let tryAutoStart = this.saveData.data.autoquickstart;
+    if (this.saveData.data.autocontinue && this.currentGame) {
+      if (this.tryContinue()) {
+        tryAutoStart = false;
+      }
+    }
+    if (tryAutoStart) {
+      this.newGame();
+      this.goto.to('game');
+    }
+
 
     this._onResize();
   }
@@ -45,11 +53,43 @@ export default class Program {
     this.save();
   }
 
+  tryContinue() {
+    if (this.currentGame) {
+      this.tiny = this.currentGame;
+      this.save();
+      this.gotoMode('gameboard');
+      return true;
+    }
+  }
+
   save() {
     this.saveData.save();
     if (this.saveData.data.logsavedata) {
       this.saveData._debugPrint('Saved:');
     }
+  }
+
+  saveCurrent(tiny) {
+    this.saveData.data = this.saveData.data || {};
+    let history = new TinyHistory(this.factory, this.saveData.data.history);
+    let data = history.saveGame(tiny);
+    this.saveData.data.history = data;
+    this.save();
+  }
+
+  _getCurrentFromHistory() {
+    let recent;
+    const hist = (this.saveData && this.saveData.data && this.saveData.data.history) || [];
+    for (const item of hist) {
+      if (!item || item.gameOver) {
+        continue;
+      }
+      if (!recent || recent.timeStamp < item.timeStamp) {
+        recent = item;
+      }
+    }
+
+    return recent && this.factory.tinyFromSaveData(recent);
   }
 
   _onResize() {

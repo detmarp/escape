@@ -61,7 +61,7 @@ export default class TinyScore {
       categories: this.categories,
       scratch: this.scratch,
     };
-    console.log(`sss: ${JSON.stringify(debug)}`);
+    console.log(`sss score: ${JSON.stringify(debug)}`);
   }
 
   _findAdjacent(cellIndex) {

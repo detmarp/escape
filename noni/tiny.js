@@ -1,6 +1,7 @@
 import TinyBoard from './tinyboard.js';
 import TinyScore from './tinyscore.js';
 import TinySpecial from './tinyspecial.js';
+import TinyCommand from './tinycommand.js';
 
 export default class Tiny {
   constructor(hand, rules) {
@@ -9,7 +10,9 @@ export default class Tiny {
     this.board = new TinyBoard(this);
     this.special = new TinySpecial(this);
     this.score = new TinyScore(this);
+    this.command = new TinyCommand(this);
     this.timeStamp = Date.now();
+    this.state = 'ready';
 
     this.startGame();
   }
@@ -18,12 +21,23 @@ export default class Tiny {
     this._refresh();
   }
 
+  doCommand(command) {
+    this.command.do(command);
+  }
+
   _refresh() {
+    let hackWasStarted = this.started;
     this.started = this.started || this._countCells(cell => cell.building || cell.resource) > 0;
+    if (!hackWasStarted && this.started) {
+      this.state = 'playing';
+    }
     if (!this.gameOver) {
       if (this._countCells(cell => cell.building || cell.resource) >= 16) {
-        this.gameOver = true;
-        this.gameOverTimeStamp = Date.now();
+        if (!this.pending) {
+          this.gameOver = true;
+          this.state = 'gameover';
+          this.gameOverTimeStamp = Date.now();
+        }
       }
     }
     this.score.calculate();
@@ -37,8 +51,7 @@ export default class Tiny {
       this.hand.resources.row.push(next[0]);
     }
 
-    this.doneResource = null;
-    this.full = false;
+    this.pending = null;
 
     this._refresh();
   }
@@ -55,7 +68,7 @@ export default class Tiny {
     // return an array of legal placements, or null
     // position and color are optional, but if present will filter results
     // TODO detmar - not really implemented
-    if (this.gameOver) {
+    if (this.gameOver || this.pending) {
       return;
     }
 
@@ -92,11 +105,16 @@ export default class Tiny {
       return;
     }
     this.board.cells[position].resource = resource;
-    this.doneResource = {
+    let handResourceIndex = this.hand.resources.row.indexOf(resource);
+    this.pending = {
       cellIndex: position,
       resource: resource,
+      handIndex: handResourceIndex < 0 ? null : handResourceIndex,
     };
+    this._refresh();
+  }
 
+  nextHandResources() {
     const i = this.hand.resources.row.indexOf(resource);
     if (i !== -1) {
       this.hand.resources.row.splice(i, 1);
@@ -109,7 +127,7 @@ export default class Tiny {
       return;
     }
 
-    for (let i=0; i < placement.placementIndexes.length; i++) {
+    for (let i = 0; i < placement.placementIndexes.length; i++) {
       const idx = placement.placementIndexes[i];
       this.board.cells[idx].resource = null;
       this.board.cells[idx].building = null;
@@ -120,6 +138,7 @@ export default class Tiny {
     if (placement.card.special) {
       this.special.addSpecial(placement.card.special, { cell: position });
     }
+    this._refresh();
   }
 
   doSpecial(id, params) {

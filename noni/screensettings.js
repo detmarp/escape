@@ -30,8 +30,9 @@ export default class ScreenMain {
       onClick: () => { this._onExit(); },
     });
     this._text('System');
-    this._addSettingsToggle('Show quick start', 'quickstart');
     this._addSettingsToggle('Auto-continue last game', 'autocontinue');
+    this._addSettingsToggle('Show quick start', 'quickstart');
+    this._addSettingsToggle('Automatic quick start', 'autoquickstart');
     this._text('In-game');
     this._addSettingsToggle('Allow edit mode', 'editmode');
     this._addSettingsToggle('Preview resources', 'previewresources');
@@ -58,9 +59,6 @@ export default class ScreenMain {
     this.uxe.text(this.box, {
       text: text,
     });
-  }
-
-  _addSettingsToggle(label, key) {
   }
 
   _onExit() {
@@ -93,7 +91,11 @@ export default class ScreenMain {
 
   _addCheckbox(label, checked, onChange) {
     const container = document.createElement('div');
+    this.box.appendChild(container);
+
     const checkbox = document.createElement('input');
+    container.appendChild(checkbox);
+
     checkbox.type = 'checkbox';
     checkbox.checked = checked;
     checkbox.id = `checkbox-${label.replace(/\s+/g, '-').toLowerCase()}`;
@@ -104,12 +106,10 @@ export default class ScreenMain {
     });
 
     const labelElement = document.createElement('label');
+    container.appendChild(labelElement);
+
     labelElement.htmlFor = checkbox.id;
     labelElement.textContent = label;
-
-    container.appendChild(checkbox);
-    container.appendChild(labelElement);
-    this.parent.appendChild(container);
     return checkbox;
   }
 

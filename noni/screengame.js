@@ -14,6 +14,11 @@ export default class ScreenMain {
   }
 
   run() {
+    this._rebuild();
+  }
+
+  _rebuild() {
+    // Keep the tiny game state, but rebuild the screen
     this.parent.innerHTML = '';
     this.box = this.uxe.box(this.parent, {
       fill: true,
@@ -30,7 +35,9 @@ export default class ScreenMain {
     this._makeCards();
     this._makePieces();
 
-    this.refresh();
+    this._updateResourceBin();
+
+    this._refresh();
   }
 
   _makeHeader() {
@@ -67,7 +74,7 @@ export default class ScreenMain {
         size: [48, 40],
         border: '#000000',
         radius: 4,
-        text: 'Edit',
+        text: 'Edit\noff',
       });
     }
 
@@ -84,19 +91,34 @@ export default class ScreenMain {
 
   _makeControls() {
     let y = 464;
-    let controlRow = this.uxe.box(this.box, {
+    this.controlRow = this.uxe.box(this.box, {
       rect: [0, y, 540, 48],
       border: '#000000',
       row: true,
     });
-    this.uxe.button(controlRow, { text: 'Button 1', onClick: () => {
+    this._refreshControls();
+  }
+
+  _refreshControls() {
+    this.controlRow.innerHTML = '';
+    this.uxe.button(this.controlRow, { text: 'Bot', onClick: () => {
       let bot = new TinyBot(this.tiny);
       bot.makeMove();
-      this.refresh();
+      this._rebuild();
     }});
-    this.uxe.button(controlRow, { text: 'Button 2' });
-    this.uxe.button(controlRow, { text: 'Button 3' });
-    this.uxe.button(controlRow, { text: 'Button 4' });
+    if (this.tiny.command.undos.length > 0) {
+      this.uxe.button(this.controlRow, { text: 'Undo', onClick: () => {
+        this.tiny.command.undo();
+        this._rebuild();
+      }});
+    }
+    if (this.tiny.pending) {
+      this.uxe.button(this.controlRow, { text: 'End turn', onClick: () => {
+        this.tiny.command.do('endturn');
+        this._updateResourceBin();
+        this._refresh();
+      }});
+    }
   }
 
   _makeBins() {
@@ -110,7 +132,7 @@ export default class ScreenMain {
       let x = start[0] + col * size[0];
       let y = start[1] + row * size[1];
       let spot = this.pieces.addSpot([x, y, size[0], size[1]]);
-      spot.cell = i;
+      spot.cellIndex = i;
       spot.nopickup = (i < 4);
       this.cellSpots.push(spot);
     }
@@ -141,19 +163,14 @@ export default class ScreenMain {
     });
   }
 
+  _getResourcePool() {
+    //let resources = this.program.factory.deck.resourceList;
+    let resources = this.tiny.getResources();
+    return resources;
+  }
+
   _makePieces() {
     let meeples = new Meeples();
-
-    // 5 pieces randomly in resourceBin
-    let resources = this.program.factory.deck.resourceList;
-    for (let resource of resources) {
-      let meeple = meeples.getMeeple(resource);
-      let params = {
-        color: meeple.color,
-        textColor: meeple.textColor,
-      };
-      this.pieces.newPiece(this.resourceBin.id, params);
-    }
 
     // 8 pieces randomly in buildingBin
     let buildings = this.program.factory.deck.categories;
@@ -163,11 +180,63 @@ export default class ScreenMain {
         color: meeple.color,
         textColor: meeple.textColor,
       };
-      this.pieces.newPiece(this.buildingBin.id, params);
+      let piece = this.pieces.newPiece(this.buildingBin.id, params);
+      piece.building = meeple;
+    }
+
+    // resources on board
+    this.tiny.board.cells.forEach((cell, i) => {
+      if (cell.resource) {
+        let meeple = meeples.getMeeple(cell.resource);
+        let params = {
+          color: meeple.color,
+          textColor: meeple.textColor,
+        };
+        let piece = this.pieces.newPiece(this.cellSpots[i].id, params);
+        piece.resource = meeple.name;
+      }
+    });
+  }
+
+  _updateResourceBin() {
+    let resources = this._getResourcePool();
+    let binResources = [];
+    this.resourceBin.pieces.forEach(piece => {
+      if (piece.resource) {
+        binResources.push(piece.resource);
+      }
+    });
+    console.log(`rrr 0 Updating resource bin...${JSON.stringify(resources)}, ${JSON.stringify(binResources)}`);
+    // One-to-one match: remove matched items from binResources copy
+    let binCopy = [...binResources];
+    let newResources = [];
+    for (let resource of resources) {
+      const idx = binCopy.indexOf(resource);
+      if (idx !== -1) {
+        binCopy.splice(idx, 1);
+      } else {
+        newResources.push(resource);
+      }
+    }
+    console.log(`rrr Updating resource bin. New resources: ${JSON.stringify(newResources)}`);
+    // Now newResources contains only those not matched in binResources
+    let meeples = new Meeples();
+    for (let resource of newResources) {
+      let meeple = meeples.getMeeple(resource);
+      let params = {
+        color: meeple.color,
+        textColor: meeple.textColor,
+      };
+      let piece = this.pieces.newPiece(this.resourceBin.id, params);
+      piece.resource = meeple.name;
     }
   }
 
-  refresh() {
+  _refresh() {
+
+    this._refreshControls();
+
+    // refresh display text
     for (let i = 0; i < 16; i++) {
       let cell = this.tiny.board.cells[i];
       let parts = [];
@@ -192,23 +261,51 @@ export default class ScreenMain {
 
   // Piece delegate methods
   canPieceDrop(piece, spot) {
-    console.log('canPieceDrop:', piece.id, spot ? spot.id : 'null');
-    return spot.cell != null;
+    if (!spot || spot.cellIndex == null) {
+      return;
+    }
+    if (this.tiny.pending) {
+      return;
+    }
+    let cell = this.tiny.board.cells[spot.cellIndex];
+    if (cell.resource || cell.building) {
+      return;
+    }
+    // Can drop building if cell is empty
+    if (piece.resource) {
+      return true;
+    }
   }
 
   onPieceTap(piece) {
-    console.log('onPieceTap:', piece.id);
+    //console.log('onPieceTap:', piece.id);
+    this._refresh()
   }
 
   onPieceDragStart(piece) {
     console.log('onPieceDragStart:', piece.id);
+    console.log(`${piece.fromSpot} ${piece.fromSpot && piece.fromSpot.cellIndex}`);
+    console.log(`${this.tiny.pending}`);
+    if (piece.fromSpot && piece.fromSpot.cellIndex != null && this.tiny.pending) {
+      // this is a little indirect, but the idea is to undo the pending resource placement
+      this.tiny.command.undo();
+    }
+    this._refresh()
   }
 
   onPieceDrop(piece, spot) {
-    console.log('onPieceDrop:', piece.id, spot ? spot.id : 'null');
+    //console.log('onPieceDrop:', piece.id, spot ? spot.id : 'null');
+    if (spot && spot.cellIndex != null) {
+      if (piece.resource) {
+        let command = `resource ${piece.resource} ${spot.cellIndex}`;
+        this.tiny.command.do(command);
+      }
+    }
+    this._refresh()
   }
 
   onPieceKill(piece) {
-    console.log('onPieceKill:', piece.id);
+    //console.log('onPieceKill:', piece.id);
+    this._refresh()
   }
 }
