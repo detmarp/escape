@@ -12,6 +12,13 @@
       box-sizing: border-box;
     }
 
+    /* Restore user-select and touch-action for form controls */
+    input, label, button, select, textarea {
+      -webkit-user-select: auto !important;
+      user-select: auto !important;
+      touch-action: auto !important;
+    }
+
     html,
     body {
       margin: 0;

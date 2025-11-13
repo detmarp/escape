@@ -90,26 +90,26 @@ export default class ScreenMain {
   }
 
   _addCheckbox(label, checked, onChange) {
-    const container = document.createElement('div');
-    this.box.appendChild(container);
+    // Use a <label> wrapper so the entire area is clickable/tappable
+    const wrapper = document.createElement('label');
+    wrapper.style.display = 'flex';
+    wrapper.style.alignItems = 'center';
+    wrapper.style.cursor = 'pointer';
+    this.box.appendChild(wrapper);
 
     const checkbox = document.createElement('input');
-    container.appendChild(checkbox);
-
     checkbox.type = 'checkbox';
     checkbox.checked = checked;
-    checkbox.id = `checkbox-${label.replace(/\s+/g, '-').toLowerCase()}`;
+    checkbox.style.marginRight = '0.5em';
     checkbox.addEventListener('change', (e) => {
       if (typeof onChange === 'function') {
         onChange(e.target.checked);
       }
     });
+    wrapper.appendChild(checkbox);
 
-    const labelElement = document.createElement('label');
-    container.appendChild(labelElement);
-
-    labelElement.htmlFor = checkbox.id;
-    labelElement.textContent = label;
+    const textNode = document.createTextNode(label);
+    wrapper.appendChild(textNode);
     return checkbox;
   }
 
