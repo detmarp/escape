@@ -121,10 +121,11 @@ export default class UxElement {
       el.style.display = 'flex';
       el.style.alignItems = 'center';
       el.style.background = '#fff7d1ff';
+      el.style.color = '#35312fff';
     }
 
     if (params.onLeftClick) {
-      let left = el('🏠', true);
+      let left = el('<🏠', true);
       left.onclick = params.onLeftClick;
       styleButton(left);
     }
