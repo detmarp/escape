@@ -41,19 +41,11 @@ export default class ScreenMain {
   }
 
   _makeHeader() {
-    let header = this.uxe.box(this.box, {
-      rect: [0, 0, 540, 48],
-      border: '#000000',
-      row: true,
+    let header = this.uxe.headerBar(this.box, {
+      onLeftClick: () => { this.program.goto.to('main'); },
+      streak: 0,
+      score: 22,
     });
-    this.uxe.button(header, {
-      text: '<',
-      onClick: () => { this.program.goto.to('main'); },
-    });
-    this.uxe.text(header, { text: 'Game', });
-    this.uxe.text(header, { text: 'Score: 0', });
-    this.uxe.text(header, { text: 'game id', });
-
   }
 
   _makeBoardArea() {

@@ -25,7 +25,11 @@ export default class ScreenMain {
     });
 
     this.uxe.headerBar(this.box, {
-      text: 'Main Screen 🪙 ⯇🏠 ☰ ◀️ 🔙 ⛭ ⇜ ↶ 🏆'
+      onRightClick: () => { this.program.goto.to('settings'); },
+      info: 'Info',
+      text: 'Tiny Towns',
+      streak: 0,
+      score: 22,
     });
     this.uxe.text(this.box, { text: 'Main Screen', });
 

@@ -1,6 +1,15 @@
 export default class UxElement {
   constructor(container) {
     this.container = container;
+    this.color = {
+      border: '#000000',
+      background: '#ffffff',
+      text: '#000000',
+      headerBorder: '#ce9852ff',
+      headerBackground: '#fcd8a4ff',
+      headerText: '#35312fff',
+      infoColor: '#666666',
+    };
   }
 
   testFill(parent, params = {}) {
@@ -70,9 +79,84 @@ export default class UxElement {
   headerBar(parent, params = {}) {
     // retuned element has a .update(params) method
     let p2 = Object.assign({}, params);
-    p2.rect ||= [0, 0, 540, 40];
-    p2.background ||= '#eeeeee';
+    p2.rect ||= [0, 0, 540, 48];
+    p2.background ||= this.color.headerBackground;
+    p2.row ||= true;
+    p2.text = '';
+
     let div = this.box(parent, p2);
+    div.style.display = 'flex';
+    div.style.flexDirection = 'row';
+    div.style.alignItems = 'center';
+    div.style.borderBottom = `calc(var(--scale) * 2px) solid ${this.color.headerBorder}`;
+    div.style.paddingLeft = `calc(${0.5 * 16} * var(--scale) * 1px)`;
+    div.style.columnGap = `calc(${1 * 16} * var(--scale) * 1px)`;
+    div.style.fontSize = `calc(1.4 * 16 * var(--scale) * 1px)`;
+
+    function el(text) {
+      let e = document.createElement('div');
+      div.appendChild(e);
+      e.style.display = 'flex';
+      e.style.alignItems = 'center';
+      if (text) {
+        e.textContent = text;
+      }
+      e.style.height = '100%';
+      return e;
+    }
+    function styleInfo(el) {
+      el.style.border = `calc(var(--scale) * 1px) solid #242321ff`;
+      el.style.borderRadius = `calc(var(--scale) * 4px)`;
+      el.style.padding = `0 calc(var(--scale) * 8px)`;
+      el.style.height = '75%';
+      el.style.display = 'flex';
+      el.style.alignItems = 'center';
+      el.style.background = '#fdfaf1ff';
+    }
+    function styleButton(el) {
+      el.style.border = `calc(var(--scale) * 3px) solid #242321ff`;
+      el.style.borderRadius = `calc(var(--scale) * 8px)`;
+      el.style.padding = `0 calc(var(--scale) * 8px)`;
+      el.style.height = '85%';
+      el.style.display = 'flex';
+      el.style.alignItems = 'center';
+      el.style.background = '#fff7d1ff';
+    }
+
+    if (params.onLeftClick) {
+      let left = el('🏠');
+      left.onclick = params.onLeftClick;
+      styleButton(left);
+    }
+    if (params.streak != null) {
+      let streak = el(`🏆 ${params.streak}`);
+      styleInfo(streak);
+    }
+    if (params.text) {
+      let center = el(params.text);
+    }
+    if (params.score != null) {
+      let s = el();
+      styleInfo(s);
+      div.score = s;
+    }
+    if (params.info) {
+      let info = el(params.info);
+      info.style.color = this.color.infoColor;
+    }
+    if (params.onRightClick) {
+      let right = el('⚙️');
+      right.onclick = params.onRightClick;
+      styleButton(right);
+    }
+
+    div.update = (newParams = {}) => {
+      if (newParams.score != null && div.score) {
+        div.score.textContent = `Score ${newParams.score}`;
+      }
+    };
+    div.update(params);
+
     return div
   }
 
