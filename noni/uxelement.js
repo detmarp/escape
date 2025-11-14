@@ -44,6 +44,7 @@ export default class UxElement {
     this._colors(div, params);
     this._packing(div, params);
     div.style.whiteSpace = 'pre-wrap';
+    div.onclick = params.onClick || (() => {});
     if (params.text) {
       div.textContent = params.text;
     }
@@ -64,6 +65,15 @@ export default class UxElement {
     div.textContent = params.text || 'Button';
     div.onclick = params.onClick || (() => {});
     return div;
+  }
+
+  headerBar(parent, params = {}) {
+    // retuned element has a .update(params) method
+    let p2 = Object.assign({}, params);
+    p2.rect ||= [0, 0, 540, 40];
+    p2.background ||= '#eeeeee';
+    let div = this.box(parent, p2);
+    return div
   }
 
   _size(div, params = {}) {

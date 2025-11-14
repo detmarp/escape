@@ -87,6 +87,10 @@ export default class ScreenMain {
       border: '#000000',
       text: 'score',
     });
+
+    this.boardMarkers = this.uxe.box(this.parent, {
+      rect: [70, 54, 400, 400],
+    });
   }
 
   _makeControls() {
@@ -100,6 +104,7 @@ export default class ScreenMain {
   }
 
   _refreshControls() {
+    // buttons
     this.controlRow.innerHTML = '';
     this.uxe.button(this.controlRow, { text: 'Bot', onClick: () => {
       let bot = new TinyBot(this.tiny);
@@ -119,6 +124,23 @@ export default class ScreenMain {
         this._updatePiecesOnBoard();
         this._refresh();
       }});
+    }
+
+    // placement marker
+    this.boardMarkers.innerHTML = '';
+    console.log('mmm 000');
+    if (this.tiny.buildingPlacements && this.tiny.buildingPlacements.length > 0) {
+      console.log('mmm 111');
+      let placement = this.tiny.buildingPlacements[0];
+      placement.resourceIndexes.forEach(i => {
+        let rect = [i % 4 * 100, Math.floor(i / 4) * 100, 100, 100];
+        let marker = this.uxe.box(this.boardMarkers, {
+          rect: rect,
+          border: '#0000ff',
+          borderWidth: 3,
+          radius: 20,
+        });
+      });
     }
   }
 
@@ -204,10 +226,8 @@ export default class ScreenMain {
       for (let piece of this.pieces.pieces) {
         if (piece.spot && piece.spot.cellIndex != null) {
             piece.nopickup = true;
-            console.log('www 000');
         } else {
           piece.nopickup = false;
-            console.log('www 111');
         }
       }
     }
@@ -221,7 +241,6 @@ export default class ScreenMain {
         binResources.push(piece.resource);
       }
     });
-    console.log(`rrr 0 Updating resource bin...${JSON.stringify(resources)}, ${JSON.stringify(binResources)}`);
     // One-to-one match: remove matched items from binResources copy
     let binCopy = [...binResources];
     let newResources = [];
@@ -233,7 +252,6 @@ export default class ScreenMain {
         newResources.push(resource);
       }
     }
-    console.log(`rrr Updating resource bin. New resources: ${JSON.stringify(newResources)}`);
     // Now newResources contains only those not matched in binResources
     let meeples = new Meeples();
     for (let resource of newResources) {
@@ -308,7 +326,6 @@ export default class ScreenMain {
   }
 
   onPieceDrop(piece, spot) {
-    console.log('ddd onPieceDrop:', piece.id, spot ? spot.id : 'null');
     if (spot && spot.cellIndex != null) {
       if (piece.resource) {
         let command = `resource ${piece.resource} ${spot.cellIndex}`;

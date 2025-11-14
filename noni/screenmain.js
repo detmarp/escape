@@ -1,3 +1,4 @@
+import TinyHistory from './tinyhistory.js';
 import UxElement from './uxelement.js';
 
 export default class ScreenMain {
@@ -23,6 +24,9 @@ export default class ScreenMain {
       border: '#000000',
     });
 
+    this.uxe.headerBar(this.box, {
+      text: 'Main Screen 🪙 ⯇🏠 ☰ ◀️ 🔙 ⛭ ⇜ ↶ 🏆'
+    });
     this.uxe.text(this.box, { text: 'Main Screen', });
 
     this._goto(this.box, 'Pregame 🛠️', 'pregame');
@@ -38,10 +42,12 @@ export default class ScreenMain {
       });
     }
 
+    let history = new TinyHistory(this.program.factory, this.program.saveData.data.history);
     this.daily = this._gamesBox('Game of the day');
-    this._gameButton(this.daily);
-    this._gameButton(this.daily);
-    this._gameButton(this.daily);
+    let daily = history.getDailyGames(15);
+    daily.forEach(e => {
+      this._gameButton(this.daily, e);
+    });
     this.other = this._gamesBox('Other games');
     this._gameButton(this.other);
     this._gameButton(this.other);
@@ -74,17 +80,29 @@ export default class ScreenMain {
 
     let inner = this.uxe.box(outer, {
       fill: true,
-      row: false,
+      row: true,
     });
-
+    // Ensure the inner box uses flex row and wraps its children
+    inner.style.flexWrap = 'wrap';
     return inner;
   }
 
-  _gameButton(parent) {
+  _gameButton(parent, entry) {
     let box = this.uxe.box(parent, {
       background: '#e0e0e0',
       border: '#999999',
       radius: this.container.u(5),
+      onClick: () => {
+        let history = new TinyHistory(this.program.factory, this.program.saveData.data.history);
+        let tiny = history.tinyFromObject(entry);
+        this.program.newGame(tiny);
+        if (tiny.started) {
+          this.program.goto.to('game');
+        }
+        else {
+          this.program.goto.to('pregame');
+        }
+      },
     });
 
     this.uxe.text(box, { text: 'Game' });

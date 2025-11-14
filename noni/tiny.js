@@ -40,6 +40,10 @@ export default class Tiny {
         }
       }
     }
+
+    this.buildingPlacements = this.getBuildingPlacements();
+    console.log(`bbb placements: ${this.buildingPlacements.length}`);
+
     this.score.calculate();
   }
 
