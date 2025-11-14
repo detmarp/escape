@@ -15,20 +15,22 @@ export default class ScreenMain {
   update() {
     this.parent.innerHTML = '';
 
-    this.box = this.uxe.box(this.parent, {
+    this.uxe.box(this.parent, {
       fill: true,
+      background: '#dddddd',
+    });
+
+    this.uxe.headerBar(this.parent, {
+      onLeftClick: () => { this.program.goto.to('main'); },
+      text: 'Settings',
+    });
+    this.box = this.uxe.box(this.parent, {
+      rect: [10, 60, 520, 880],
       row: false,
-      radius: this.container.u(20),
       background: '#eeeeee',
-      border: '#000000',
     });
+    this.box.style.padding = 'calc(var(--scale) * 10px)';
 
-    this._text('Settings ⚙');
-
-    this.uxe.button(this.box, {
-      text: '< Main',
-      onClick: () => { this._onExit(); },
-    });
     this._text('System');
     this._addSettingsToggle('Auto-continue last game', 'autocontinue');
     this._addSettingsToggle('Show quick start', 'quickstart');

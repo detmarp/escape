@@ -19,43 +19,41 @@ export default class ScreenMain {
     this.box = this.uxe.box(this.parent, {
       fill: true,
       row: false,
-      radius: this.container.u(20),
+      radius: 10,
       background: '#f5f5dc',
-      border: '#000000',
     });
 
     this.uxe.headerBar(this.box, {
       onRightClick: () => { this.program.goto.to('settings'); },
-      info: 'Info',
       text: 'Tiny Towns',
       streak: 0,
-      score: 22,
     });
-    this.uxe.text(this.box, { text: 'Main Screen', });
-
-    this._goto(this.box, 'Pregame 🛠️', 'pregame');
-    this._goto(this.box, 'Game 🪙', 'game');
-    this._goto(this.box, 'Editor ✏️', 'editor');
-    this._goto(this.box, 'Credits 📜', 'credits');
-    this._goto(this.box, 'Settings ⚙️', 'settings');
-
-    if (this.program.saveData.data.quickstart) {
-      this.uxe.button(this.box, {
-        text: 'Quick start 🚀',
-        onClick: () => { this._onQuickStart(); },
-      });
-    }
 
     let history = new TinyHistory(this.program.factory, this.program.saveData.data.history);
-    this.daily = this._gamesBox('Game of the day');
+    this.daily = this._gamesBox('Game of the day', [20, 60, 500, 200]);
     let daily = history.getDailyGames(15);
     daily.forEach(e => {
       this._gameButton(this.daily, e);
     });
-    this.other = this._gamesBox('Other games');
+    this.other = this._gamesBox('Other games', [20, 270, 500, 200]);
     this._gameButton(this.other);
     this._gameButton(this.other);
     this._gameButton(this.other);
+
+    let buttonArea = this.uxe.box(this.box, {
+      rect: [0, 480, 540, 480],
+    });
+    this._goto(buttonArea, 'Pregame 🛠️', 'pregame');
+    this._goto(buttonArea, 'Game 🪙', 'game');
+    this._goto(buttonArea, 'Editor ✏️', 'editor');
+    this._goto(buttonArea, 'Credits 📜', 'credits');
+    this._goto(buttonArea, 'Settings ⚙️', 'settings');
+    if (this.program.saveData.data.quickstart) {
+      this.uxe.button(buttonArea, {
+        text: 'Quick start 🚀',
+        onClick: () => { this._onQuickStart(); },
+      });
+    }
   }
 
   _goto(parent, label, screen) {
@@ -71,13 +69,14 @@ export default class ScreenMain {
     });
   }
 
-  _gamesBox(label) {
+  _gamesBox(label, rect) {
     let outer = this.uxe.box(this.box, {
       fill: true,
       row: false,
       radius: this.container.u(10),
       background: '#ffffff',
       border: '#cccccc',
+      rect: rect,
     });
 
     this.uxe.text(outer, { text: label });

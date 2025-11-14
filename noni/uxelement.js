@@ -93,8 +93,8 @@ export default class UxElement {
     div.style.columnGap = `calc(${1 * 16} * var(--scale) * 1px)`;
     div.style.fontSize = `calc(1.4 * 16 * var(--scale) * 1px)`;
 
-    function el(text) {
-      let e = document.createElement('div');
+    function el(text, button) {
+      let e = document.createElement(button ? 'button' : 'div');
       div.appendChild(e);
       e.style.display = 'flex';
       e.style.alignItems = 'center';
@@ -105,7 +105,7 @@ export default class UxElement {
       return e;
     }
     function styleInfo(el) {
-      el.style.border = `calc(var(--scale) * 1px) solid #242321ff`;
+      el.style.border = `calc(var(--scale) * 1px) solid #afafafff`;
       el.style.borderRadius = `calc(var(--scale) * 4px)`;
       el.style.padding = `0 calc(var(--scale) * 8px)`;
       el.style.height = '75%';
@@ -114,7 +114,7 @@ export default class UxElement {
       el.style.background = '#fdfaf1ff';
     }
     function styleButton(el) {
-      el.style.border = `calc(var(--scale) * 3px) solid #242321ff`;
+      el.style.border = `calc(var(--scale) * 3px) solid #554524ff`;
       el.style.borderRadius = `calc(var(--scale) * 8px)`;
       el.style.padding = `0 calc(var(--scale) * 8px)`;
       el.style.height = '85%';
@@ -124,7 +124,7 @@ export default class UxElement {
     }
 
     if (params.onLeftClick) {
-      let left = el('🏠');
+      let left = el('🏠', true);
       left.onclick = params.onLeftClick;
       styleButton(left);
     }
@@ -145,8 +145,9 @@ export default class UxElement {
       info.style.color = this.color.infoColor;
     }
     if (params.onRightClick) {
-      let right = el('⚙️');
+      let right = el('⚙️', true);
       right.onclick = params.onRightClick;
+      right.setAttribute('role', 'button');
       styleButton(right);
     }
 
