@@ -228,7 +228,8 @@ export default class Pieces {
     this._highlightPiece(); // Refresh all piece highlights
   }
 
-  _setCurrentSpot(spotIndex) {
+  _setCurrentSpot(spot) {
+    let spotIndex = spot.index;
     this.currentSpot = spotIndex;
     // Refresh spot highlights to show current state
     for (let i = 0; i < this.spots.length; i++) {
@@ -239,6 +240,9 @@ export default class Pieces {
         state = 'highlighted';
       }
       this.pieceUx.updateSpotStyle(this.spots[i], state);
+    }
+    if (this.owner?.onSpotTap) {
+      this.owner.onSpotTap(spot);
     }
   }
 
@@ -384,7 +388,7 @@ export default class Pieces {
           let [cx, cy] = clampedPosition;
           let [w, h] = p.size;
           this.pieceUx.updatePiecePosition(p, cx - w/2, cy - h/2);
-          this._setCurrentSpot(droppedSpot.index);
+          this._setCurrentSpot(droppedSpot);
           this._setCurrentPiece(p.id);
           modifiedPieces.add(p);
         } else if (p.fromSpot) {
@@ -434,7 +438,7 @@ export default class Pieces {
           } else {
             let spot = this._findSpot(pos);
             if (spot) {
-              this._setCurrentSpot(spot.index);
+              this._setCurrentSpot(spot);
               this.currentPiece = null;
             } else {
               this._clearCurrent();

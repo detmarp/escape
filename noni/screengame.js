@@ -152,7 +152,6 @@ export default class ScreenGame {
     this.boardMarkers.innerHTML = '';
     if (this.tiny.buildingPlacements && this.tiny.buildingPlacements.length > 0) {
       this.placementIndex ||= 0;
-      this.placementIndex = (this.placementIndex + 1) % this.tiny.buildingPlacements.length;
       let placement = this.tiny.buildingPlacements[this.placementIndex];
       placement.resourceIndexes.forEach(i => {
         let rect = [i % 4 * 100, Math.floor(i / 4) * 100, 100, 100];
@@ -217,15 +216,16 @@ export default class ScreenGame {
     let meeples = new Meeples();
 
     // 8 pieces randomly in buildingBin
-    let buildings = this.program.factory.deck.categories;
-    for (let building of buildings) {
-      let meeple = meeples.getMeeple(building);
+    let categories = this.program.factory.deck.categories;
+    for (let category of categories) {
+      let meeple = meeples.getMeeple(category);
       let params = {
         color: meeple.color,
         textColor: meeple.textColor,
       };
       let piece = this.pieces.newPiece(this.buildingBin.id, params);
-      piece.building = meeple;
+      piece.meeple = meeple;
+      piece.category = category;
     }
 
     // resources on board
@@ -332,8 +332,26 @@ export default class ScreenGame {
     }
   }
 
+  onSpotTap(spot) {
+    let hint = {};
+    if (spot.cellIndex != null) {
+      hint.cellIndex = spot.cellIndex;
+    }
+    this._highlightPlacement(hint
+    );
+  }
+
   onPieceTap(piece) {
-    //console.log('onPieceTap:', piece.id);
+    let hint = {};
+    if (piece.spot) {
+      if (piece.spot == this.buildingBin) {
+        hint.category = piece.category;
+      }
+      else if (piece.spot.cellIndex != null) {
+        hint.cellIndex = piece.spot.cellIndex;
+      }
+    }
+    this._highlightPlacement(hint);
     this._refresh()
   }
 
@@ -344,6 +362,7 @@ export default class ScreenGame {
       // Also fake the home spot as the resource bin
       piece.fromSpot = this.resourceBin;
     }
+    this._highlightPlacement();
     this._refresh()
   }
 
@@ -375,5 +394,40 @@ export default class ScreenGame {
 
   _action_setuppool(action) {
     this._action_updatepool(action);
+  }
+
+  _action_resource(action) {
+  }
+
+  _action_checkplacements() {
+    this._highlightPlacement();
+  }
+
+  _highlightPlacement(nextHint) {
+    // Choose a plamecement index to highlight
+    console.log(`ppp time to check placements ${JSON.stringify(nextHint)}`);
+    this.placementIndex ||= 0;
+
+    if (nextHint) {
+      // The hint will help us to cycle through placements
+      let list = [];
+      this.tiny.buildingPlacements.forEach((placement, i) => {
+        let match =
+          (nextHint.cellIndex != null && placement.resourceIndexes.includes(nextHint.cellIndex)) ||
+          (nextHint.category && placement.card && nextHint.category === placement.card.category);
+
+        if (match) {
+          list.push(i);
+        }
+      });
+      let listIndex = list.indexOf(this.placementIndex);
+      if (listIndex >= 0) {
+        listIndex = (listIndex + 1) % list.length;
+      }
+      else {
+        (listIndex = 0);
+      }
+      this.placementIndex = list[listIndex];
+    }
   }
 }

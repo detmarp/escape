@@ -38,6 +38,8 @@ export default class TinyCommand {
         resource: resource,
         cellIndex: cellIndex,
       };
+      yield* this._checkPlacements();
+      yield* this._checkScores();
       return;
     }
 
@@ -63,6 +65,8 @@ export default class TinyCommand {
         return;
       }
       yield* this._setup();
+      yield* this._checkPlacements();
+      yield* this._checkScores();
       return;
     }
 
@@ -71,6 +75,14 @@ export default class TinyCommand {
 
   *_syntaxError(tokens) {
     yield { action: 'error', error: 'syntax' };
+  }
+
+  *_checkPlacements() {
+    yield { action: 'checkplacements' };
+  }
+
+  *_checkScores() {
+    yield { action: 'checkscores' };
   }
 
   _makeUndo(action) {
