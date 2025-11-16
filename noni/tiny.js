@@ -48,28 +48,28 @@ export default class Tiny {
   }
 
   endTurn() {
-    console.log(JSON.stringify(this.pending));
-    this._updateHandResources();
     this.pending = null;
 
     this._refresh();
   }
 
-  _updateHandResources() {
+  updateHandResources() {
     // At the end of a resource placement in a turn, move the current resources
-if (this.pending && typeof this.pending.handIndex === 'number') {
-  // Remove the picked resource from row
-  const picked = this.hand.resources.row.splice(this.pending.handIndex, 1)[0];
-  // Push it to the end of drawPile
-  this.hand.resources.drawPile.push(picked);
-  // Pop the 0th item from drawPile and push onto row
-  const next = this.hand.resources.drawPile.splice(0, 1);
-  if (next.length > 0) {
-    this.hand.resources.row.push(next[0]);
-  }
-  // Clear picked
-  this.hand.resources.picked = null;
-}
+    if (this.pending && typeof this.pending.handIndex === 'number') {
+      let nextResource;
+      const usedResource = this.hand.resources.row.splice(this.pending.handIndex, 1)[0];
+      this.hand.resources.drawPile.push(usedResource);
+      const next = this.hand.resources.drawPile.splice(0, 1);
+      nextResource = next[0];
+      this.hand.resources.row.push(nextResource);
+      this.hand.resources.picked = null;
+
+      return {
+        action: 'updatepool',
+        index: this.pending.handIndex,
+        resource: nextResource,
+      };
+    }
   }
 
   getResources() {

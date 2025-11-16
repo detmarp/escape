@@ -43,8 +43,9 @@ export default class Program {
       this.goto.to('game');
     }
 
-
     this._onResize();
+
+    this._startLoop();
   }
 
   newGame(tiny) {
@@ -95,5 +96,13 @@ export default class Program {
   _onResize() {
     this.goto.update();
     this.background.update();
+  }
+
+  _startLoop() {
+    const loop = () => {
+      this.goto.work();
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
   }
 }

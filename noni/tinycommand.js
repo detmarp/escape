@@ -14,65 +14,63 @@ export default class TinyCommand {
     }
   }
 
-  do(commands, isUndo=false) {
-    let groups = this.parser.groups(commands);
+  *do(commands, isUndo=false) {
     this.actionUndos = [];
-    groups.forEach(group => {
-      let action = this.toAction(group);
-      this._doAction(action, isUndo);
-    });
-    if (this.actionUndos.length > 0) {
-      // concatenate undo parts into one undo command
-      this.undos.push(this.actionUndos.join(','));
-    }
-  }
+    let tokens = this.parser.tokenize(commands);
 
-  _doAction(action, isUndo) {
-    if (!isUndo) {
-      // Save undo action, which might be part of a larger sequence
-      let ua = this._makeUndo(action);
-      if (ua) {
-        this.actionUndos.push(ua);
+    if (tokens.length == 0) {
+      yield { action: 'error', error: 'empty' };
+      return;
+    }
+
+    let verb = tokens[0].string;
+
+    if (verb === 'resource') {
+      if (tokens.length != 3 || tokens[2].number == null) {
+        yield* this._syntaxError(tokens);
+        return;
       }
-    }
-
-    let debug = {
-      undo: `${JSON.stringify(this.undos)}`,
-      state: `${this.tiny.state}`,
-      pending: `${this.tiny.pending == null ? 'null' : 'not null'}`,
-    };
-    //console.log(`ccc DEBUG: ${JSON.stringify(debug)}`);
-
-    if (action.verb === 'resource') {
-      let resource = action.params[0];
-      let cellIndex = action.params[1];
+      let resource = tokens[1].string;
+      let cellIndex = tokens[2].number;
       this.tiny.doResource(cellIndex, resource);
+      yield {
+        action: 'resource',
+        resource: resource,
+        cellIndex: cellIndex,
+      };
+      return;
     }
-    else if (action.verb === 'unresource') {
-      let cellIndex = action.params[0];
-      this.tiny.board.cells[cellIndex].resource = null;
-      this.tiny.pending = null;
-    }
-    else if (action.verb === 'endturn') {
-      this.tiny.endTurn();
+
+    if (verb === 'endturn') {
+      if (tokens.length != 1) {
+        yield* this._syntaxError(tokens);
+        return;
+      }
       this.undos = [];
+      yield { action: 'clearundo' };
+      let poolAction = this.tiny.updateHandResources();
+      if (poolAction) {
+        yield poolAction;
+      }
+      this.tiny.endTurn();
+      yield { action: 'endturn' };
+      return;
     }
+
+    if (verb === 'setup') {
+      if (tokens.length != 1) {
+        yield* this._syntaxError(tokens);
+        return;
+      }
+      yield* this._setup();
+      return;
+    }
+
+    yield { action: 'error', error: `unknown: ${verb}` };
   }
 
-  toAction(command) {
-    let action = {
-      verb: command[0],
-      params: [],
-    };
-    for (let i = 1; i < command.length; i++) {
-      let value = command[i];
-      try {
-        value = JSON.parse(value);
-      } catch (e) {
-      }
-      action.params.push(value);
-    }
-    return action;
+  *_syntaxError(tokens) {
+    yield { action: 'error', error: 'syntax' };
   }
 
   _makeUndo(action) {
@@ -81,5 +79,30 @@ export default class TinyCommand {
       return `unresource ${cellIndex}`;
     }
     return null;
+  }
+
+  *_setup() {
+    for (let cell of this.tiny.board.cells) {
+      if (cell.resource) {
+        yield {
+          action: 'setupresource',
+          resource: cell.resource,
+          index: cell.index
+        };
+      }
+      if (cell.building) {
+        yield {
+          action: 'setupbuilding',
+          building: cell.building,
+          index: cell.index
+        };
+      }
+    }
+    for (let resource of this.tiny.hand.resources.row) {
+      yield {
+        action: 'setuppool',
+        resource: resource,
+      };
+    }
   }
 }

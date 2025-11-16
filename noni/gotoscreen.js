@@ -52,4 +52,10 @@ export default class GoToScreen {
       this.screen.update();
     }
   }
+
+  work() {
+    if (this.screen && this.screen.work) {
+      this.screen.work();
+    }
+  }
 }

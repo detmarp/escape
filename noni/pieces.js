@@ -18,6 +18,11 @@ export default class Pieces {
     this.highlightedSpot = null;
     this.currentSpot = null;
     this.currentPiece = null;
+    this.paused = false;
+  }
+
+  pause(set = true) {
+    this.paused = set;
   }
 
   addSpot(rect) {
@@ -411,27 +416,29 @@ export default class Pieces {
           this._highlightPiece(p.id, 1);
         }
       } else if (action === 'down') {
-        let p = this._find(pos);
-        if (p != null) {
-          this._onTap(p);
-          this._setCurrentPiece(p.id);
-          this.currentSpot = null;
-          this._highlightPiece(p.id, 2);
-          this._moveToTop(this.pieces.indexOf(p));
-          // Do NOT clear spot or set fromSpot yet; only do so on first movement
-          this.dragging = {
-            piece: p,
-            startPos: pos,
-            startPosition: [...p.position],
-            active: false,
-          };
-        } else {
-          let spot = this._findSpot(pos);
-          if (spot) {
-            this._setCurrentSpot(spot.index);
-            this.currentPiece = null;
+        if (!this.paused) {
+          let p = this._find(pos);
+          if (p != null) {
+            this._onTap(p);
+            this._setCurrentPiece(p.id);
+            this.currentSpot = null;
+            this._highlightPiece(p.id, 2);
+            this._moveToTop(this.pieces.indexOf(p));
+            // Do NOT clear spot or set fromSpot yet; only do so on first movement
+            this.dragging = {
+              piece: p,
+              startPos: pos,
+              startPosition: [...p.position],
+              active: false,
+            };
           } else {
-            this._clearCurrent();
+            let spot = this._findSpot(pos);
+            if (spot) {
+              this._setCurrentSpot(spot.index);
+              this.currentPiece = null;
+            } else {
+              this._clearCurrent();
+            }
           }
         }
       }

@@ -3,7 +3,7 @@ import TinyBot from './tinybot.js';
 import UxElement from './uxelement.js';
 import Meeples from './meeples.js';
 
-export default class ScreenMain {
+export default class ScreenGame {
   constructor(program) {
     this.program = program;
     this.tiny = program.tiny;
@@ -15,6 +15,40 @@ export default class ScreenMain {
 
   run() {
     this._rebuild();
+
+    this._doTinyCommand('setup');
+  }
+
+  work() {
+    if (this.actions) {
+      let next = this.actions.next();
+      if (next.done) {
+        this.actions = null;
+        this.pieces.pause(false);
+      }
+      else {
+        this._processCoreAction(next.value);
+      }
+      this._refresh();
+    }
+
+    if (! this.tiny.pending) {
+      this._refreshControls(); // detmar ddd
+    }
+  }
+
+  _doTinyCommand(command) {
+    this.pieces.pause();
+    this.actions = this.tiny.command.do(command);
+  }
+
+  _processCoreAction(action) {
+    // Process core action from tiny command
+    console.log(`aaa Action: ${JSON.stringify(action)}`);
+    let handler = this[`_action_${action.action}`];
+    if (handler) {
+      handler.call(this, action);
+    }
   }
 
   _rebuild() {
@@ -34,8 +68,6 @@ export default class ScreenMain {
     this._makeBins();
     this._makeCards();
     this._makePieces();
-
-    this._updateResourceBin();
 
     this._refresh();
   }
@@ -105,25 +137,23 @@ export default class ScreenMain {
     }});
     if (this.tiny.command.undos.length > 0) {
       this.uxe.button(this.controlRow, { text: 'Undo', onClick: () => {
-        this.tiny.command.undo();
+        this._doTinyCommand('undo');
         this._rebuild();
       }});
     }
     if (this.tiny.pending) {
       this.uxe.button(this.controlRow, { text: 'End turn', onClick: () => {
-        this.tiny.command.do('endturn');
-        this._updateResourceBin();
+        this._doTinyCommand('endturn');
         this._updatePiecesOnBoard();
-        this._refresh();
       }});
     }
 
     // placement marker
     this.boardMarkers.innerHTML = '';
-    console.log('mmm 000');
     if (this.tiny.buildingPlacements && this.tiny.buildingPlacements.length > 0) {
-      console.log('mmm 111');
-      let placement = this.tiny.buildingPlacements[0];
+      this.placementIndex ||= 0;
+      this.placementIndex = (this.placementIndex + 1) % this.tiny.buildingPlacements.length;
+      let placement = this.tiny.buildingPlacements[this.placementIndex];
       placement.resourceIndexes.forEach(i => {
         let rect = [i % 4 * 100, Math.floor(i / 4) * 100, 100, 100];
         let marker = this.uxe.box(this.boardMarkers, {
@@ -310,7 +340,7 @@ export default class ScreenMain {
   onPieceDragStart(piece) {
     if (piece.fromSpot && piece.fromSpot.cellIndex != null && this.tiny.pending) {
       // this is a little indirect, but the idea is to undo the pending resource placement
-      this.tiny.command.undo();
+      this._doTinyCommand('undo');
       // Also fake the home spot as the resource bin
       piece.fromSpot = this.resourceBin;
     }
@@ -321,7 +351,7 @@ export default class ScreenMain {
     if (spot && spot.cellIndex != null) {
       if (piece.resource) {
         let command = `resource ${piece.resource} ${spot.cellIndex}`;
-        this.tiny.command.do(command);
+        this._doTinyCommand(command);
       }
     }
     this._refresh()
@@ -330,5 +360,20 @@ export default class ScreenMain {
   onPieceKill(piece) {
     //console.log('onPieceKill:', piece.id);
     this._refresh()
+  }
+
+  _action_updatepool(action) {
+    let meeples = new Meeples();
+    let meeple = meeples.getMeeple(action.resource);
+    let params = {
+      color: meeple.color,
+      textColor: meeple.textColor,
+    };
+    let piece = this.pieces.newPiece(this.resourceBin.id, params);
+    piece.resource = meeple.name;
+  }
+
+  _action_setuppool(action) {
+    this._action_updatepool(action);
   }
 }

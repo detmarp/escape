@@ -21,14 +21,14 @@ export default class TinyFactory {
     }
 
     const dataFiles = [
-      'tinydatared.json',
-      'tinydataorange.json',
-      'tinydatayellow.json',
-      'tinydatagreen.json',
-      'tinydatablue.json',
-      'tinydatablack.json',
-      'tinydatagray.json',
-      'tinydatapink.json',
+      'tinydata_red.json',
+      'tinydata_orange.json',
+      'tinydata_yellow.json',
+      'tinydata_green.json',
+      'tinydata_blue.json',
+      'tinydata_black.json',
+      'tinydata_gray.json',
+      'tinydata_pink.json',
     ];
 
     // Resolve paths relative to this module's location
