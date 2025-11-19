@@ -135,7 +135,7 @@ export default class Container {
     }
 
     if (this.hasDragged) {
-      this._onFinger('drag', [this.pointerStartPos.x, this.pointerStartPos.y], [pos.x, pos.y]);
+      this._onFinger('drag', [pos.x, pos.y]);
     }
   }
 

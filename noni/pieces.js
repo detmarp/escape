@@ -284,16 +284,16 @@ export default class Pieces {
     }
   }
 
-  onFinger(action, pos, pos2) {
-    //console.log(`ppp ${action} at (${pos[0]}, ${pos[1]})${pos2 ? ` to (${pos2[0]}, ${pos2[1]})` : ''}`);
+  onFinger(action, pos) {
+    //console.log(`fff ${action} at (${pos[0]}, ${pos[1]})`);
 
     // Track pieces that need text updates
     let modifiedPieces = new Set();
 
     if (this.dragging) {
-      if (action === 'drag' && pos2) {
-        let dx = pos2[0] - this.dragging.startPos[0];
-        let dy = pos2[1] - this.dragging.startPos[1];
+      if (action === 'drag' && pos) {
+        let dx = pos[0] - this.dragging.startPos[0];
+        let dy = pos[1] - this.dragging.startPos[1];
 
         if (!this.dragging.active && (dx !== 0 || dy !== 0)) {
           // Only now, on first movement, start dragging

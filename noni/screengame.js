@@ -1,7 +1,10 @@
 import Pieces from './pieces.js';
 import TinyBot from './tinybot.js';
 import UxElement from './uxelement.js';
+import Swatches from './swatches.js';
 import Meeples from './meeples.js';
+import Markers from './markers.js';
+import Party from './party.js';
 
 export default class ScreenGame {
   constructor(program) {
@@ -11,6 +14,70 @@ export default class ScreenGame {
     this.parent = this.container.inner;
     this.uxe = new UxElement(this.parent);
     this.editMode = false;
+    this.meeples = new Meeples(this.parent);
+
+
+    let delegate = {
+      onHover: (info) => {
+        console.log(`ggg onHover ${Object.keys(info)}`);
+      },
+      onTap: (info) => {
+        console.log(`ggg onTap ${Object.keys(info)}`);
+        this.deubgPrint();
+        this.current = null;
+        if (info.marker) {
+          this.current ||= {};
+          this.current.marker = info.marker;
+          this.current.position = info.position;
+          this.current.over = info.over;
+          const meeple = this.meeples.list.find(m => m.marker === info.marker);
+          if (meeple) {
+            this.current.meeple = meeple;
+          }
+        }
+      },
+      onDrag: (info) => {
+        console.log(`ggg onDrag ${Object.keys(info)}`);
+        this.deubgPrint();
+        this.dragging = this.current ? { ...this.current } : {};
+      },
+      onDragging: (info) => {
+        console.log(`ggg onDragging ${Object.keys(info)}`);
+        if (info.marker) {
+          const meeple = this.meeples.list.find(m => m.marker === info.marker);
+          if (meeple) {
+            this.meeples.updateRect(meeple, info.marker.rect);
+          }
+          this.dragging.startPos = info.startPos;
+          this.dragging.position = info.position;
+          this.dragging.over = info.over;
+        }
+        this.deubgPrint();
+      },
+      onDrop: (info) => {
+        console.log(`ggg onDrop ${Object.keys(info)}`);
+        this.current = this.dragging;
+        this.dragging = null;
+        this.deubgPrint();
+      },
+      onUp: (info) => {
+        console.log(`ggg onUp ${Object.keys(info)}`);
+        this.deubgPrint();
+      },
+      onClick: (info) => {
+        console.log(`ggg onClick ${Object.keys(info)}`);
+        this.deubgPrint();
+      },
+    };
+    this.markers = new Markers(delegate);
+  }
+
+  deubgPrint() {
+    let m = {
+      current: this.current ? Object.keys(this.current) : null,
+      dragging: this.dragging ? Object.keys(this.dragging) : null,
+    };
+    console.log(`ttt ${JSON.stringify(m)}`);
   }
 
   run() {
@@ -24,7 +91,7 @@ export default class ScreenGame {
       let next = this.actions.next();
       if (next.done) {
         this.actions = null;
-        this.pieces.pause(false);
+        this.pauseInput = false;
       }
       else {
         this._processCoreAction(next.value);
@@ -35,10 +102,15 @@ export default class ScreenGame {
     if (! this.tiny.pending) {
       this._refreshControls(); // detmar ddd
     }
+
+    this.markers.debugDraw(this.layer2);
+
+    let scale = this.program.container.scale;
+    this.party.draw(Date.now(), scale);
   }
 
   _doTinyCommand(command) {
-    this.pieces.pause();
+    this.pauseInput = true;
     this.actions = this.tiny.command.do(command);
   }
 
@@ -68,6 +140,7 @@ export default class ScreenGame {
     this._makeBins();
     this._makeCards();
     this._makePieces();
+    this._makeParticles();
 
     this._refresh();
   }
@@ -115,6 +188,11 @@ export default class ScreenGame {
     this.boardMarkers = this.uxe.box(this.parent, {
       rect: [70, 54, 400, 400],
     });
+
+    this.layer2 = this.uxe.box(this.parent, {
+      rect: [0, 0, 540, 960],
+    });
+    this.layer2.style.pointerEvents = 'none';
   }
 
   _makeControls() {
@@ -162,6 +240,7 @@ export default class ScreenGame {
           radius: 20,
         });
       });
+      // draw targets
     }
   }
 
@@ -176,6 +255,7 @@ export default class ScreenGame {
       let x = start[0] + col * size[0];
       let y = start[1] + row * size[1];
       let spot = this.pieces.addSpot([x, y, size[0], size[1]]);
+this.markers.add({rect: spot.rect, fixed: true,});
       spot.cellIndex = i;
       this.cellSpots.push(spot);
     }
@@ -189,8 +269,14 @@ export default class ScreenGame {
 
     let controlsY = 464 + 48 + 8;
     this.resourceBin = this.pieces.addSpot([0, controlsY, 240, 224]);
+    this.resourceBin2 = this.meeples.add({
+      rect: [0, controlsY, 240, 224]
+    });
+     this.resourceBin2.rect = [0, controlsY, 240, 224];
+this.markers.add({rect: this.resourceBin.rect, fixed: true,});
     this.resourceBin.autoreturn = true;
     this.buildingBin = this.pieces.addSpot([240, controlsY, 300, 224]);
+this.markers.add({rect: this.buildingBin.rect, fixed: true,});
     this.buildingBin.autoreturn = true;
   }
 
@@ -213,17 +299,18 @@ export default class ScreenGame {
   }
 
   _makePieces() {
-    let meeples = new Meeples();
+    let swatch = new Swatches();
 
     // 8 pieces randomly in buildingBin
     let categories = this.program.factory.deck.categories;
     for (let category of categories) {
-      let meeple = meeples.getMeeple(category);
+      let meeple = swatch.getSwatch(category);
       let params = {
         color: meeple.color,
         textColor: meeple.textColor,
       };
       let piece = this.pieces.newPiece(this.buildingBin.id, params);
+this.markers.add({size: [...piece.size], position: [...piece.position]});
       piece.meeple = meeple;
       piece.category = category;
     }
@@ -231,15 +318,23 @@ export default class ScreenGame {
     // resources on board
     this.tiny.board.cells.forEach((cell, i) => {
       if (cell.resource) {
-        let meeple = meeples.getMeeple(cell.resource);
+        let meeple = swatch.getSwatch(cell.resource);
         let params = {
           color: meeple.color,
           textColor: meeple.textColor,
         };
         let piece = this.pieces.newPiece(this.cellSpots[i].id, params);
+this.markers.add({size: [...piece.size], position: [...piece.position]});
         piece.resource = meeple.name;
       }
     });
+  }
+
+  _makeParticles() {
+    this.particles = this.uxe.box(this.parent, {
+      rect: [0, 0, 540, 960],
+    });
+    this.party = new Party(this.particles);
   }
 
   _updatePiecesOnBoard() {
@@ -275,14 +370,15 @@ export default class ScreenGame {
       }
     }
     // Now newResources contains only those not matched in binResources
-    let meeples = new Meeples();
+    let swatch = new Swatches();
     for (let resource of newResources) {
-      let meeple = meeples.getMeeple(resource);
+      let meeple = swatch.getSwatch(resource);
       let params = {
         color: meeple.color,
         textColor: meeple.textColor,
       };
       let piece = this.pieces.newPiece(this.resourceBin.id, params);
+this.markers.add({size: [...piece.size], position: [...piece.position]});
       piece.resource = meeple.name;
     }
   }
@@ -308,6 +404,7 @@ export default class ScreenGame {
 
   onFinger(action, pos, pos2) {
     this.pieces.onFinger(action, pos, pos2);
+    this.markers.onFinger(action, pos);
   }
 
   _setEditMode(editMode) {
@@ -382,14 +479,22 @@ export default class ScreenGame {
   }
 
   _action_updatepool(action) {
-    let meeples = new Meeples();
-    let meeple = meeples.getMeeple(action.resource);
+    let swatch = new Swatches();
+    let s = swatch.getSwatch(action.resource);
     let params = {
-      color: meeple.color,
-      textColor: meeple.textColor,
+      color: s.color,
+      textColor: s.textColor,
     };
-    let piece = this.pieces.newPiece(this.resourceBin.id, params);
-    piece.resource = meeple.name;
+    let position = this.meeples.getRandom(this.resourceBin2.rect);
+    let marker = this.markers.add({
+      size: [80, 80],
+      position: position,
+    });
+    let meeple = this.meeples.add({
+      name: action.resource,
+      rect: [...marker.rect],
+    });
+    meeple.marker = marker;
   }
 
   _action_setuppool(action) {
@@ -404,7 +509,7 @@ export default class ScreenGame {
   }
 
   _highlightPlacement(nextHint) {
-    // Choose a plamecement index to highlight
+    // Choose a placement index to highlight
     console.log(`ppp time to check placements ${JSON.stringify(nextHint)}`);
     this.placementIndex ||= 0;
 
