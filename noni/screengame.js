@@ -478,14 +478,17 @@ this.markers.add({size: [...piece.size], position: [...piece.position]});
       color: s.color,
       textColor: s.textColor,
     };
-    let position = this.meeples.getRandom(this.resourceBin2.rect);
+    let rect = this.markers.getDestinationRect(
+      this.resourceBin2,
+      null,
+      [80, 80]
+    );
     let marker = this.markers.add({
-      size: [80, 80],
-      position: position,
+      rect: rect,
     });
     let meeple = this.meeples.add({
       name: action.resource,
-      rect: [...marker.rect],
+      rect: rect,
     });
     meeple.marker = marker;
   }
@@ -498,9 +501,12 @@ this.markers.add({size: [...piece.size], position: [...piece.position]});
     if (this.current.last && this.current.last.meeple) {
       const meeple = this.current.last.meeple;
       if (meeple.marker) {
-        const position = this.meeples.getRandom(this.cells[action.cellIndex].marker.rect);
-        this.markers.setPositionSize(meeple.marker, position);
-        this.meeples.sendToRect(meeple, meeple.marker.rect);
+        let rect = this.markers.getDestinationRect(
+          this.cells[action.cellIndex].marker,
+          meeple.marker.rect
+        );
+        this.markers.setRect(meeple.marker, rect);
+        this.meeples.sendToRect(meeple, rect);
       }
     }
   }
@@ -544,40 +550,6 @@ this.markers.add({size: [...piece.size], position: [...piece.position]});
 
   onMarkersTap(info) {
     console.log(`ggg onMarkersTap ${Object.keys(info)}`);
-    // away from all, clear currentmeeple, clear currentcell
-    // on resource (bin or cell) - select that resource, show placement if any, also select cell, show all legal targets
-    // on cell w/o resource - select cell, show placement,
-    //
-    // generally, if there is a available placement, the building meeple should be "happy", placement visible
-    //
-    // selected cell
-    // selected meeple (can be dragging one) (one max)
-    // happy building in bin (can be dragging one)
-    // targets
-    // building plan (one at a time, cleared only when we clear it manually, or when we place that building type)
-    //
-    // the list
-    //   B - building plan - this.current.buildingPlan
-    //   C - selected cell - this.current.cellIndex
-    //   D - dragging meeple - this.dragging.meeple (same as this.current.meeple)
-    //   M - selected meeple - this.current.meeple
-    //   P - placement / happy building - this.current.placements, this.current.placementIndex
-    //   T - targets - this.current.targetIndexes
-    //
-    // tap on
-    //   1. resource in bin
-    //     set MTP, clear CD, leave B
-    //   2. resource in cell
-    //     undoable?
-    //     set MTCP, set D, leave B
-    //   3. cell
-    //   4. building in bin
-    //   5. building in cell
-    //     undoable?
-    //   6. elsewhere
-    //     S none, clear CDMT, leave BPT
-    //
-    //
     let meeple = this.meeples.list.find(m => info.marker && m.marker === info.marker);
     this._selectMeeple(meeple);
 
@@ -657,16 +629,23 @@ this.markers.add({size: [...piece.size], position: [...piece.position]});
     let meeple = this.current.meeple;
     if (meeple) {
       if (meeple.type === 'resource') {
-        if (this.current.cellIndex != null) {
+        if (
+          this.current.cellIndex != null &&
+          this.current.targets &&
+          this.current.targets.has(this.current.cellIndex)
+        ) {
           let command = `resource ${meeple.name} ${this.current.cellIndex}`;
           this._doTinyCommand(command);
         }
         else {
           let marker = meeple.marker;
           if (marker) {
-            let position = this.meeples.getRandom(this.resourceBin2.rect);
-            this.markers.setPositionSize(marker, position);
-            this.meeples.sendToRect(meeple, marker.rect);
+            let rect = this.markers.getDestinationRect(
+              this.resourceBin2,
+              marker.rect
+            );
+            this.markers.setRect(marker, rect);
+            this.meeples.sendToRect(meeple, rect);
           }
         }
       }

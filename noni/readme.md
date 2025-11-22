@@ -106,3 +106,21 @@ pieces are created / destroyed
 * building created, in buildingbin, at populate time (start or when building)
 * building destroyed, from buildingbin, at building undo
 *
+
+## Finger-based gameplay actions
+* (excluding specials)
+* Forward play
+  * Drag resource to board
+  * Drag building to board
+  * End turn
+* Undo
+  * Drag resource from board
+  * Drag building from board
+* Special
+  * drag or select to do special action
+  * We need special undo action, too
+* Hint
+  * Select building placement
+  * Set building plan
+  * Flip card
+  * Rotate card shape

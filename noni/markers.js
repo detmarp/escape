@@ -199,6 +199,34 @@ export default class Markers {
     return defaultValue;
   }
 
+  getDestinationRect(targetMarker, startRect, hintSize) {
+    // Returns a rect to place in target
+    let size = startRect ? startRect.slice(2) : (
+      hintSize ? [...hintSize] : [20, 20]
+    );
+    let position = [];
+    for (let d = 0; d < 2; d++) {
+      let s = size[d];
+      let min = targetMarker.rect[d];
+      let max = min + targetMarker.rect[d + 2] - s;
+      let space = max - min;
+      let x = (max + min) / 2;
+      if (space > 0) {
+        if (startRect) {
+          x = startRect[d];
+        }
+        else {
+          x = min + (Math.random() * space);
+        }
+        // clamp away from edges
+        x = Math.max(x, min);
+        x = Math.min(x, max);
+        position[d] = x;
+      }
+    }
+    return [position[0], position[1], size[0], size[1]];
+  }
+
   debugDraw(parent) {
     parent.innerHTML = '';
 
