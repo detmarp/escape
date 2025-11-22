@@ -10,22 +10,13 @@ export default class Markers {
     let id = this.id++;
     let marker = { id, ...params };
 
-    if (marker.rect) {
-      // Clamp rect to ints
-      let [x, y, w, h] = marker.rect.map(v => Math.round(v));
-      marker.rect = [x, y, w, h];
-      // Derive position (center) and size from rect
-      marker.size = [w, h];
-      marker.position = [x + Math.floor(w / 2), y + Math.floor(h / 2)];
+    if (params.rect) {
+      this.setRect(marker, params.rect);
     } else {
-      marker.position ||= [0, 0];
-      marker.size ||= [20, 20];
-      // Clamp position and size to ints
-      let [cx, cy] = marker.position.map(v => Math.round(v));
-      let [w, h] = marker.size.map(v => Math.round(v));
-      marker.position = [cx, cy];
-      marker.size = [w, h];
-      marker.rect = [cx - Math.floor(w / 2), cy - Math.floor(h / 2), w, h];
+      this.setPositionSize(marker,
+        params.position || [0, 0],
+        params.size || [20, 20]
+      );
     }
 
     this.markers.push(marker);
@@ -46,6 +37,22 @@ export default class Markers {
     delete this.map[id];
   }
 
+  setRect(marker, rect) {
+    rect = rect.map(v => Math.round(v));
+    marker.rect = [...rect];
+    let [x, y, w, h] = rect;
+    marker.position = [x + Math.floor(w / 2), y + Math.floor(h / 2)];
+    marker.size = [w, h];
+  }
+
+  setPositionSize(marker, position, size) {
+    const [w, h] = size ? size : (marker.size || [20, 20]);
+    const [x, y] = position;
+    marker.position = [x, y];
+    marker.size = [w, h];
+    marker.rect = [x - (w >> 1), y - (h >> 1), w, h];
+  }
+
   onFinger(action, pos) {
     // Action is one of: 'hover', 'down', 'drag', 'up'
     //console.log(`mmm ${action} at (${pos[0]}, ${pos[1]})`);
@@ -64,7 +71,7 @@ export default class Markers {
     this.top = over.length > 0 ? over[over.length - 1] : null;
 
     if (action === 'hover') {
-      this.callDelegate('onHover', {
+      this.callDelegate('onMarkersHover', {
         marker: this.top,
         position: [...pos],
         over: [...over],
@@ -95,7 +102,7 @@ export default class Markers {
         position: [...pos],
         over: [...over],
       };
-      this.callDelegate('onTap', params);
+      this.callDelegate('onMarkersTap', params);
 
       this.down = [...pos];
     }
@@ -112,7 +119,7 @@ export default class Markers {
         if (this.tapped) {
           this.tapped.dragging = true;
         }
-        this.callDelegate('onDrag', {
+        this.callDelegate('onMarkersDrag', {
           marker: this.tapped,
           startPos: [...this.down],
           position: [...pos],
@@ -137,7 +144,7 @@ export default class Markers {
           ];
         }
         this.dragging.endPos = [...pos];
-        this.callDelegate('onDragging', {
+        this.callDelegate('onMarkersDragging', {
           marker: this.dragging.marker,
           startPos: [...this.dragging.startPos],
           position: [...pos],
@@ -152,7 +159,7 @@ export default class Markers {
         if (this.dragging.marker) {
           marker = this.dragging.marker;
           this.dragging.marker.dragging = false;
-          this.callDelegate('onDrop', {
+          this.callDelegate('onMarkersDrop', {
             marker: this.dragging.marker,
             startPos: [...this.dragging.startPos],
             position: [...pos],
@@ -182,7 +189,6 @@ export default class Markers {
     }
   }
 
-
   callDelegate(method, params, defaultValue) {
     if (params && params.marker == null) {
       delete params.marker;
@@ -197,6 +203,7 @@ export default class Markers {
     parent.innerHTML = '';
 
     function box(parent, params = {}) {
+      return;
       let div = document.createElement('div');
       parent.appendChild(div);
 
@@ -250,7 +257,7 @@ export default class Markers {
       box(parent, {
         rect: marker.rect,
         border: color,
-        background: '#ccccff80',
+        background: '#ccccff20',
         text: `id: ${marker.id}`,
       });
 
@@ -274,8 +281,11 @@ export default class Markers {
             ],
             background: '#ff8000',
           });
-          line.style.transformOrigin = 'center center';
-          line.style.transform = `rotate(${angle}deg)`;
+          if (line) {
+            // in case we commented out the box func above
+            line.style.transformOrigin = 'center center';
+            line.style.transform = `rotate(${angle}deg)`;
+          }
         }
       }
     }

@@ -49,6 +49,9 @@ export default class UxElement {
   box(parent, params = {}) {
     let div = this._div(parent);
     div.style.position = 'relative';
+    if (params.clickthrough) {
+      div.style.pointerEvents = 'none';
+    }
     this._size(div, params);
     this._colors(div, params);
     this._packing(div, params);
@@ -229,4 +232,77 @@ export default class UxElement {
       div.style.justifyContent = 'flex-start';
     }
   }
+
+  cell(parent, params = {}) {
+    params = Object.assign({}, params);
+    params.background = '#66cc66';
+
+    let div = this.box(parent, params);
+    div.style.display = 'flex';
+    div.style.alignItems = 'center';
+    div.style.justifyContent = 'center';
+    div.style.textAlign = 'center';
+
+    let text = this.box(div, {
+      rect: [0, 0, 100, 100],
+      textColor: '#ff0000',
+      text: 'x',
+    });
+    text.style.display = 'flex';
+    text.style.alignItems = 'center';
+    text.style.justifyContent = 'center';
+    text.style.fontSize = '5em';
+    text.style.textAlign = 'center';
+    div.text = text;
+    let current = this.box(div, {
+      rect: [0, 0, 100, 100],
+      border: '#ffffff',
+      borderWidth: 1,
+      radius: 4,
+    });
+    div.current = current;
+
+    let building = this.box(div, {
+      rect: [4, 4, 92, 92],
+      border: '#ffff00',
+      borderWidth: 5,
+      radius: 4,
+    });
+    div.building = building;
+
+    let plan = this.box(div, {
+      rect: [6, 6, 88, 88],
+      border: '#00ff00',
+      borderWidth: 5,
+      radius: 4,
+    });
+    div.plan = plan;
+
+    let target = this.box(div, {
+      rect: [30, 30, 40, 40],
+      background: '#00ff00',
+      radius: 20,
+    });
+    div.target = target;
+
+    div.update = (params = {}) => {
+      // turn on/off elements
+      // selected: bool; building: color; plan: color; target: bool; x:bool
+      div.text.textContent = params.x ? 'x' : '';
+
+      div.current.style.display = params.selected ? '' : 'none';
+
+      div.building.style.display = params.building ? '' : 'none';
+      div.building.style.borderColor = params.building;
+
+      div.plan.style.display = params.plan ? '' : 'none';
+      div.plan.style.borderColor = params.plan;
+
+      div.target.style.display = params.target ? '' : 'none';
+    };
+
+    div.update(params);
+    return div;
+  }
+
 }

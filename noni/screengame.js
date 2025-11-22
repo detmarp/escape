@@ -15,69 +15,19 @@ export default class ScreenGame {
     this.uxe = new UxElement(this.parent);
     this.editMode = false;
     this.meeples = new Meeples(this.parent);
+    this.current = {};
 
 
-    let delegate = {
-      onHover: (info) => {
-        console.log(`ggg onHover ${Object.keys(info)}`);
-      },
-      onTap: (info) => {
-        console.log(`ggg onTap ${Object.keys(info)}`);
-        this.deubgPrint();
-        this.current = null;
-        if (info.marker) {
-          this.current ||= {};
-          this.current.marker = info.marker;
-          this.current.position = info.position;
-          this.current.over = info.over;
-          const meeple = this.meeples.list.find(m => m.marker === info.marker);
-          if (meeple) {
-            this.current.meeple = meeple;
-          }
-        }
-      },
-      onDrag: (info) => {
-        console.log(`ggg onDrag ${Object.keys(info)}`);
-        this.deubgPrint();
-        this.dragging = this.current ? { ...this.current } : {};
-      },
-      onDragging: (info) => {
-        console.log(`ggg onDragging ${Object.keys(info)}`);
-        if (info.marker) {
-          const meeple = this.meeples.list.find(m => m.marker === info.marker);
-          if (meeple) {
-            this.meeples.updateRect(meeple, info.marker.rect);
-          }
-          this.dragging.startPos = info.startPos;
-          this.dragging.position = info.position;
-          this.dragging.over = info.over;
-        }
-        this.deubgPrint();
-      },
-      onDrop: (info) => {
-        console.log(`ggg onDrop ${Object.keys(info)}`);
-        this.current = this.dragging;
-        this.dragging = null;
-        this.deubgPrint();
-      },
-      onUp: (info) => {
-        console.log(`ggg onUp ${Object.keys(info)}`);
-        this.deubgPrint();
-      },
-      onClick: (info) => {
-        console.log(`ggg onClick ${Object.keys(info)}`);
-        this.deubgPrint();
-      },
-    };
-    this.markers = new Markers(delegate);
+    this.markers = new Markers(this);
   }
 
   deubgPrint() {
     let m = {
-      current: this.current ? Object.keys(this.current) : null,
+      current: Object.keys(this.current),
       dragging: this.dragging ? Object.keys(this.dragging) : null,
+      last: this.current.last ? Object.keys(this.current.last) : null,
     };
-    console.log(`ttt ${JSON.stringify(m)}`);
+    console.log(`ccc0 ${JSON.stringify(m)}`);
   }
 
   run() {
@@ -104,6 +54,14 @@ export default class ScreenGame {
     }
 
     this.markers.debugDraw(this.layer2);
+
+    if (this.cellsDirty) {
+      for (let i = 0; i < 16; i++) {
+        let cell = this.cells[i];
+        cell.element.update(cell.uxParams);
+      }
+      this.cellsDirty = false;
+    }
 
     let scale = this.program.container.scale;
     this.party.draw(Date.now(), scale);
@@ -185,14 +143,15 @@ export default class ScreenGame {
       text: 'score',
     });
 
-    this.boardMarkers = this.uxe.box(this.parent, {
-      rect: [70, 54, 400, 400],
-    });
 
     this.layer2 = this.uxe.box(this.parent, {
       rect: [0, 0, 540, 960],
     });
     this.layer2.style.pointerEvents = 'none';
+
+    this.boardMarkers = this.uxe.box(this.parent, {
+      rect: [70, 54, 400, 400],
+    });
   }
 
   _makeControls() {
@@ -227,7 +186,7 @@ export default class ScreenGame {
     }
 
     // placement marker
-    this.boardMarkers.innerHTML = '';
+    //this.boardMarkers.innerHTML = '';
     if (this.tiny.buildingPlacements && this.tiny.buildingPlacements.length > 0) {
       this.placementIndex ||= 0;
       let placement = this.tiny.buildingPlacements[this.placementIndex];
@@ -244,6 +203,18 @@ export default class ScreenGame {
     }
   }
 
+  _setCellUx(cellIndex, param, value) {
+    let cell = this.cells[cellIndex];
+    cell.uxParams[param] = value;
+    this.cellsDirty = true;
+  }
+
+  _setCellParams(cellIndex, params) {
+    let cell = this.cells[cellIndex];
+    cell.uxParams = params;
+    this.cellsDirty = true;
+  }
+
   _makeBins() {
     // spots for the board
     let start = [70, 54];
@@ -255,9 +226,30 @@ export default class ScreenGame {
       let x = start[0] + col * size[0];
       let y = start[1] + row * size[1];
       let spot = this.pieces.addSpot([x, y, size[0], size[1]]);
-this.markers.add({rect: spot.rect, fixed: true,});
       spot.cellIndex = i;
       this.cellSpots.push(spot);
+    }
+
+    this.cells = [];
+    for (let i = 0; i < 16; i++) {
+      let rect = [ (i % 4) * 100, Math.floor(i / 4) * 100, 100, 100];
+      let cell = this.uxe.cell(
+        this.boardMarkers,
+        {
+          rect: rect,
+          index: i,
+        }
+      );
+
+      let boardRect = [70 + rect[0], 54 + rect[1], rect[2], rect[3]];
+      let marker = this.markers.add({rect: boardRect, fixed: true,});
+      marker.cellIndex = i;
+
+      this.cells[i] = {
+        element: cell,
+        marker: marker,
+        uxParams: {},
+      }
     }
 
     let y = 464 + 48 + 8;
@@ -333,6 +325,7 @@ this.markers.add({size: [...piece.size], position: [...piece.position]});
   _makeParticles() {
     this.particles = this.uxe.box(this.parent, {
       rect: [0, 0, 540, 960],
+      clickthrough: true,
     });
     this.party = new Party(this.particles);
   }
@@ -502,6 +495,14 @@ this.markers.add({size: [...piece.size], position: [...piece.position]});
   }
 
   _action_resource(action) {
+    if (this.current.last && this.current.last.meeple) {
+      const meeple = this.current.last.meeple;
+      if (meeple.marker) {
+        const position = this.meeples.getRandom(this.cells[action.cellIndex].marker.rect);
+        this.markers.setPositionSize(meeple.marker, position);
+        this.meeples.sendToRect(meeple, meeple.marker.rect);
+      }
+    }
   }
 
   _action_checkplacements() {
@@ -534,5 +535,168 @@ this.markers.add({size: [...piece.size], position: [...piece.position]});
       }
       this.placementIndex = list[listIndex];
     }
+  }
+
+
+  onMarkersHover(info) {
+    ///console.log(`ggg onMarkersHover ${Object.keys(info)}`);
+  }
+
+  onMarkersTap(info) {
+    console.log(`ggg onMarkersTap ${Object.keys(info)}`);
+    // away from all, clear currentmeeple, clear currentcell
+    // on resource (bin or cell) - select that resource, show placement if any, also select cell, show all legal targets
+    // on cell w/o resource - select cell, show placement,
+    //
+    // generally, if there is a available placement, the building meeple should be "happy", placement visible
+    //
+    // selected cell
+    // selected meeple (can be dragging one) (one max)
+    // happy building in bin (can be dragging one)
+    // targets
+    // building plan (one at a time, cleared only when we clear it manually, or when we place that building type)
+    //
+    // the list
+    //   B - building plan - this.current.buildingPlan
+    //   C - selected cell - this.current.cellIndex
+    //   D - dragging meeple - this.dragging.meeple (same as this.current.meeple)
+    //   M - selected meeple - this.current.meeple
+    //   P - placement / happy building - this.current.placements, this.current.placementIndex
+    //   T - targets - this.current.targetIndexes
+    //
+    // tap on
+    //   1. resource in bin
+    //     set MTP, clear CD, leave B
+    //   2. resource in cell
+    //     undoable?
+    //     set MTCP, set D, leave B
+    //   3. cell
+    //   4. building in bin
+    //   5. building in cell
+    //     undoable?
+    //   6. elsewhere
+    //     S none, clear CDMT, leave BPT
+    //
+    //
+    let meeple = this.meeples.list.find(m => info.marker && m.marker === info.marker);
+    this._selectMeeple(meeple);
+
+    let markerList = [info.marker, ...info.over];
+    let cellIndex = markerList.find(item => item && item.cellIndex != null)?.cellIndex ?? null;
+    this._selectCell(cellIndex);
+
+    let resource = meeple && meeple.type === 'resource' ? meeple.name : null;
+    this._setTargets(resource);
+    this.deubgPrint();
+  }
+
+  _selectMeeple(meeple) {
+    if (meeple) {
+      this.current.meeple = meeple;
+    }
+    else {
+      delete this.current.meeple;
+    }
+    // For all meeples, call update({selected: bool})
+    this.meeples.list.forEach(m => m.update({ selected: m === meeple }));
+  }
+
+  _selectCell(cellIndex) {
+    for (let i = 0; i < 16; i++) {
+      this._setCellUx(i, 'selected', i === cellIndex);
+    }
+    if (cellIndex != null) {
+      this.current.cellIndex = cellIndex;
+    }
+    else {
+      delete this.current.cellIndex;
+    }
+  }
+
+  _setTargets(resource = null) {
+    let targets = this.tiny.canDoResource();
+    if (resource && targets) {
+      this.current.targets = new Set(targets.map(t => t.position));
+    }
+    else {
+      delete this.current.targets;
+    }
+
+    for (let i = 0; i < 16; i++) {
+      this._setCellUx(i, 'target', this.current.targets && this.current.targets.has(i));
+    }
+  }
+
+  onMarkersDrag(info) {
+    console.log(`ggg onMarkersDrag ${Object.keys(info)}`);
+    this.deubgPrint();
+    this.dragging = {};
+  }
+
+  onMarkersDragging(info) {
+    console.log(`ggg onMarkersDragging ${Object.keys(info)}`);
+    if (info.marker) {
+      const meeple = this.meeples.list.find(m => m.marker === info.marker);
+      if (meeple) {
+        this.meeples.updateRect(meeple, info.marker.rect);
+      }
+      this.dragging.startPos = info.startPos;
+      this.dragging.position = info.position;
+      this.dragging.over = info.over;
+    }
+
+    let markerList = [info.marker, ...info.over];
+    let cellIndex = markerList.find(item => item && item.cellIndex != null)?.cellIndex ?? null;
+    this._selectCell(cellIndex);
+
+    this.deubgPrint();
+  }
+
+  onMarkersDrop(info) {
+    console.log(`ggg onMarkersDrop ${Object.keys(info)}`);
+    let meeple = this.current.meeple;
+    if (meeple) {
+      if (meeple.type === 'resource') {
+        if (this.current.cellIndex != null) {
+          let command = `resource ${meeple.name} ${this.current.cellIndex}`;
+          this._doTinyCommand(command);
+        }
+        else {
+          let marker = meeple.marker;
+          if (marker) {
+            let position = this.meeples.getRandom(this.resourceBin2.rect);
+            this.markers.setPositionSize(marker, position);
+            this.meeples.sendToRect(meeple, marker.rect);
+          }
+        }
+      }
+    }
+    this.current.last = {};
+    if (this.current.meeple) {
+      this.current.last.meeple = this.current.meeple;
+    }
+    if (this.current.cellIndex != null) {
+      this.current.last.cellIndex = this.current.cellIndex;
+    }
+    if (this.current.marker) {
+      this.current.last.marker = this.current.marker;
+    }
+
+    this.dragging = null;
+    this._selectMeeple();
+    this._selectCell();
+    this._setTargets();
+    this.deubgPrint();
+
+  }
+
+  onMarkersUp(info) {
+    console.log(`ggg onMarkersUp ${Object.keys(info)}`);
+    this.deubgPrint();
+  }
+
+  onMarkersClick(info) {
+    console.log(`ggg onMarkersClick ${Object.keys(info)}`);
+    this.deubgPrint();
   }
 }
