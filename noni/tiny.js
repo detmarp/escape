@@ -116,6 +116,9 @@ export default class Tiny {
     return list;
   }
 
+  canUndo(position, type) {
+  }
+
   doResource(position, resource) {
     if (!this.canDoResource(position, resource)) {
       return;

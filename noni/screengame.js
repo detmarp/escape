@@ -264,11 +264,11 @@ export default class ScreenGame {
     this.resourceBin2 = this.meeples.add({
       rect: [0, controlsY, 240, 224]
     });
-     this.resourceBin2.rect = [0, controlsY, 240, 224];
-this.markers.add({rect: this.resourceBin.rect, fixed: true,});
+    this.resourceBin2.rect = [0, controlsY, 240, 224];
+    this.resourceBinMarker = this.markers.add({rect: this.resourceBin.rect, fixed: true,});
     this.resourceBin.autoreturn = true;
     this.buildingBin = this.pieces.addSpot([240, controlsY, 300, 224]);
-this.markers.add({rect: this.buildingBin.rect, fixed: true,});
+    this.buildingBinMarker = this.markers.add({rect: this.buildingBin.rect, fixed: true,});
     this.buildingBin.autoreturn = true;
   }
 
@@ -556,9 +556,24 @@ this.markers.add({size: [...piece.size], position: [...piece.position]});
     let markerList = [info.marker, ...info.over];
     let cellIndex = markerList.find(item => item && item.cellIndex != null)?.cellIndex ?? null;
     this._selectCell(cellIndex);
+    let fromBin = markerList.find(item => item === this.resourceBinMarker);
+    let fromMarker = (cellIndex == null) ? fromBin : this.cells[cellIndex].marker;
+    if (fromMarker) {
+      this.current.from = fromMarker;
+    }
+    else {
+      delete this.current.from;
+    }
 
     let resource = meeple && meeple.type === 'resource' ? meeple.name : null;
-    this._setTargets(resource);
+    if (resource && (cellIndex == null)) {
+      this._setTargets(resource);
+    }
+    else {
+      // dragging from a cell
+      this._setTargets();
+    }
+
     this.deubgPrint();
   }
 
@@ -640,8 +655,9 @@ this.markers.add({size: [...piece.size], position: [...piece.position]});
         else {
           let marker = meeple.marker;
           if (marker) {
+            let returnTo = this.current.from || this.resourceBinMarker;
             let rect = this.markers.getDestinationRect(
-              this.resourceBin2,
+              returnTo,
               marker.rect
             );
             this.markers.setRect(marker, rect);
