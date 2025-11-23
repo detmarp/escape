@@ -48,7 +48,7 @@ export default class UxElement {
 
   box(parent, params = {}) {
     let div = this._div(parent);
-    div.style.position = 'relative';
+    div.style.position = 'absolute';
     if (params.clickthrough) {
       div.style.pointerEvents = 'none';
     }
