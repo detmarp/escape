@@ -1,7 +1,5 @@
-import Pieces from './pieces.js';
 import TinyBot from './tinybot.js';
 import UxElement from './uxelement.js';
-import Swatches from './swatches.js';
 import Meeples from './meeples.js';
 import Markers from './markers.js';
 import Party from './party.js';
@@ -90,14 +88,12 @@ export default class ScreenGame {
       background: '#b0c0d0',
     });
 
-    this.pieces = new Pieces(this.parent, this);
-
     this._makeHeader();
     this._makeBoardArea();
     this._makeControls();
     this._makeBins();
     this._makeCards();
-    this._makePieces();
+    //this._makePieces();
     this._makeParticles();
 
     this._refresh();
@@ -181,7 +177,6 @@ export default class ScreenGame {
     if (this.tiny.pending) {
       this.uxe.button(this.controlRow, { text: 'End turn', onClick: () => {
         this._doTinyCommand('endturn');
-        this._updatePiecesOnBoard();
       }});
     }
 
@@ -216,20 +211,6 @@ export default class ScreenGame {
   }
 
   _makeBins() {
-    // spots for the board
-    let start = [70, 54];
-    let size = [100, 100];
-    this.cellSpots = [];
-    for (let i = 0; i < 16; i++) {
-      let col = i % 4;
-      let row = Math.floor(i / 4);
-      let x = start[0] + col * size[0];
-      let y = start[1] + row * size[1];
-      let spot = this.pieces.addSpot([x, y, size[0], size[1]]);
-      spot.cellIndex = i;
-      this.cellSpots.push(spot);
-    }
-
     this.cells = [];
     for (let i = 0; i < 16; i++) {
       let rect = [ (i % 4) * 100, Math.floor(i / 4) * 100, 100, 100];
@@ -260,14 +241,17 @@ export default class ScreenGame {
     });
 
     let controlsY = 464 + 48 + 8;
-    this.resourceBin = this.pieces.addSpot([0, controlsY, 240, 224]);
     let resourceRect = [0, controlsY, 240, 224];
     this.resourceBinMarker = this.markers.add({rect: resourceRect, fixed: true,});
-    this.resourceBin.autoreturn = true;
+    this.uxe.bin(this.parent, {
+      rect: resourceRect,
+    });
 
-    this.buildingBin = this.pieces.addSpot([240, controlsY, 300, 224]);
-    this.buildingBinMarker = this.markers.add({rect: this.buildingBin.rect, fixed: true,});
-    this.buildingBin.autoreturn = true;
+    let buildingRect = [240, controlsY, 300, 224];
+    this.buildingBinMarker = this.markers.add({rect: buildingRect, fixed: true,});
+    this.uxe.bin(this.parent, {
+      rect: buildingRect,
+    });
   }
 
   _makeCards() {
@@ -288,38 +272,6 @@ export default class ScreenGame {
     return resources;
   }
 
-  _makePieces() {
-    let swatch = new Swatches();
-
-    // 8 pieces randomly in buildingBin
-    let categories = this.program.factory.deck.categories;
-    for (let category of categories) {
-      let meeple = swatch.getSwatch(category);
-      let params = {
-        color: meeple.color,
-        textColor: meeple.textColor,
-      };
-      let piece = this.pieces.newPiece(this.buildingBin.id, params);
-this.markers.add({size: [...piece.size], position: [...piece.position]});
-      piece.meeple = meeple;
-      piece.category = category;
-    }
-
-    // resources on board
-    this.tiny.board.cells.forEach((cell, i) => {
-      if (cell.resource) {
-        let meeple = swatch.getSwatch(cell.resource);
-        let params = {
-          color: meeple.color,
-          textColor: meeple.textColor,
-        };
-        let piece = this.pieces.newPiece(this.cellSpots[i].id, params);
-this.markers.add({size: [...piece.size], position: [...piece.position]});
-        piece.resource = meeple.name;
-      }
-    });
-  }
-
   _makeParticles() {
     this.particles = this.uxe.box(this.parent, {
       rect: [0, 0, 540, 960],
@@ -328,73 +280,11 @@ this.markers.add({size: [...piece.size], position: [...piece.position]});
     this.party = new Party(this.particles);
   }
 
-  _updatePiecesOnBoard() {
-    // If there are currently no undos, then fix any pieces in a cell.
-    if (this.tiny.command.undos.length === 0) {
-      for (let piece of this.pieces.pieces) {
-        if (piece.spot && piece.spot.cellIndex != null) {
-            piece.nopickup = true;
-        } else {
-          piece.nopickup = false;
-        }
-      }
-    }
-  }
-
-  _updateResourceBin() {
-    let resources = this._getResourcePool();
-    let binResources = [];
-    this.resourceBin.pieces.forEach(piece => {
-      if (piece.resource) {
-        binResources.push(piece.resource);
-      }
-    });
-    // One-to-one match: remove matched items from binResources copy
-    let binCopy = [...binResources];
-    let newResources = [];
-    for (let resource of resources) {
-      const idx = binCopy.indexOf(resource);
-      if (idx !== -1) {
-        binCopy.splice(idx, 1);
-      } else {
-        newResources.push(resource);
-      }
-    }
-    // Now newResources contains only those not matched in binResources
-    let swatch = new Swatches();
-    for (let resource of newResources) {
-      let meeple = swatch.getSwatch(resource);
-      let params = {
-        color: meeple.color,
-        textColor: meeple.textColor,
-      };
-      let piece = this.pieces.newPiece(this.resourceBin.id, params);
-this.markers.add({size: [...piece.size], position: [...piece.position]});
-      piece.resource = meeple.name;
-    }
-  }
-
   _refresh() {
-
     this._refreshControls();
-
-    // refresh display text
-    for (let i = 0; i < 16; i++) {
-      let cell = this.tiny.board.cells[i];
-      let parts = [];
-      if (cell.building) {
-        parts.push(cell.building);
-      }
-      if (cell.resource) {
-        parts.push(cell.resource);
-      }
-      let text = parts.join('\n');
-      this.cellSpots[i].innerText = text;
-    }
   }
 
   onFinger(action, pos, pos2) {
-    this.pieces.onFinger(action, pos, pos2);
     this.markers.onFinger(action, pos);
   }
 
@@ -402,80 +292,7 @@ this.markers.add({size: [...piece.size], position: [...piece.position]});
     this.editMode = editMode;
   }
 
-  // Piece delegate methods
-  canPieceDrop(piece, spot) {
-    if (!spot || spot.cellIndex == null) {
-      return;
-    }
-    if (this.tiny.pending) {
-      return;
-    }
-    let cell = this.tiny.board.cells[spot.cellIndex];
-    if (cell.resource || cell.building) {
-      return;
-    }
-    // Can drop building if cell is empty
-    if (piece.resource) {
-      return true;
-    }
-  }
-
-  onSpotTap(spot) {
-    let hint = {};
-    if (spot.cellIndex != null) {
-      hint.cellIndex = spot.cellIndex;
-    }
-    this._highlightPlacement(hint
-    );
-  }
-
-  onPieceTap(piece) {
-    let hint = {};
-    if (piece.spot) {
-      if (piece.spot == this.buildingBin) {
-        hint.category = piece.category;
-      }
-      else if (piece.spot.cellIndex != null) {
-        hint.cellIndex = piece.spot.cellIndex;
-      }
-    }
-    this._highlightPlacement(hint);
-    this._refresh()
-  }
-
-  onPieceDragStart(piece) {
-    if (piece.fromSpot && piece.fromSpot.cellIndex != null && this.tiny.pending) {
-      // this is a little indirect, but the idea is to undo the pending resource placement
-      this._doTinyCommand('undo');
-      // Also fake the home spot as the resource bin
-      piece.fromSpot = this.resourceBin;
-    }
-    this._highlightPlacement();
-    this._refresh()
-  }
-
-  onPieceDrop(piece, spot) {
-    if (spot && spot.cellIndex != null) {
-      if (piece.resource) {
-        let command = `resource ${piece.resource} ${spot.cellIndex}`;
-        this._doTinyCommand(command);
-      }
-    }
-    this._refresh()
-  }
-
-  onPieceKill(piece) {
-    //console.log('onPieceKill:', piece.id);
-    this._refresh()
-  }
-
   _action_updatepool(action) {
-    let swatch = new Swatches();
-    let s = swatch.getSwatch(action.resource);
-    let params = {
-      color: s.color,
-      textColor: s.textColor,
-    };
     let rect = this.markers.getDestinationRect(
       this.resourceBinMarker,
       null,

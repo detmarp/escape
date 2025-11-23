@@ -233,6 +233,37 @@ export default class UxElement {
     }
   }
 
+  bin(parent, params = {}) {
+    params = {
+      ...params,
+      background: '#c0bdb8ff',
+      border: '#8f8b86ff',
+      borderWidth: 1,
+    };
+    let div = this.box(parent, params);
+
+    let [w, h] = params.rect.slice(2,4);
+    let rect1 = [2, 2, w - 4, h - 4];
+    let layer1 = this.box(div, {
+      rect: rect1,
+      border: '#554e49ff',
+      borderWidth: 2,
+      radius: 8,
+    });
+    layer1.style.background = 'linear-gradient(135deg, #585653 20%, #a0978d 100%)';
+
+    let rect2 = [6, 6, w - 12, h - 12];
+    let layer2 = this.box(div, {
+      rect: rect2,
+      border: '#534d47ff',
+      borderWidth: 2,
+      radius: 8,
+    });
+    layer2.style.background = 'linear-gradient(135deg, #b6b1acff 30%, #dfdbd9ff 100%)';
+
+    return div;
+  }
+
   cell(parent, params = {}) {
     params = Object.assign({}, params);
     params.background = '#b38056ff';
