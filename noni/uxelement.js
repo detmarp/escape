@@ -235,7 +235,7 @@ export default class UxElement {
 
   cell(parent, params = {}) {
     params = Object.assign({}, params);
-    params.background = '#66cc66';
+    params.background = '#b38056ff';
 
     let div = this.box(parent, params);
     div.style.display = 'flex';
@@ -243,6 +243,14 @@ export default class UxElement {
     div.style.justifyContent = 'center';
     div.style.textAlign = 'center';
 
+    // layer on some effects
+    let layer1 = this.box(div, {
+      rect: [2, 2, 96, 96],
+      radius: 8,
+    });
+    layer1.style.background = 'linear-gradient(135deg, #66cc66 60%, #72d872ff 100%)';
+
+    // add the sub-elements
     let text = this.box(div, {
       rect: [0, 0, 100, 100],
       textColor: '#ff0000',

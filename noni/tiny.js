@@ -98,8 +98,17 @@ export default class Tiny {
       if (position != null && c !== position) {
         continue;
       }
-      if (this.board.cells[c].building || this.board.cells[c].resource) {
+      if (this.board.cells[c].building) {
         continue;
+      }
+      if (this.board.cells[c].resource) {
+        let allowUndo = undo &&
+          this.pending &&
+          this.pending.resource &&
+          this.pending.cellIndex === c;
+        if (!allowUndo) {
+          continue;
+        }
       }
       for (const r of this.hand.resources.row) {
         if (resource != null && r !== resource) {

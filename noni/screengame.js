@@ -261,12 +261,10 @@ export default class ScreenGame {
 
     let controlsY = 464 + 48 + 8;
     this.resourceBin = this.pieces.addSpot([0, controlsY, 240, 224]);
-    this.resourceBin2 = this.meeples.add({
-      rect: [0, controlsY, 240, 224]
-    });
-    this.resourceBin2.rect = [0, controlsY, 240, 224];
-    this.resourceBinMarker = this.markers.add({rect: this.resourceBin.rect, fixed: true,});
+    let resourceRect = [0, controlsY, 240, 224];
+    this.resourceBinMarker = this.markers.add({rect: resourceRect, fixed: true,});
     this.resourceBin.autoreturn = true;
+
     this.buildingBin = this.pieces.addSpot([240, controlsY, 300, 224]);
     this.buildingBinMarker = this.markers.add({rect: this.buildingBin.rect, fixed: true,});
     this.buildingBin.autoreturn = true;
@@ -479,7 +477,7 @@ this.markers.add({size: [...piece.size], position: [...piece.position]});
       textColor: s.textColor,
     };
     let rect = this.markers.getDestinationRect(
-      this.resourceBin2,
+      this.resourceBinMarker,
       null,
       [80, 80]
     );
@@ -590,6 +588,9 @@ this.markers.add({size: [...piece.size], position: [...piece.position]});
   _selectMeeple(meeple) {
     if (meeple) {
       this.current.meeple = meeple;
+      if (meeple && meeple.parentNode) {
+        meeple.parentNode.appendChild(meeple);
+      }
     }
     else {
       delete this.current.meeple;
@@ -627,6 +628,9 @@ this.markers.add({size: [...piece.size], position: [...piece.position]});
   onMarkersDrag(info) {
     console.log(`ggg onMarkersDrag ${Object.keys(info)}`);
     if (this.current.undo) {
+      // pretend we picked from the resource bin
+      this.current.from = this.resourceBinMarker;
+
       // undo last, to begin dragging
       let command = `undo resource ${this.current.cellIndex}`;
       this._doTinyCommand(command);
