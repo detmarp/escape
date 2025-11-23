@@ -3,6 +3,7 @@ import UxElement from './uxelement.js';
 import Meeples from './meeples.js';
 import Markers from './markers.js';
 import Party from './party.js';
+import CardArea from './cardarea.js';
 
 export default class ScreenGame {
   constructor(program) {
@@ -243,27 +244,45 @@ export default class ScreenGame {
     let controlsY = 464 + 48 + 8;
     let resourceRect = [0, controlsY, 240, 224];
     this.resourceBinMarker = this.markers.add({rect: resourceRect, fixed: true,});
+    this.resourceBinMarker.bin = true;
     this.uxe.bin(this.parent, {
       rect: resourceRect,
     });
 
     let buildingRect = [240, controlsY, 300, 224];
     this.buildingBinMarker = this.markers.add({rect: buildingRect, fixed: true,});
+    this.buildingBinMarker.bin = true;
     this.uxe.bin(this.parent, {
       rect: buildingRect,
     });
+
+    // buildings
+    let hand = this.tiny.getHand();
+    for (let i = 0; i < hand.length; i++) {
+      let card = hand[i];
+      let category = card.category;
+      let rect = this.markers.getDestinationRect(
+        this.buildingBinMarker,
+        null,
+        [80, 80]
+      );
+      let marker = this.markers.add({
+        rect: rect,
+      });
+      let meeple = this.meeples.add({
+        name: category,
+        rect: rect,
+      });
+      meeple.marker = marker;
+    }
   }
 
   _makeCards() {
     let y = 464 + 48 + 8 + 224 + 8
     let cardArea = this.uxe.box(this.box, {
       rect: [0, y, 540, 208],
-      border: '#000000',
     });
-
-    this.uxe.text(cardArea, {
-      text: this.program.tiny ? `${JSON.stringify(Object.keys(this.program.tiny))}` : 'null',
-    });
+    this.cardArea = new CardArea(cardArea, this);
   }
 
   _getResourcePool() {
@@ -371,10 +390,10 @@ export default class ScreenGame {
     let meeple = this.meeples.list.find(m => info.marker && m.marker === info.marker);
     this._selectMeeple(meeple);
 
-    let markerList = [info.marker, ...info.over];
-    let cellIndex = markerList.find(item => item && item.cellIndex != null)?.cellIndex ?? null;
+    let overMarkerList = [info.marker, ...info.over];
+    let cellIndex = overMarkerList.find(item => item && item.cellIndex != null)?.cellIndex ?? null;
     this._selectCell(cellIndex);
-    let fromBin = markerList.find(item => item === this.resourceBinMarker);
+    let fromBin = overMarkerList.find(item => item && item.bin);
     let fromMarker = (cellIndex == null) ? fromBin : this.cells[cellIndex].marker;
     if (fromMarker) {
       this.current.from = fromMarker;
@@ -384,6 +403,7 @@ export default class ScreenGame {
     }
     delete this.current.undo;
 
+    // resource selection setup
     this._setTargets();
     let resource = meeple && meeple.type === 'resource' ? meeple.name : null;
     if (resource) {
@@ -398,6 +418,9 @@ export default class ScreenGame {
         }
       }
     }
+
+    // building selection setup
+    let building = meeple && meeple.type === 'building' ? meeple.name : null;
 
     this.deubgPrint();
   }
@@ -481,6 +504,7 @@ export default class ScreenGame {
     console.log(`ggg onMarkersDrop ${Object.keys(info)}`);
     let meeple = this.current.meeple;
     if (meeple) {
+      let marker = meeple.marker;
       if (meeple.type === 'resource') {
         if (
           this.current.cellIndex != null &&
@@ -491,7 +515,6 @@ export default class ScreenGame {
           this._doTinyCommand(command);
         }
         else {
-          let marker = meeple.marker;
           if (marker) {
             let returnTo = this.current.from || this.resourceBinMarker;
             let rect = this.markers.getDestinationRect(
@@ -501,6 +524,17 @@ export default class ScreenGame {
             this.markers.setRect(marker, rect);
             this.meeples.sendToRect(meeple, rect);
           }
+        }
+      }
+      if (meeple.type === 'building') {
+        if (marker) {
+          let returnTo = this.current.from || this.buildingBinMarker;
+          let rect = this.markers.getDestinationRect(
+            returnTo,
+            marker.rect
+          );
+          this.markers.setRect(marker, rect);
+          this.meeples.sendToRect(meeple, rect);
         }
       }
     }

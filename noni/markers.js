@@ -173,7 +173,7 @@ export default class Markers {
           const duration = Date.now() - this.lastDownTime;
           this.lastDownTime = null;
           if (duration < 250) {
-            this.callDelegate('onClick', {
+            this.callDelegate('onMarkersClick', {
               marker: this.tapped,
               position: [...pos],
             });
@@ -185,7 +185,7 @@ export default class Markers {
         position: [...pos],
         over: [...over],
       };
-      this.callDelegate('onUp', params);
+      this.callDelegate('onMarkersUp', params);
     }
   }
 
@@ -193,6 +193,22 @@ export default class Markers {
     if (params && params.marker == null) {
       delete params.marker;
     }
+
+    // see if the marker has a delegate
+    if (params && params.marker && params.marker.delegate) {
+      let func = params.marker.delegate[method];
+      if (typeof func === 'function') {
+        func.call(params.marker.delegate, params);
+      }
+      else {
+        func = params.marker.delegate.onMarkers;
+        if (typeof func === 'function') {
+            func.call(params.marker.delegate, method.slice(9).toLowerCase(), params);
+        }
+      }
+    }
+
+    // Call the top-level delegate
     if (this.delegate && typeof this.delegate[method] === 'function') {
       return this.delegate[method](params);
     }

@@ -19,7 +19,7 @@ export default class Meeples {
     let swatch = swatches.getSwatch(params.name);
     let element = this.uxe.box(this.parent, {
       rect: [...params.rect],
-      border: '#999999',
+      border: '#333333',
       borderWidth: 2,
       background: swatch.color,
       radius: 8,
