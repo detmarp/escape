@@ -80,11 +80,15 @@ export default class Tiny {
     return this.hand.cards;
   }
 
-  canDoResource(position, resource) {
+  canDoResource(position, resource, undo) {
     // return an array of legal placements, or null
+    // undo lets us ovverride pending state
     // position and color are optional, but if present will filter results
     // TODO detmar - not really implemented
-    if (this.gameOver || this.pending) {
+    if (this.gameOver) {
+      return;
+    }
+    if (this.pending && !undo) {
       return;
     }
 
@@ -117,6 +121,13 @@ export default class Tiny {
   }
 
   canUndo(position, type) {
+    if (this.pending) {
+      if (this.pending.cellIndex === position) {
+        if (type === 'resource' && this.pending.resource) {
+          return true;
+        }
+      }
+    }
   }
 
   doResource(position, resource) {

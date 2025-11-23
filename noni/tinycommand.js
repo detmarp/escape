@@ -15,6 +15,7 @@ export default class TinyCommand {
   }
 
   *do(commands, isUndo=false) {
+    console.log(`ooo TinyCommand do: ${commands}`);
     this.actionUndos = [];
     let tokens = this.parser.tokenize(commands);
 
@@ -70,6 +71,17 @@ export default class TinyCommand {
       return;
     }
 
+    if (verb == 'undo') {
+      if (tokens.length != 3) {
+        yield* this._syntaxError(tokens);
+        return;
+      }
+      let type = tokens[1].string;;
+      let cellIndex = tokens[2].number;
+      yield* this._undo(cellIndex, type);
+      return;
+    }
+
     yield { action: 'error', error: `unknown: ${verb}` };
   }
 
@@ -83,6 +95,21 @@ export default class TinyCommand {
 
   *_checkScores() {
     yield { action: 'checkscores' };
+  }
+
+  *_undo(cellIndex, type) {
+    if (!this.tiny.canUndo(cellIndex, type)) {
+      yield { action: 'error', error: 'cannot undo' };
+      return;
+    }
+    if (type === 'resource') {
+      let resource = this.tiny.board.cells[cellIndex].resource;
+      if (resource) {
+        this.tiny.board.cells[cellIndex].resource = null;
+        this.tiny.pending = null;
+        yield { action: 'unresource', cellIndex: cellIndex, type: type, resource: resource };
+      }
+    }
   }
 
   _makeUndo(action) {

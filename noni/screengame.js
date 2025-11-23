@@ -515,6 +515,9 @@ this.markers.add({size: [...piece.size], position: [...piece.position]});
     this._highlightPlacement();
   }
 
+  _action_unresource(action) {
+  }
+
   _highlightPlacement(nextHint) {
     // Choose a placement index to highlight
     console.log(`ppp time to check placements ${JSON.stringify(nextHint)}`);
@@ -564,14 +567,21 @@ this.markers.add({size: [...piece.size], position: [...piece.position]});
     else {
       delete this.current.from;
     }
+    delete this.current.undo;
 
+    this._setTargets();
     let resource = meeple && meeple.type === 'resource' ? meeple.name : null;
-    if (resource && (cellIndex == null)) {
-      this._setTargets(resource);
-    }
-    else {
-      // dragging from a cell
-      this._setTargets();
+    if (resource) {
+      if (cellIndex == null) {
+        this._setTargets(resource);
+      }
+      else {
+        // dragging from a cell
+        if (this.tiny.canUndo(cellIndex, 'resource')) {
+          this._setTargets(resource, true);
+          this.current.undo = true;
+        }
+      }
     }
 
     this.deubgPrint();
@@ -600,8 +610,8 @@ this.markers.add({size: [...piece.size], position: [...piece.position]});
     }
   }
 
-  _setTargets(resource = null) {
-    let targets = this.tiny.canDoResource();
+  _setTargets(resource, undo) {
+    let targets = this.tiny.canDoResource(null, resource, undo);
     if (resource && targets) {
       this.current.targets = new Set(targets.map(t => t.position));
     }
@@ -616,6 +626,13 @@ this.markers.add({size: [...piece.size], position: [...piece.position]});
 
   onMarkersDrag(info) {
     console.log(`ggg onMarkersDrag ${Object.keys(info)}`);
+    if (this.current.undo) {
+      // undo last, to begin dragging
+      let command = `undo resource ${this.current.cellIndex}`;
+      this._doTinyCommand(command);
+      delete this.current.undo;
+    }
+
     this.deubgPrint();
     this.dragging = {};
   }
