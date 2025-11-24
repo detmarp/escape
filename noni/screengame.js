@@ -278,9 +278,9 @@ export default class ScreenGame {
   }
 
   _makeCards() {
-    let y = 464 + 48 + 8 + 224 + 8
+    let y = 464 + 48 + 8 + 224
     let cardArea = this.uxe.box(this.box, {
-      rect: [0, y, 540, 208],
+      rect: [0, y, 540, 216],
     });
     this.cardArea = new CardArea(cardArea, this);
   }

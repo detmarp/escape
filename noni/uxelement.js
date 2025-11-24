@@ -237,7 +237,7 @@ export default class UxElement {
     params = {
       ...params,
       background: '#c0bdb8ff',
-      border: '#8f8b86ff',
+      //border: '#8f8b86ff',
       borderWidth: 1,
     };
     let div = this.box(parent, params);
