@@ -136,5 +136,6 @@ export default class CardArea {
     for (let i = 0; i < this.cards.length; i++) {
       this.cards[i].style.zIndex = 10 - Math.abs(i - index);
     }
+    this.screengame.selectMeepleByName(this.cards[index].card.category);
   }
 }

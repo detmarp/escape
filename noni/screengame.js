@@ -421,8 +421,19 @@ export default class ScreenGame {
 
     // building selection setup
     let building = meeple && meeple.type === 'building' ? meeple.name : null;
+    if (building) {
+      const card = this.program.tiny.hand.cards.find(card => card.category === building);
+      if (card) {
+        this.cardArea.show(card.category);
+      }
+    }
 
     this.deubgPrint();
+  }
+
+  selectMeepleByName(name) {
+    const meeple = this.meeples.list.find(m => m.name === name);
+    this._selectMeeple(meeple);
   }
 
   _selectMeeple(meeple) {
@@ -430,6 +441,9 @@ export default class ScreenGame {
       this.current.meeple = meeple;
       if (meeple && meeple.parentNode) {
         meeple.parentNode.appendChild(meeple);
+      }
+      if (meeple.marker) {
+        this.markers.moveToTop(meeple.marker);
       }
     }
     else {
@@ -449,6 +463,9 @@ export default class ScreenGame {
     else {
       delete this.current.cellIndex;
     }
+  }
+
+  selectcard(card) {
   }
 
   _setTargets(resource, undo) {

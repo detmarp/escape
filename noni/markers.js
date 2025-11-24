@@ -53,6 +53,11 @@ export default class Markers {
     marker.rect = [x - (w >> 1), y - (h >> 1), w, h];
   }
 
+  moveToTop(marker) {
+    this.markers = this.markers.filter(m => m !== marker);
+    this.markers.push(marker);
+  }
+
   onFinger(action, pos) {
     // Action is one of: 'hover', 'down', 'drag', 'up'
     //console.log(`mmm ${action} at (${pos[0]}, ${pos[1]})`);
@@ -92,8 +97,7 @@ export default class Markers {
       if (this.top) {
         this.tapped.tapped = true;
         if (!this.tapped.fixed) {
-          this.markers = this.markers.filter(m => m !== this.tapped);
-          this.markers.push(this.tapped);
+          this.moveToTop(this.tapped);
         }
       }
 
