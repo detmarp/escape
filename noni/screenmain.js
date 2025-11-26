@@ -54,6 +54,22 @@ export default class ScreenMain {
         onClick: () => { this._onQuickStart(); },
       });
     }
+
+    let row = this.uxe.box(buttonArea, {
+      rect: [0, 360, 540, 80],
+      row: true,
+    });
+    this.uxe.button(row, {
+      text: 'test 1',
+      onClick: () => {
+      },
+    });
+    this.uxe.button(row, {
+      text: 'test 2',
+      onClick: () => {
+      },
+    });
+
   }
 
   _goto(parent, label, screen) {

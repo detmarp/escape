@@ -4,6 +4,7 @@ import Meeples from './meeples.js';
 import Markers from './markers.js';
 import Party from './party.js';
 import CardArea from './cardarea.js';
+import InfoArea from './infoarea.js';
 
 export default class ScreenGame {
   constructor(program) {
@@ -26,7 +27,7 @@ export default class ScreenGame {
       dragging: this.dragging ? Object.keys(this.dragging) : null,
       last: this.current.last ? Object.keys(this.current.last) : null,
     };
-    console.log(`ccc0 ${JSON.stringify(m)}`);
+    //console.log(`ccc0 ${JSON.stringify(m)}`);
   }
 
   run() {
@@ -41,6 +42,7 @@ export default class ScreenGame {
       if (next.done) {
         this.actions = null;
         this.pauseInput = false;
+        this.program.saveCurrent(this.program.tiny);
       }
       else {
         this._processCoreAction(next.value);
@@ -109,6 +111,11 @@ export default class ScreenGame {
   }
 
   _makeBoardArea() {
+    let boardbackground = this.uxe.box(this.box, {
+      rect: [0, 48, 540, 744],
+    });
+    boardbackground.style.background = 'linear-gradient(135deg, #f0debcff 0%, #e0d8b0 100%)';
+
     let boardRow = this.uxe.box(this.box, {
       rect: [0, 54, 540, 400],
       row: true,
@@ -237,7 +244,7 @@ export default class ScreenGame {
     let y = 464 + 48 + 8;
     let controls = this.uxe.box(this.box, {
       rect: [0, y, 540, 224],
-      border: '#000000',
+      //border: '#000000',
       row: true,
     });
 
@@ -386,7 +393,6 @@ export default class ScreenGame {
   }
 
   onMarkersTap(info) {
-    console.log(`ggg onMarkersTap ${Object.keys(info)}`);
     let meeple = this.meeples.list.find(m => info.marker && m.marker === info.marker);
     this._selectMeeple(meeple);
 
@@ -483,7 +489,6 @@ export default class ScreenGame {
   }
 
   onMarkersDrag(info) {
-    console.log(`ggg onMarkersDrag ${Object.keys(info)}`);
     if (this.current.undo) {
       // pretend we picked from the resource bin
       this.current.from = this.resourceBinMarker;
@@ -499,7 +504,6 @@ export default class ScreenGame {
   }
 
   onMarkersDragging(info) {
-    console.log(`ggg onMarkersDragging ${Object.keys(info)}`);
     if (info.marker) {
       const meeple = this.meeples.list.find(m => m.marker === info.marker);
       if (meeple) {
@@ -518,7 +522,6 @@ export default class ScreenGame {
   }
 
   onMarkersDrop(info) {
-    console.log(`ggg onMarkersDrop ${Object.keys(info)}`);
     let meeple = this.current.meeple;
     if (meeple) {
       let marker = meeple.marker;
@@ -575,12 +578,10 @@ export default class ScreenGame {
   }
 
   onMarkersUp(info) {
-    console.log(`ggg onMarkersUp ${Object.keys(info)}`);
     this.deubgPrint();
   }
 
   onMarkersClick(info) {
-    console.log(`ggg onMarkersClick ${Object.keys(info)}`);
     this.deubgPrint();
   }
 }

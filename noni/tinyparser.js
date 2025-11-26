@@ -20,8 +20,6 @@ export default class TinyParser {
       }
       tokens.push(token);
     }
-    console.log(`ccc ${command}`);
-    console.log(`ccc ${JSON.stringify(tokens)}`);
     return tokens;
   }
 

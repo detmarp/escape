@@ -34,6 +34,12 @@ export default class TinyDeck {
       drawPile: hand.resourceDeck.slice(3),
       picked: null,
     };
+    this._makeMaps(hand);
+
+    return hand;
+  }
+
+  _makeMaps(hand) {
     hand.categoryMap = {};
     for (const card of hand.cards) {
       hand.categoryMap[card.category] = card;
@@ -46,7 +52,6 @@ export default class TinyDeck {
     hand.resourceMap = this.resourceMap;
     hand.deck = this;
     hand.deckHash = this.hash;
-    return hand;
   }
 
   handFromRandom() {
@@ -56,29 +61,32 @@ export default class TinyDeck {
 
   handFromSaveData(saveData) {
     // Try to reconstruct hand from savedata
-    // Might be imperfect
     let seed = saveData.gameSeed || 0;
+    // frist, roll from seed
     let hand = this.handFromSeed(seed);
-    hand.resources = saveData.resources;
-    try {
 
-    } catch (e) {
-      console.error('Error reconstructing hand from savedata:', e);
+    // Now try to overwrite with save data
+    if (saveData.deck) {
+      //TODO detmar
     }
+
+    this._makeMaps(hand);
+
     return hand;
   }
 
   _ingest(cardData) {
-    let tempMap = {};
+    this.shortMap = {};
     for (const card of cardData) {
-      tempMap[card.short] = card;
+      this.shortMap[card.short] = card;
     }
 
-    let sortedKeys = Object.keys(tempMap).sort();
+    // hash of the available deck
+    let sortedKeys = Object.keys(this.shortMap).sort();
     let result = [];
     let appended = '';
     for (let i = 0; i < sortedKeys.length; i++) {
-      let card = tempMap[sortedKeys[i]];
+      let card = this.shortMap[sortedKeys[i]];
       card.id = i;
       result.push(card);
       appended += `${card.short}|`;

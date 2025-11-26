@@ -12,7 +12,7 @@ export default class Tiny {
     this.score = new TinyScore(this);
     this.command = new TinyCommand(this);
     this.timeStamp = Date.now();
-    this.state = 'ready';
+    this.state = 'new';
 
     this.startGame();
   }
@@ -42,7 +42,6 @@ export default class Tiny {
     }
 
     this.buildingPlacements = this.getBuildingPlacements();
-    console.log(`bbb placements: ${this.buildingPlacements.length}`);
 
     this.score.calculate();
   }
@@ -53,16 +52,27 @@ export default class Tiny {
     this._refresh();
   }
 
+  _findRotatedResources() {
+    // return [row, drawPile]
+    let row = [...this.hand.resources.row];
+    let drawPile = [...this.hand.resources.drawPile];
+    if (this.pending && typeof this.pending.handIndex === 'number') {
+      const usedResource = row.splice(this.pending.handIndex, 1)[0];
+      drawPile.push(usedResource);
+      const next = drawPile.splice(0, 1);
+      const nextResource = next[0];
+      row.push(nextResource);
+    }
+    return [row, drawPile];
+  }
+
   updateHandResources() {
     // At the end of a resource placement in a turn, move the current resources
-    if (this.pending && typeof this.pending.handIndex === 'number') {
-      let nextResource;
-      const usedResource = this.hand.resources.row.splice(this.pending.handIndex, 1)[0];
-      this.hand.resources.drawPile.push(usedResource);
-      const next = this.hand.resources.drawPile.splice(0, 1);
-      nextResource = next[0];
-      this.hand.resources.row.push(nextResource);
-      this.hand.resources.picked = null;
+    if (this.pending) {
+      let [row, drawPile] = this._findRotatedResources();
+      this.hand.resources.row = row;
+      this.hand.resources.drawPile = drawPile;
+      let nextResource = row[row.length - 1];
 
       return {
         action: 'updatepool',
@@ -73,7 +83,7 @@ export default class Tiny {
   }
 
   getResources() {
-    return this.hand.resources.row
+    return this.hand.resources.row;
   }
 
   getHand() {

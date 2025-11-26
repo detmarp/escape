@@ -70,9 +70,7 @@ export default class TinyFactory {
 
   tinyFromSaveData(saveData) {
     // can return null if invalid
-    console.log('');
-    console.log('-X-X-X-X-X-X- ttt');
-    console.log(`${JSON.stringify(saveData)}`);
+    console.log(`ttt ${JSON.stringify(saveData)}`);
 
     let hand = this.deck.handFromSaveData(saveData);
     let tiny = new Tiny(hand);
@@ -124,22 +122,28 @@ export default class TinyFactory {
       if (cell.building) {
         c.push(cell.building.category);
       }
-      if (cell.resource) {
+      else if (cell.resource) {
         c.push(cell.resource);
       }
       cells.push(c);
     });
 
+    let gameseed = 123456;
+    let timestamp = tiny.timeStamp || Date.now();
+    let state = this.state;
+    let [row, draw] = tiny._findRotatedResources();
+    let pool = row.concat(draw);
+    let deck = tiny.hand.cards.map(card => card.short);
+    let score = tiny.score.displayScore;
+
     let data = {
-      gameSeed: tiny.hand.seed,
-      timeStamp: tiny.timeStamp,
-      started: tiny.started,
-      gameOver: tiny.gameOver,
+      gameseed,
+      timestamp,
+      state,
       cells,
-      specials: tiny.special.specials || undefined,
-      points: tiny.score.displayScore,
-      resources: tiny.hand.resources,
-      deckHash: tiny.hand.deckHash,
+      pool,
+      deck,
+      score,
     };
 
     return data;

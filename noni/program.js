@@ -58,7 +58,7 @@ export default class Program {
     if (this.currentGame) {
       this.tiny = this.currentGame;
       this.save();
-      this.gotoMode('gameboard');
+      //this.gotoMode('gameboard');
       return true;
     }
   }

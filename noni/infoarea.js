@@ -2,8 +2,8 @@ import UxElement from './uxelement.js';
 import Swatches from './swatches.js';
 
 // helper class for screengame
-// draws and manages the game cards
-export default class CardArea {
+// draws and manages the button bar
+export default class InfoArea {
   constructor(parent, screengame) {
     this.parent = parent;
     this.screengame = screengame;

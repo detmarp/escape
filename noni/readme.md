@@ -1,3 +1,8 @@
+## playtest notes
+* Roe - resources need to snap to middle of the cell squares or it will really bug me
+
+## x
+
 all the possible board states
 
 let's leave specials out of it for now.  I might have to redesign those.
@@ -124,3 +129,24 @@ pieces are created / destroyed
   * Set building plan
   * Flip card
   * Rotate card shape
+
+## Savegame definition
+Saved: {"settings":{},"history":[{"gameSeed":596568,"timeStamp":1764004376921,"started":true,"cells":[[],[],[],[],[],[],[],[],[],[],[],[],["stone"],[],[],[]],"specials":[],"points":0,"resources":{"row":["wheat","stone","wood"],"drawPile":["wood","wheat","brick","stone","glass","wheat","glass","brick","brick","wood","glass","stone"],"picked":null},"deckHash":2754852755},{"gameSeed":705955,"timeStamp":1764004399294,"started":true,"cells":[[],[],[],[],[],[],[],[],[],[],[],[],["glass"],[],[],[]],"specials":[],"points":0,"resources":{"row":["stone","glass","glass"],"drawPile":["wheat","glass","stone","brick","wood","wheat","brick","stone","wood","wheat","wood","brick"],"picked":null},"deckHash":2754852755}],"count":857,"autocontinue":true,"quickstart":true,"autoquickstart":true,"editmode":false,"botbutton":true,"logsavedata":true}
+savedata.js:45 0: {"gameSeed":596568,"timeStamp":1764004376921,"started":true,"cells":[[],[],[],[],[],[],[],[],[],[],[],[],["stone"],[],[],[]],"specials":[],"points":0,"resources":{"row":["wheat","stone","wood"],"drawPile":["wood","wheat","brick","stone","glass","wheat","glass","brick","brick","wood","glass","stone"],"picked":null},"deckHash":2754852755}
+savedata.js:45 1: {"gameSeed":705955,"timeStamp":1764004399294,"started":true,"cells":[[],[],[],[],[],[],[],[],[],[],[],[],["glass"],[],[],[]],"specials":[],"points":0,"resources":{"row":["stone","glass","glass"],"drawPile":["wheat","glass","stone","brick","wood","wheat","brick","stone","wood","wheat","wood","brick"],"picked":null},"deckHash":2754852755}
+
+A saved blob has
+* settings: {}
+* optional history: []
+
+Each history[] is a savedgame blob
+
+savedgame
+* Example, typical, - WITHOUT specials
+  * gameseed: int
+  * timestamp: int
+  * state: new|playing|gameover
+  * cells: [[],[],[] x16 ], each cell has 0 or 1 strings
+  * pool: ['wood','wheat' ... x15]
+  * deck: ['cott','fact' ... x8], one for each 8 colors/categories
+  * score: int

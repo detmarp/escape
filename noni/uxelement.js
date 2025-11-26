@@ -125,7 +125,9 @@ export default class UxElement {
       el.style.alignItems = 'center';
       el.style.background = '#fff7d1ff';
       el.style.color = '#35312fff';
-    }
+      el.style.userSelect = 'none';
+      el.style.touchAction = 'manipulation';
+      }
 
     if (params.onLeftClick) {
       let left = el('<🏠', true);
@@ -236,7 +238,7 @@ export default class UxElement {
   bin(parent, params = {}) {
     params = {
       ...params,
-      background: '#c0bdb8ff',
+      //background: '#c0bdb8ff',
       //border: '#8f8b86ff',
       borderWidth: 1,
     };
