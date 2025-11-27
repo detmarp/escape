@@ -120,16 +120,16 @@ export default class ScreenGame {
       rect: [0, 54, 540, 400],
       row: true,
     });
-    this.infoArea = this.uxe.box(boardRow, {
+    this.leftSideBar = this.uxe.box(boardRow, {
       rect: [8, 0, 54, 400],
       border: '#000000',
     });
-    this.infoArea.style.display = 'flex';
-    this.infoArea.style.flexDirection = 'column';
-    this.infoArea.style.alignItems = 'center';
-    this.infoArea.style.gap = `${4 * this.uxe.scale}px`;
+    this.leftSideBar.style.display = 'flex';
+    this.leftSideBar.style.flexDirection = 'column';
+    this.leftSideBar.style.alignItems = 'center';
+    this.leftSideBar.style.gap = `${4 * this.uxe.scale}px`;
     if (true) {
-      this.editButton = this.uxe.box(this.infoArea, {
+      this.editButton = this.uxe.box(this.leftSideBar, {
         size: [48, 40],
         border: '#000000',
         radius: 4,
@@ -159,34 +159,29 @@ export default class ScreenGame {
   }
 
   _makeControls() {
-    let y = 464;
-    this.controlRow = this.uxe.box(this.box, {
-      rect: [0, y, 540, 48],
-      border: '#000000',
-      row: true,
-    });
+    this.infoArea = new InfoArea(this.box, this);
     this._refreshControls();
   }
 
   _refreshControls() {
-    // buttons
-    this.controlRow.innerHTML = '';
-    this.uxe.button(this.controlRow, { text: 'Bot', onClick: () => {
-      let bot = new TinyBot(this.tiny);
-      bot.makeMove();
-      this._rebuild();
-    }});
-    if (this.tiny.command.undos.length > 0) {
-      this.uxe.button(this.controlRow, { text: 'Undo', onClick: () => {
-        this._doTinyCommand('undo');
-        this._rebuild();
-      }});
-    }
-    if (this.tiny.pending) {
-      this.uxe.button(this.controlRow, { text: 'End turn', onClick: () => {
-        this._doTinyCommand('endturn');
-      }});
-    }
+    // // buttons
+    // this.controlRow.innerHTML = '';
+    // this.uxe.button(this.controlRow, { text: 'Bot', onClick: () => {
+    //   let bot = new TinyBot(this.tiny);
+    //   bot.makeMove();
+    //   this._rebuild();
+    // }});
+    // if (this.tiny.command.undos.length > 0) {
+    //   this.uxe.button(this.controlRow, { text: 'Undo', onClick: () => {
+    //     this._doTinyCommand('undo');
+    //     this._rebuild();
+    //   }});
+    // }
+    // if (this.tiny.pending) {
+    //   this.uxe.button(this.controlRow, { text: 'End turn', onClick: () => {
+    //     this._doTinyCommand('endturn');
+    //   }});
+    // }
 
     // placement marker
     //this.boardMarkers.innerHTML = '';

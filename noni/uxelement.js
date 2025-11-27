@@ -79,6 +79,49 @@ export default class UxElement {
     return div;
   }
 
+  headerInfo(parent, params = {}) {
+    let el = this._headerElement(parent, params);
+    el.style.border = `calc(var(--scale) * 1px) solid #afafafff`;
+    el.style.borderRadius = `calc(var(--scale) * 4px)`;
+    el.style.padding = `0 calc(var(--scale) * 8px)`;
+    el.style.height = '75%';
+    el.style.display = 'flex';
+    el.style.alignItems = 'center';
+    el.style.background = '#fdfaf1ff';
+    return el;
+  }
+
+  headerButton(parent, params = {}) {
+    let el = this._headerElement(parent, params);
+    el.onclick = params.onClick || (() => {});
+    el.style.border = `calc(var(--scale) * 3px) solid #554524ff`;
+    el.style.borderRadius = `calc(var(--scale) * 8px)`;
+    el.style.padding = `0 calc(var(--scale) * 8px)`;
+    el.style.height = '85%';
+    el.style.display = 'flex';
+    el.style.alignItems = 'center';
+    el.style.background = '#fff7d1ff';
+    el.style.color = '#35312fff';
+    el.style.userSelect = 'none';
+    el.style.webkitUserSelect = 'none';
+    el.style.touchAction = 'manipulation';
+    el.style.pointerEvents = 'auto';
+    el.setAttribute('role', 'button');
+    return el;
+  }
+
+  _headerElement(parent, params = {}) {
+    let e = document.createElement(params.onClick ? 'button' : 'div');
+    parent.appendChild(e);
+    e.style.display = 'flex';
+    e.style.alignItems = 'center';
+    if (params.text) {
+      e.textContent = params.text;
+    }
+    e.style.height = '100%';
+    return e;
+  }
+
   headerBar(parent, params = {}) {
     // retuned element has a .update(params) method
     let p2 = Object.assign({}, params);
@@ -96,65 +139,39 @@ export default class UxElement {
     div.style.columnGap = `calc(${1 * 16} * var(--scale) * 1px)`;
     div.style.fontSize = `calc(1.4 * 16 * var(--scale) * 1px)`;
 
-    function el(text, button) {
-      let e = document.createElement(button ? 'button' : 'div');
-      div.appendChild(e);
-      e.style.display = 'flex';
-      e.style.alignItems = 'center';
-      if (text) {
-        e.textContent = text;
-      }
-      e.style.height = '100%';
-      return e;
-    }
-    function styleInfo(el) {
-      el.style.border = `calc(var(--scale) * 1px) solid #afafafff`;
-      el.style.borderRadius = `calc(var(--scale) * 4px)`;
-      el.style.padding = `0 calc(var(--scale) * 8px)`;
-      el.style.height = '75%';
-      el.style.display = 'flex';
-      el.style.alignItems = 'center';
-      el.style.background = '#fdfaf1ff';
-    }
-    function styleButton(el) {
-      el.style.border = `calc(var(--scale) * 3px) solid #554524ff`;
-      el.style.borderRadius = `calc(var(--scale) * 8px)`;
-      el.style.padding = `0 calc(var(--scale) * 8px)`;
-      el.style.height = '85%';
-      el.style.display = 'flex';
-      el.style.alignItems = 'center';
-      el.style.background = '#fff7d1ff';
-      el.style.color = '#35312fff';
-      el.style.userSelect = 'none';
-      el.style.touchAction = 'manipulation';
-      }
-
     if (params.onLeftClick) {
-      let left = el('<🏠', true);
-      left.onclick = params.onLeftClick;
-      styleButton(left);
+      let left = this.headerButton(div, {
+        text: '<🏠',
+        onClick: params.onLeftClick
+      });
     }
     if (params.streak != null) {
-      let streak = el(`🏆 ${params.streak}`);
-      styleInfo(streak);
+      let streak = this.headerInfo(div, {
+        text: `🏆 ${params.streak}`
+      });
     }
     if (params.text) {
-      let center = el(params.text);
+      let center = this.headerInfo(div, {
+        text: params.text
+      });
     }
     if (params.score != null) {
-      let s = el();
-      styleInfo(s);
+      let s = this.headerInfo(div, {
+        text: `Score ${params.score}`
+      });
       div.score = s;
     }
     if (params.info) {
-      let info = el(params.info);
+      let info = this.headerInfo(div, {
+        text: params.info
+      });
       info.style.color = this.color.infoColor;
     }
     if (params.onRightClick) {
-      let right = el('⚙️', true);
-      right.onclick = params.onRightClick;
-      right.setAttribute('role', 'button');
-      styleButton(right);
+      let right = this.headerButton(div, {
+        text: '⚙️',
+        onClick: params.onRightClick
+      });
     }
 
     div.update = (newParams = {}) => {
