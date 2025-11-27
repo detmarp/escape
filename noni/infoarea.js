@@ -16,19 +16,40 @@ export default class InfoArea {
       //border: '#c5a575ff',
       row: true,
     });
+
+    this.update();
+  }
+
+  update() {
+    this.row.innerHTML = '';
+
     this.row.style.paddingLeft = '8px';
     this.row.style.gap = '12px';
     this.row.style.justifyContent = 'center';
     this.row.style.alignItems = 'center';
 
-    this.uxe.headerInfo(this.row, {
-      text: 'Info Area',
-    });
-    this.uxe.headerButton(this.row, {
-      text: 'Info Area',
-    });
-    this.uxe.headerInfo(this.row, {
-      text: 'Info Area',
-    });
+    let hint = 'Place a resource';
+
+    if (this.screengame.tiny.pending) {
+      this.uxe.headerButton(this.row, {
+        text: 'End turn',
+        onClick: () => {
+         this.screengame._doTinyCommand('endturn');
+        },
+      });
+      hint = null;
+    }
+
+    if (hint) {
+      this.uxe.headerInfo(this.row, {
+        text: '↙️ Place a resource',
+      });
+    }
+
+    if (this.tiny.buildingPlacements && this.tiny.buildingPlacements.length > 0) {
+      this.uxe.headerInfo(this.row, {
+        text: 'or Place a building ↘️',
+      });
+    }
   }
 }

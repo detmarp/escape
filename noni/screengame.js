@@ -40,9 +40,7 @@ export default class ScreenGame {
     if (this.actions) {
       let next = this.actions.next();
       if (next.done) {
-        this.actions = null;
-        this.pauseInput = false;
-        this.program.saveCurrent(this.program.tiny);
+        this._onActionsComplete();
       }
       else {
         this._processCoreAction(next.value);
@@ -66,6 +64,13 @@ export default class ScreenGame {
 
     let scale = this.program.container.scale;
     this.party.draw(Date.now(), scale);
+  }
+
+  _onActionsComplete() {
+    this.actions = null;
+    this.pauseInput = false;
+    this.infoArea.update();
+    this.program.saveCurrent(this.program.tiny);
   }
 
   _doTinyCommand(command) {
