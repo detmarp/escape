@@ -48,19 +48,39 @@ export default class Program {
     this._startLoop();
   }
 
-  newGame(tiny) {
-    // Init with this tiny, or make a new one
-    this.tiny = tiny || this.factory.tinyFromRandom();
-    this.save();
+  setupPregame(params) {
+    // ALL pregames are created through this call
+    // Look at params
+    //   params.savegame
+    //   params.gameseed
+    //   else random
+    // TODO - handle optional rules struct
+
+    // Roll new random pregame
+    // New pregame from gameseed
+    // Using savedata, goto pregame
+    // Using savedata, goto game in progress
+    let pregame = {...(params ?? {}) };
+    this.pregame = pregame;
+    return pregame;
   }
 
-  tryContinue() {
-    if (this.currentGame) {
-      this.tiny = this.currentGame;
-      this.save();
-      //this.gotoMode('gameboard');
-      return true;
+  setupTiny(pregame = {}) {
+    // ALL Tiny instances are created here
+    // using data in this.pregame
+    // TODO stub...
+    let tiny;
+    if (pregame.savegame) {
+      tiny = this.factory.tinyFromSaveData(pregame.savegame);
     }
+    else if (pregame.gameseed) {
+      tiny = this.factory.tinyFromSeed(pregame.gameseed);
+    }
+    else {
+      tiny = this.factory.tinyFromRandom();
+    }
+
+    this.tiny = tiny;
   }
 
   save() {
@@ -68,9 +88,12 @@ export default class Program {
     if (this.saveData.data.logsavedata) {
       this.saveData._debugPrint('Saved:');
     }
+    console.log(`eee 0 ${this.tiny && this.tiny.timeStamp} - save()`);
+
   }
 
   saveCurrent(tiny) {
+    console.log(`eee 1 ${this.tiny && this.tiny.timeStamp} - saveCurrent()`);
     this.saveData.data = this.saveData.data || {};
     let history = new TinyHistory(this.factory, this.saveData.data.history);
     let data = history.saveGame(tiny);

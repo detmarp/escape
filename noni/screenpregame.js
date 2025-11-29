@@ -9,6 +9,11 @@ export default class ScreenMain {
   }
 
   run() {
+    if (this.program.pregame?.autostart) {
+      this._gotoGame();
+      return;
+    }
+
     this.update();
   }
 
@@ -23,7 +28,7 @@ export default class ScreenMain {
 
     this.uxe.text(this.box, { text: 'Pregame Screen', });
     this.uxe.button(this.box, {
-      text: 'Main',
+      text: '< Main',
       onClick: () => { this.program.goto.to('main'); },
     });
 
@@ -34,12 +39,17 @@ export default class ScreenMain {
     this.uxe.button(this.box, {
       text: 'Play',
       onClick: () => {
-        this.program.goto.to('game');
+        this._gotoGame();
       },
     });
 
     this.uxe.text(this.box, {
       text: `${JSON.stringify(this.program.saveData.data)}`,
     });
+  }
+
+  _gotoGame() {
+    this.program.setupTiny(this.program.pregame);
+    this.program.goto.to('game');
   }
 }

@@ -30,28 +30,46 @@ export default class ScreenMain {
     });
 
     let history = new TinyHistory(this.program.factory, this.program.saveData.data.history);
-    this.daily = this._gamesBox('Game of the day', [20, 60, 500, 200]);
+    this.dailyBox = this._gamesBox('Game of the day', [20, 60, 500, 200]);
     let daily = history.getDailyGames(15);
     daily.forEach(e => {
-      this._gameButton(this.daily, e);
+      this._gameButton(this.dailyBox, e);
     });
-    this.other = this._gamesBox('Other games', [20, 270, 500, 200]);
-    this._gameButton(this.other);
-    this._gameButton(this.other);
-    this._gameButton(this.other);
+    this.otherBox = this._gamesBox('Other games', [20, 270, 500, 200]);
+    let other = history.getOtherGames();
+    this._gameButton(this.otherBox, null);
+    other.forEach(e => {
+      this._gameButton(this.otherBox, e);
+    });
 
     let buttonArea = this.uxe.box(this.box, {
       rect: [0, 480, 540, 480],
     });
-    this._goto(buttonArea, 'Pregame 🛠️', 'pregame');
-    this._goto(buttonArea, 'Game 🪙', 'game');
-    this._goto(buttonArea, 'Editor ✏️', 'editor');
+    this._goto(buttonArea, 'debug Pregame 🛠️', 'pregame', () => {
+      this.program.setupPregame({
+      }
+      );
+    });
+    this._goto(buttonArea, 'debug Game 🪙', 'pregame', () => {
+      this.program.setupPregame({
+        autostart: true,
+      }
+      );
+    });
+    this._goto(buttonArea, 'Editor ✏️', 'editor', () => {
+      this.program.setupPregame({
+        autostart: true,
+      }
+      );
+    });
     this._goto(buttonArea, 'Credits 📜', 'credits');
     this._goto(buttonArea, 'Settings ⚙️', 'settings');
     if (this.program.saveData.data.quickstart) {
-      this.uxe.button(buttonArea, {
-        text: 'Quick start 🚀',
-        onClick: () => { this._onQuickStart(); },
+      this._goto(buttonArea, 'Quick start 🚀', 'pregame', () => {
+        this.program.setupPregame({
+          autostart: true,
+        }
+        );
       });
     }
 
@@ -72,13 +90,12 @@ export default class ScreenMain {
 
   }
 
-  _goto(parent, label, screen) {
+  _goto(parent, label, screen, setup) {
     this.uxe.button(parent, {
       text: label,
       onClick: () => {
-        if (!this.program.tiny) {
-          // TODO This is a HACK for the tiny creation flow
-          this.program.newGame();
+        if (setup) {
+          setup();
         }
         this.program.goto.to(screen);
       },
@@ -107,30 +124,46 @@ export default class ScreenMain {
   }
 
   _gameButton(parent, entry) {
-    let box = this.uxe.box(parent, {
-      background: '#e0e0e0',
-      border: '#999999',
-      radius: this.container.u(5),
-      onClick: () => {
-        let history = new TinyHistory(this.program.factory, this.program.saveData.data.history);
-        let tiny = history.tinyFromObject(entry);
-        this.program.newGame(tiny);
-        if (tiny.started) {
-          this.program.goto.to('game');
-        }
-        else {
-          this.program.goto.to('pregame');
-        }
-      },
-    });
+    let b = document.createElement('button');
+    parent.appendChild(b);
 
-    this.uxe.text(box, { text: 'Game' });
+    let text = entry ? Object.keys(entry) : 'New game ➕';
+    b.textContent = text;
+    b.onclick = () => {
+      let history = new TinyHistory(this.program.factory, this.program.saveData.data.history);
+      let setupParams = {};
+      if (entry) {
+        if (entry.saved) {
+          setupParams.savegame = entry.saved;
+        }
+        else if (entry.seed) {
+          let index = history.findBySeed(history, entry.seed);
+          if (index !== null) {
+            const foundEntry = list[index];
+            if (foundEntry && foundEntry.saved) {
+              setupParams.savegame = foundEntry.saved;
+            }
+          }
+          if (!setupParams.savegame) {
+            setupParams.gameseed = entry.seed;
+          }
+        }
+      }
+      this.program.setupPregame(setupParams);
+      this.program.goto.to('pregame');
+    };
 
-    return box;
+    return b;
   }
 
-  _onQuickStart() {
-    this.program.newGame();
-    this.program.goto.to('game');
+  _ago(timeStamp) {
+    let ago = Math.floor((Date.now() - timeStamp) / 1000);
+    if (ago <= 30) return 'now';
+    const minutes = Math.ceil(ago / 60);
+    if (minutes < 60) return `${minutes}m`;
+    const hours = Math.ceil((minutes + 15) / 60);
+    if (hours < 20) return `${hours}h`;
+    const days = Math.ceil(hours / 24);
+    return `${days}d`;
   }
 }

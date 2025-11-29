@@ -21,8 +21,8 @@ export default class TinyHistory {
     let list = this.originalHistory;
     for (let i = 0; i < count; i++) {
       let dayInfo = this._getDayInfo(new Date(), i);
-      let index = this._findBySeed(list, dayInfo.seed);
-      if (index >= 0) {
+      let index = this.findBySeed(list, dayInfo.seed);
+      if (index !== null) {
         dayInfo.saved = list[index];
         dayInfo.over = dayInfo.saved.gameOver;
         dayInfo.time = dayInfo.saved.timeStamp;
@@ -61,31 +61,10 @@ export default class TinyHistory {
     // Return Tiny from this timestamp entry, or null if not found
   }
 
-  tinyFromObject(entry) {
-    // Return Tiny from this entry, even if gameOver.  Or create new.
-    if (entry) {
-      if (entry.saved) {
-        return this.factory.tinyFromSaveData(entry.saved);
-      }
-      if (entry.seed) {
-        let list = this.originalHistory;
-        let index = this._findBySeed(list, entry.seed);
-        if (index >= 0) {
-          const foundEntry = list[index];
-          if (foundEntry && foundEntry.saved) {
-            return this.factory.tinyFromSaveData(foundEntry.saved);
-          }
-        }
-        return this.factory.tinyFromSeed(entry.seed);
-      }
-    }
-    return this.factory.tinyFromRandom();
-  }
-
-  _findBySeed(list, seed) {
+  findBySeed(list, seed) {
     // Look through history list   for matching seed
     // Prefer not gameOver; then largest timeStamp
-    // Returns index or -1
+    // Returns index or null
     let bestIndex = -1;
     let best = null;
     for (let i = 0; i < list.length; i++) {
@@ -111,7 +90,7 @@ export default class TinyHistory {
         bestIndex = i;
       }
     }
-    return bestIndex;
+    return bestIndex >= 0 ? bestIndex : null;
   }
 
   getCurrent() {

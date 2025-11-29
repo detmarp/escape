@@ -56,6 +56,8 @@ export default class UxElement {
     this._colors(div, params);
     this._packing(div, params);
     div.style.whiteSpace = 'pre-wrap';
+    div.style.lineHeight = 1;
+    div.style.padding = `calc(var(--scale) * 2px)`;
     div.onclick = params.onClick || (() => {});
     if (params.text) {
       div.textContent = params.text;

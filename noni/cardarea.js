@@ -72,9 +72,10 @@ export default class CardArea {
     if (action === 'dragging') {
       let delta = params.position[0] - params.startPos[0];
       let space = 24;
+      let offset = delta;
       let i = this.dragCurrent + Math.round(delta / space);
       i = Math.max(0, Math.min(this.cards.length - 1, i));
-      this.show(i);
+      this.show(i, offset);
     }
   }
 
@@ -111,6 +112,7 @@ export default class CardArea {
       borderWidth: 1,
       background: '#eeeeee',
       radius: 4,
+      text: card.text,
     });
     let d = this.uxe.box(div, {
       rect: [216, 32, 104, 154],
@@ -123,7 +125,8 @@ export default class CardArea {
     return div;
   }
 
-  show(value) {
+  show(value, offset = 0) {
+    //console.log('show called with:', value, offset);
     // value can be: index, short or category
     let index = this.cards.findIndex((c, i) =>
       i === value ||
@@ -132,8 +135,13 @@ export default class CardArea {
     );
     index ??= 0;
     this.current = index;
+    let start = 20;
+    let space = 24;
+    let width = 326;
     for (let i = 0; i < this.cards.length; i++) {
+      let x = start + space * i;
       this.cards[i].style.zIndex = 10 - Math.abs(i - index);
+      this.cards[i].style.left = `calc(var(--scale) * ${x}px)`;
     }
     this.screengame.selectMeepleByName(this.cards[index].card.category);
   }

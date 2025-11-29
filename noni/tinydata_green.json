@@ -1,2 +1,15 @@
 [
+  {
+    "category": "green",
+    "name": "Tavern",
+    "short": "tavrn",
+    "shape": [
+      "rrc"
+    ],
+    "score": {
+      "custom": true,
+      "lookup": "tavern"
+    },
+    "text": "🪙 based on your constructed 🟩."
+  }
 ]
