@@ -69,7 +69,7 @@ export default class TinyHistory {
     let best = null;
     for (let i = 0; i < list.length; i++) {
       const entry = list[i];
-      if (entry.gameSeed !== seed) continue;
+      if (entry.gameseed !== seed) continue;
       if (!best) {
         best = entry;
         bestIndex = i;
@@ -85,7 +85,7 @@ export default class TinyHistory {
         continue;
       }
       // Tiebreaker 2: largest timeStamp
-      if ((entry.timeStamp || 0) > (best.timeStamp || 0)) {
+      if ((entry.timestamp || 0) > (best.timestamp || 0)) {
         best = entry;
         bestIndex = i;
       }
@@ -100,7 +100,7 @@ export default class TinyHistory {
   saveGame(tiny) {
     let byTime = {};
     for (const entry of this.originalHistory) {
-      byTime[entry.timeStamp] = entry;
+      byTime[entry.timestamp] = entry;
     }
     if (tiny) {
       byTime[tiny.timeStamp] = this.factory.tinyToSaveData(tiny);
@@ -124,7 +124,8 @@ export default class TinyHistory {
     const hash = (Number(midnight) * 2654435761) >>> 0;
     const seed = (hash % 900000) + 100000;
     return {
-      ago: daysAgo, weekday, midnight, seed, hash,
+      ago: daysAgo,
+      weekday, midnight, seed, hash,
       month: month + 1,
       day: day,
     };

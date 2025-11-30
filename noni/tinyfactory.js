@@ -1,5 +1,7 @@
 import TinyDeck from './tinydeck.js';
 import Tiny from './tiny.js';
+import TinyRandom from './tinyrandom.js';
+import TinyHand from './tinyhand.js';
 
 // 🔴🟠🟡🟢🔵⚫⚪🟣
 // 🟥🟧🟨🟩🟦⬛⬜🟪
@@ -56,6 +58,45 @@ export default class TinyFactory {
     this._initialized = true;
   }
 
+  tinyFromPregame(pregame) {
+    pregame = this.normalizePregame(pregame ?? {});
+
+    let hand = new TinyHand();
+    hand.seed = pregame.gameseed;
+    hand.cards = pregame.deck.map(short => this._deck.map.get(short)).filter(card => card);
+    hand.pinks = pregame.pinks.map(short => this._deck.map.get(short)).filter(card => card);
+    hand.resourceDeck = pregame.pool;
+    hand.resources = {
+      row: hand.resourceDeck.slice(0, 3),
+      drawPile: hand.resourceDeck.slice(3),
+      picked: null,
+    };
+    this.deck._makeMaps(hand);
+
+    let tiny = new Tiny(hand);
+
+    tiny.gameSeed = hand.seed;
+    tiny.timeStamp = pregame.timestamp;
+
+    pregame.cells.forEach((cell, i) => {
+      cell.forEach(c => {
+        let building = tiny.hand.categoryMap[c];
+        if (building) {
+          tiny.board.cells[i].building = building;
+        }
+        else {
+          if (tiny.hand.resourceList.includes(c)) {
+            tiny.board.cells[i].resource = c;
+          }
+        }
+      });
+    });
+
+    tiny._refresh();
+
+    return tiny;
+  }
+
   tinyFromRandom() {
     let hand = this.deck.handFromRandom();
     let tiny = new Tiny(hand);
@@ -75,7 +116,7 @@ export default class TinyFactory {
     let hand = this.deck.handFromSaveData(saveData);
     let tiny = new Tiny(hand);
 
-    tiny.gameSeed = parseInt(saveData.gameSeed, 10);
+    tiny.gameSeed = parseInt(saveData.gameseed, 10);
     tiny.timeStamp = parseInt(saveData.timeStamp, 10) || 0;
     tiny.started = saveData.started;
     tiny.gameOver = saveData.gameOver;
@@ -115,6 +156,82 @@ export default class TinyFactory {
     return tiny;
   }
 
+  normalizePregame(pregame = {}) {
+    let result = {};
+    result.autostart = !!pregame.autostart;
+    result.cells = this.normalizeCells(pregame.savegame?.cells);
+    result.gameseed = typeof pregame.savegame?.gameseed === 'number' ?
+      Math.floor(pregame.savegame?.gameseed) :
+      (pregame.gameseed ?? 0);
+    let random = new TinyRandom(result.gameseed);
+    let [deck, pinks] = this.normalizeDeck(pregame.savegame?.deck, random);
+    result.deck = deck;
+    result.pinks = pinks;
+    result.pool = this.normalizePool(pregame.savegame?.pool, random);
+    result.timestamp = pregame.savegame?.timestamp ?? Date.now();
+    return result;
+  }
+
+  normalizeCells(cells) {
+    let result = [];
+    if (!Array.isArray(cells)) {
+      // Not an array, create 16 empty arrays
+      for (let i = 0; i < 16; i++) result.push([]);
+      return result;
+    }
+    for (let i = 0; i < 16; i++) {
+      let cell = cells[i];
+      if (Array.isArray(cell)) {
+        // Only keep string elements
+        result.push(cell.filter(x => typeof x === 'string'));
+      } else {
+        result.push([]);
+      }
+    }
+    return result;
+  }
+
+  normalizeDeck(deck, random) {
+    // return [[8],[2]] - shortnames including pink, and pink[2] shortnames
+    // assume deck is array of 8 shortnames.
+    let [defaultDeck, defaultPinks] = this.deck.makeShuffledDeck(random);
+    let defaultCards = [...defaultDeck];
+    defaultCards.push(defaultPinks[0]);
+    // Make a map of default fallback cards, randomly
+    let defaultMap = {};
+    defaultCards.forEach(short => {
+      let card = this._deck.map.get(short);
+      defaultMap[card.category] = card.short;
+    });
+    // make a map of provided deck
+    let map = {};
+    if (deck) {
+      deck.forEach(shortname => {
+        const card = this._deck.map.get(shortname);
+        if (card) {
+          map[card.category] = card.short;
+        }
+      });
+    }
+    // Fill in any gaps
+    Object.keys(defaultMap).forEach(category => {
+      if (!map[category]) {
+        map[category] = defaultMap[category];
+      }
+    });
+    return [Object.values(map), defaultPinks];
+  }
+
+  normalizePool(pool, random) {
+    let defaultPool = random.shuffle([
+      ...this.deck.resourceList,
+      ...this.deck.resourceList,
+      ...this.deck.resourceList,
+    ]);
+    let result = pool ?? [];
+    return [...result, ...defaultPool].slice(0, 15);
+  }
+
   tinyToSaveData(tiny) {
     let cells = [];
     tiny.board.cells.forEach(cell => {
@@ -128,7 +245,7 @@ export default class TinyFactory {
       cells.push(c);
     });
 
-    let gameseed = 123456;
+    let gameseed = tiny.gameSeed || 0;
     let timestamp = tiny.timeStamp || Date.now();
     let state = this.state;
     let [row, draw] = tiny._findRotatedResources();

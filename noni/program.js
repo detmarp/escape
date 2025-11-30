@@ -39,8 +39,9 @@ export default class Program {
       }
     }
     if (tryAutoStart) {
-      this.newGame();
-      this.goto.to('game');
+      let seed = Math.floor(Math.random() * 900000) + 100000;
+      this.pregame = this.setupPregame({ gameseed: seed, autostart: true, });
+      this.goto.to('pregame');
     }
 
     this._onResize();
@@ -67,19 +68,7 @@ export default class Program {
 
   setupTiny(pregame = {}) {
     // ALL Tiny instances are created here
-    // using data in this.pregame
-    // TODO stub...
-    let tiny;
-    if (pregame.savegame) {
-      tiny = this.factory.tinyFromSaveData(pregame.savegame);
-    }
-    else if (pregame.gameseed) {
-      tiny = this.factory.tinyFromSeed(pregame.gameseed);
-    }
-    else {
-      tiny = this.factory.tinyFromRandom();
-    }
-
+    let tiny = this.factory.tinyFromPregame(pregame);
     this.tiny = tiny;
   }
 

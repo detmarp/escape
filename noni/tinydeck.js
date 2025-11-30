@@ -96,6 +96,24 @@ export default class TinyDeck {
     return result;
   }
 
+  makeShuffledDeck(random) {
+    // Return two values [[7] card shortnames, [2] pink card shortnames];
+    let others = [];
+    let pinks = [];
+    let list = this._makeCategoryList();
+    random ||= new TinyRandom(0);
+    list.forEach(item => {
+      let cards = random.shuffle(item.cards);
+      if (item.category === 'pink') {
+        pinks.push(...cards.slice(0, 2).map(c => c.short));
+      }
+      else {
+        others.push(cards[0].short);
+      }
+    });
+    return [others, pinks];
+  }
+
   _makeCategoryMap() {
     let map = {};
     for (const card of this.cards) {

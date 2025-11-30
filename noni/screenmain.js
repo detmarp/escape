@@ -68,6 +68,7 @@ export default class ScreenMain {
       this._goto(buttonArea, 'Quick start 🚀', 'pregame', () => {
         this.program.setupPregame({
           autostart: true,
+          gameseed: Math.floor(Math.random() * 900000) + 100000,
         }
         );
       });
@@ -148,6 +149,10 @@ export default class ScreenMain {
             setupParams.gameseed = entry.seed;
           }
         }
+      }
+      else {
+        let seed = Math.floor(Math.random() * 900000) + 100000;
+        setupParams.gameseed = seed;
       }
       this.program.setupPregame(setupParams);
       this.program.goto.to('pregame');

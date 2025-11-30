@@ -36,7 +36,6 @@ export default class GoToScreen {
     }
 
     if (screen) {
-      console.log(`eee 2 ${this.program.tiny && this.program.tiny.timeStamp} - goto ${name}`);
       this.program.container.onFinger = null;
       this.screen = screen;
       this.screen.run();

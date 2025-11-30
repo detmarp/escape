@@ -1,6 +1,6 @@
 import UxElement from './uxelement.js';
 
-export default class ScreenMain {
+export default class ScreenPregame {
   constructor(program) {
     this.program = program;
     this.container = program.container;
@@ -9,6 +9,8 @@ export default class ScreenMain {
   }
 
   run() {
+    this.pregame = this.program.factory.normalizePregame(this.program.pregame);
+
     if (this.program.pregame?.autostart) {
       this._gotoGame();
       return;
@@ -18,6 +20,9 @@ export default class ScreenMain {
   }
 
   update() {
+    let text1 = `${JSON.stringify(this.pregame)}`;
+    let text2 = `${JSON.stringify(this.program.saveData.data)}`;
+
     this.parent.innerHTML = '';
     this.box = this.uxe.box(this.parent, {
       fill: true,
@@ -32,9 +37,13 @@ export default class ScreenMain {
       onClick: () => { this.program.goto.to('main'); },
     });
 
-    this.uxe.text(this.box, {
-      text: this.program.tiny ? `${JSON.stringify(Object.keys(this.program.tiny))}` : 'null',
+    let t1 = this.uxe.text(this.box, {
+      text: text1,
     });
+  t1.style.whiteSpace = 'pre-wrap';
+  t1.style.wordBreak = 'break-word';
+  t1.style.width = '100%';
+  t1.style.fontFamily = 'monospace';
 
     this.uxe.button(this.box, {
       text: 'Play',
@@ -43,9 +52,13 @@ export default class ScreenMain {
       },
     });
 
-    this.uxe.text(this.box, {
-      text: `${JSON.stringify(this.program.saveData.data)}`,
+    let t2 = this.uxe.text(this.box, {
+      text: text2,
     });
+  t2.style.whiteSpace = 'pre-wrap';
+  t2.style.wordBreak = 'break-word';
+  t2.style.width = '100%';
+  t2.style.fontFamily = 'monospace';
   }
 
   _gotoGame() {
