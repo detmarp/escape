@@ -319,23 +319,16 @@ export default class ScreenGame {
   }
 
   _action_updatepool(action) {
-    let rect = this.markers.getDestinationRect(
-      this.resourceBinMarker,
-      null,
-      [80, 80]
-    );
-    let marker = this.markers.add({
-      rect: rect,
-    });
-    let meeple = this.meeples.add({
-      name: action.resource,
-      rect: rect,
-    });
-    meeple.marker = marker;
+    let spot = this.resourceBinMarker;
+    this._makeResourceMarker(action.resource, spot);
   }
 
   _action_setuppool(action) {
     this._action_updatepool(action);
+  }
+
+  _action_setupresource(action) {
+    this._makeResourceMarker(action.resource, this.cells[action.index].marker);
   }
 
   _action_resource(action) {
@@ -357,6 +350,22 @@ export default class ScreenGame {
   }
 
   _action_unresource(action) {
+  }
+
+  _makeResourceMarker(resource, inMarker) {
+    let rect = this.markers.getDestinationRect(
+      inMarker,
+      null,
+      [80, 80]
+    );
+    let marker = this.markers.add({
+      rect: rect,
+    });
+    let meeple = this.meeples.add({
+      name: resource,
+      rect: rect,
+    });
+    meeple.marker = marker;
   }
 
   _highlightPlacement(nextHint) {
