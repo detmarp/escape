@@ -208,11 +208,20 @@ export default class Tiny {
     return result;
   }
 
-  getBuildingPlacements() {
+  getBuildingPlacements(hint) {
     // return description of all legal building placements
     let placements = [];
     if (this.gameOver) {
       return placements;
+    }
+
+    let cells = [...this.board.cells];
+    if (hint && hint.resource && hint.index != null) {
+      if (!cells[hint.index].building && !cells[hint.index].resource) {
+        cells[hint.index] = {
+          resource: hint.resource,
+        };
+      }
     }
 
     let hand = this.getHand();
@@ -229,7 +238,7 @@ export default class Tiny {
             for (var k = 0; k < pattern.cells.length; k++) {
               const cell = pattern.cells[k];
               let offset = j * 4 + i + cell.offset;
-              const boardCell = this.board.cells[offset];
+              const boardCell = cells[offset];
               if (boardCell && boardCell.resource !== cell.resource) {
                 found = false;
                 break;
@@ -245,7 +254,7 @@ export default class Tiny {
                 placementIndexes: resourceIndexes.slice(),
               };
               if (card.anywhere || this.score.scratch.anywhere) {
-                this.board.cells.forEach((cell, i) => {
+                cells.forEach((cell, i) => {
                   if (!cell.building && !cell.resource) {
                     placement.placementIndexes.push(i);
                   }

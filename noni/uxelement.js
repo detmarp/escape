@@ -287,7 +287,7 @@ export default class UxElement {
 
   cell(parent, params = {}) {
     params = Object.assign({}, params);
-    params.background = '#b38056ff';
+    //params.background = '#b38056ff';
 
     let div = this.box(parent, params);
     div.style.display = 'flex';
@@ -323,9 +323,9 @@ export default class UxElement {
     div.current = current;
 
     let building = this.box(div, {
-      rect: [4, 4, 92, 92],
+      rect: [-4, -4, 108, 108],
       border: '#ffff00',
-      borderWidth: 5,
+      borderWidth: 10,
       radius: 4,
     });
     div.building = building;

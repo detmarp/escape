@@ -60,7 +60,7 @@ export default class Markers {
 
   onFinger(action, pos) {
     // Action is one of: 'hover', 'down', 'drag', 'up'
-    //console.log(`mmm ${action} at (${pos[0]}, ${pos[1]})`);
+    //if (action !== 'hover') console.log(`AAA ${action} at (${pos[0]}, ${pos[1]})`);
 
     const over = [];
     let probe = this.dragging && this.dragging.marker ? this.dragging.marker.position : pos;

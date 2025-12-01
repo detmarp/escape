@@ -49,6 +49,16 @@ export default class Program {
     this._startLoop();
   }
 
+  tryContinue() {
+    if (this.currentGame) {
+      this.pregame = this.setupPregame({
+        savegame: this.currentGame,
+        autostart: true,
+      });
+      this.goto.to('pregame');
+    }
+  }
+
   setupPregame(params) {
     // ALL pregames are created through this call
     // Look at params
@@ -77,12 +87,10 @@ export default class Program {
     if (this.saveData.data.logsavedata) {
       this.saveData._debugPrint('Saved:');
     }
-    console.log(`eee 0 ${this.tiny && this.tiny.timeStamp} - save()`);
 
   }
 
   saveCurrent(tiny) {
-    console.log(`eee 1 ${this.tiny && this.tiny.timeStamp} - saveCurrent()`);
     this.saveData.data = this.saveData.data || {};
     let history = new TinyHistory(this.factory, this.saveData.data.history);
     let data = history.saveGame(tiny);
@@ -101,8 +109,7 @@ export default class Program {
         recent = item;
       }
     }
-
-    return recent && this.factory.tinyFromSaveData(recent);
+    return recent;
   }
 
   _onResize() {

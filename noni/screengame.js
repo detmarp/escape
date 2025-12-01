@@ -5,6 +5,7 @@ import Markers from './markers.js';
 import Party from './party.js';
 import CardArea from './cardarea.js';
 import InfoArea from './infoarea.js';
+import Swatches from './swatches.js';
 
 export default class ScreenGame {
   constructor(program) {
@@ -49,7 +50,6 @@ export default class ScreenGame {
     }
 
     if (! this.tiny.pending) {
-      this._refreshControls(); // detmar ddd
     }
 
     this.markers.debugDraw(this.layer2);
@@ -125,6 +125,8 @@ export default class ScreenGame {
       rect: [0, 54, 540, 400],
       row: true,
     });
+    boardRow.style.overflow = 'visible';
+
     this.leftSideBar = this.uxe.box(boardRow, {
       rect: [8, 0, 54, 400],
       border: '#000000',
@@ -143,9 +145,11 @@ export default class ScreenGame {
     }
 
     let board = this.uxe.box(boardRow, {
-      rect: [70, 0, 400, 400],
-      //border: '#000000',
+      rect: [66, -4, 408, 408],
+      background: '#885b35ff',
+      radius: 8,
     });
+
     let scoreArea = this.uxe.box(boardRow, {
       rect: [478, 0, 54, 400],
       border: '#000000',
@@ -165,45 +169,6 @@ export default class ScreenGame {
 
   _makeControls() {
     this.infoArea = new InfoArea(this.box, this);
-    this._refreshControls();
-  }
-
-  _refreshControls() {
-    // // buttons
-    // this.controlRow.innerHTML = '';
-    // this.uxe.button(this.controlRow, { text: 'Bot', onClick: () => {
-    //   let bot = new TinyBot(this.tiny);
-    //   bot.makeMove();
-    //   this._rebuild();
-    // }});
-    // if (this.tiny.command.undos.length > 0) {
-    //   this.uxe.button(this.controlRow, { text: 'Undo', onClick: () => {
-    //     this._doTinyCommand('undo');
-    //     this._rebuild();
-    //   }});
-    // }
-    // if (this.tiny.pending) {
-    //   this.uxe.button(this.controlRow, { text: 'End turn', onClick: () => {
-    //     this._doTinyCommand('endturn');
-    //   }});
-    // }
-
-    // placement marker
-    //this.boardMarkers.innerHTML = '';
-    if (this.tiny.buildingPlacements && this.tiny.buildingPlacements.length > 0) {
-      this.placementIndex ||= 0;
-      let placement = this.tiny.buildingPlacements[this.placementIndex];
-      placement.resourceIndexes.forEach(i => {
-        let rect = [i % 4 * 100, Math.floor(i / 4) * 100, 100, 100];
-        let marker = this.uxe.box(this.boardMarkers, {
-          rect: rect,
-          border: '#0000ff',
-          borderWidth: 3,
-          radius: 20,
-        });
-      });
-      // draw targets
-    }
   }
 
   _setCellUx(cellIndex, param, value) {
@@ -307,7 +272,6 @@ export default class ScreenGame {
   }
 
   _refresh() {
-    this._refreshControls();
   }
 
   onFinger(action, pos, pos2) {
@@ -368,32 +332,91 @@ export default class ScreenGame {
     meeple.marker = marker;
   }
 
-  _highlightPlacement(nextHint) {
+  _highlightPlacement(checkCell, clicked) {
     // Choose a placement index to highlight
-    console.log(`ppp time to check placements ${JSON.stringify(nextHint)}`);
-    this.placementIndex ||= 0;
+    /*
+      dragging resource
+        if over legal cell
+          filter to that cell
+      tap cell, with resource in it
+        filter to placements with that resource index
+        -click- cycle this list
+      tap building in bin, or card
+        filter to placements with that building
+        -click- cycle this list
+      drag building over cell with resource in it
+        filter *if * this cell is for this building type
 
-    if (nextHint) {
-      // The hint will help us to cycle through placements
-      let list = [];
-      this.tiny.buildingPlacements.forEach((placement, i) => {
-        let match =
-          (nextHint.cellIndex != null && placement.resourceIndexes.includes(nextHint.cellIndex)) ||
-          (nextHint.category && placement.card && nextHint.category === placement.card.category);
-
-        if (match) {
-          list.push(i);
-        }
-      });
-      let listIndex = list.indexOf(this.placementIndex);
-      if (listIndex >= 0) {
-        listIndex = (listIndex + 1) % list.length;
-      }
-      else {
-        (listIndex = 0);
-      }
-      this.placementIndex = list[listIndex];
+>>> either cell in question -
+      OR building category
+    */
+    this.placement ||= {};
+    if (checkCell && (this.current.cellIndex == this.placement.cellIndex)) {
+      return;
     }
+
+    console.log(`ppp time to check placements ${Date.now()}`);
+    console.log(`    ${JSON.stringify(Object.keys(this.current))}`);
+
+    let hint;
+    if (this.current.meeple) {
+      console.log(`    ${JSON.stringify(this.current.meeple.type)}`);
+      if (this.current.meeple.type === 'resource') {
+        if (this.current.cellIndex != null) {
+          hint = {
+            index: this.current.cellIndex,
+            resource: this.current.meeple.name,
+          };
+        }
+      }
+      else if (this.current.meeple.type === 'building') {
+        hint = {
+          index: this.current.cellIndex,
+          building: this.current.meeple.name,
+        };
+      }
+      console.log(`ppp 9 ${JSON.stringify(hint)}`);
+    }
+
+    let placements = this.tiny.getBuildingPlacements(hint);
+    console.log(`    ${placements.length} placements`);
+
+    // if there are palcements, but we have a hint then try a filter
+    if (placements.length > 0 && hint) {
+      let filtered = [];
+      if (hint.index) {
+        filtered = placements.filter(p => p.resourceIndexes && p.resourceIndexes.includes(hint.index));
+      }
+      if (filtered.length > 0) {
+        placements = filtered;
+      }
+      if (hint.building) {
+        filtered = placements.filter(p => p.card && p.card.category === hint.building);
+      }
+      if (filtered.length > 0) {
+        placements = filtered;
+      }
+    }
+
+    this.placement.cellIndex = this.current.cellIndex;
+    this.placement.placements = placements;
+    this.placement.index = (this.placement.index ?? 0) % this.placement.placements.length;
+
+    // Update ux
+    let p = this.placement.placements[this.placement.index];
+    let color;
+    if (p) {
+      let swatches = new Swatches()
+      let s = swatches.getSwatch(p.card.category);
+      color = s.color;
+    }
+    for (let i = 0; i < 16; i++) {
+      let c = p && p.resourceIndexes.includes(i) ? color : null;
+      this._setCellUx(i, 'building', c);
+    }
+//card: card,
+//                rotation: r,
+//                resourceIndexes: resourceIndexes,
   }
 
 
@@ -403,7 +426,9 @@ export default class ScreenGame {
 
   onMarkersTap(info) {
     let meeple = this.meeples.list.find(m => info.marker && m.marker === info.marker);
-    this._selectMeeple(meeple);
+    if (meeple || !info.marker) {
+      this._selectMeeple(meeple);
+    }
 
     let overMarkerList = [info.marker, ...info.over];
     let cellIndex = overMarkerList.find(item => item && item.cellIndex != null)?.cellIndex ?? null;
@@ -443,15 +468,19 @@ export default class ScreenGame {
       }
     }
 
+    this._highlightPlacement();
+
     this.deubgPrint();
   }
 
   selectMeepleByName(name) {
+    //console.log(`mmm 000 selectMeepleByName ${name}`);
     const meeple = this.meeples.list.find(m => m.name === name);
     this._selectMeeple(meeple);
   }
 
   _selectMeeple(meeple) {
+    //console.log(`mmm 111 _selectMeeple ${meeple ? meeple.name : 'null'}`);
     if (meeple) {
       this.current.meeple = meeple;
       if (meeple && meeple.parentNode) {
@@ -478,6 +507,8 @@ export default class ScreenGame {
     else {
       delete this.current.cellIndex;
     }
+
+    this._highlightPlacement(true);
   }
 
   selectcard(card) {
@@ -592,5 +623,6 @@ export default class ScreenGame {
 
   onMarkersClick(info) {
     this.deubgPrint();
+    this._highlightPlacement(null, true);
   }
 }
