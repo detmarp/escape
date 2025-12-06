@@ -36,8 +36,7 @@ export default class CardArea {
       c.card = card;
       this.cards.push(c);
     }
-    this.current = 0;
-    this.show(3);
+    this.show(4);
   }
 
   _update(text) {
@@ -67,15 +66,15 @@ export default class CardArea {
     if (action === 'click') {
     }
     if (action === 'drag') {
-      this.dragCurrent = this.current;
+      this.leftEdge = start + this.current * space; // track the front card edge
     }
     if (action === 'dragging') {
       let delta = params.position[0] - params.startPos[0];
-      let space = 24;
-      let offset = delta;
-      let i = this.dragCurrent + Math.round(delta / space);
-      i = Math.max(0, Math.min(this.cards.length - 1, i));
-      this.show(i, offset);
+      left = this.leftEdge + delta;
+      left = Math.max(start, Math.min(left, start + space * (this.cards.length - 1)));
+      this.current = Math.round((left - start) / space);
+      this.show(this.current, left);
+      console.log('dragging delta:', delta);
     }
   }
 
@@ -101,6 +100,17 @@ export default class CardArea {
     });
     a.style.paddingLeft = `calc(var(--scale) * 8px)`;
 
+    // Add SVG pattern if card.shape exists
+    if (card.shape) {
+      let svg = this.uxe.makePatternSVG(card.shape);
+      svg.style.position = 'absolute';
+      svg.style.left = '10px';
+      svg.style.top = '32px';
+      svg.style.width = '200px';
+      svg.style.height = '154px';
+      a.appendChild(svg);
+    }
+
     let b = this.uxe.box(div, {
       rect: [302, 4, 24, 24],
       borderWidth: 2,
@@ -125,7 +135,7 @@ export default class CardArea {
     return div;
   }
 
-  show(value, offset = 0) {
+  show(value, offset = null) {
     //console.log('show called with:', value, offset);
     // value can be: index, short or category
     let index = this.cards.findIndex((c, i) =>
@@ -140,6 +150,9 @@ export default class CardArea {
     let width = 326;
     for (let i = 0; i < this.cards.length; i++) {
       let x = start + space * i;
+      if (offset !== null && this.current == i) {
+        x = offset;
+      }
       this.cards[i].style.zIndex = 10 - Math.abs(i - index);
       this.cards[i].style.left = `calc(var(--scale) * ${x}px)`;
     }

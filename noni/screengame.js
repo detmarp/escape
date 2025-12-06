@@ -52,6 +52,7 @@ export default class ScreenGame {
     if (! this.tiny.pending) {
     }
 
+    this.markers._logGestures = this.program.saveData.data.loggestures;
     this.markers.debugDraw(this.layer2);
 
     if (this.cellsDirty) {
@@ -80,7 +81,7 @@ export default class ScreenGame {
 
   _processCoreAction(action) {
     // Process core action from tiny command
-    console.log(`aaa Action: ${JSON.stringify(action)}`);
+    //console.log(`aaa Action: ${JSON.stringify(action)}`);
     let handler = this[`_action_${action.action}`];
     if (handler) {
       handler.call(this, action);
@@ -355,12 +356,12 @@ export default class ScreenGame {
       return;
     }
 
-    console.log(`ppp time to check placements ${Date.now()}`);
-    console.log(`    ${JSON.stringify(Object.keys(this.current))}`);
+    //console.log(`ppp time to check placements ${Date.now()}`);
+    //console.log(`    ${JSON.stringify(Object.keys(this.current))}`);
 
     let hint;
     if (this.current.meeple) {
-      console.log(`    ${JSON.stringify(this.current.meeple.type)}`);
+      //console.log(`    ${JSON.stringify(this.current.meeple.type)}`);
       if (this.current.meeple.type === 'resource') {
         if (this.current.cellIndex != null) {
           hint = {
@@ -375,11 +376,11 @@ export default class ScreenGame {
           building: this.current.meeple.name,
         };
       }
-      console.log(`ppp 9 ${JSON.stringify(hint)}`);
+      //console.log(`ppp 9 ${JSON.stringify(hint)}`);
     }
 
     let placements = this.tiny.getBuildingPlacements(hint);
-    console.log(`    ${placements.length} placements`);
+    //console.log(`    ${placements.length} placements`);
 
     // if there are palcements, but we have a hint then try a filter
     if (placements.length > 0 && hint) {

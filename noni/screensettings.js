@@ -41,6 +41,8 @@ export default class ScreenMain {
     this._text('Misc');
     this._addSettingsToggle('Show bot button', 'botbutton');
     this._addSettingsToggle('Log SaveData', 'logsavedata');
+    this._addSettingsToggle('Log Touches', 'logtouches');
+    this._addSettingsToggle('Log Gestures', 'loggestures');
     this._text('Data');
     this.uxe.button(this.box, {
       text: 'Clear game history',

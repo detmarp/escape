@@ -1,4 +1,61 @@
 export default class UxElement {
+  // Generate an SVG pattern from a shape string (ported from mika/icons.js)
+  makePatternSVG(shape) {
+    // shape: rectangle of chars (rows high, cols wide). '-' means blank.
+    // each character is a color code; we map a char to a hex color deterministically.
+    const xmlns = 'http://www.w3.org/2000/svg';
+    let rowsArr = [];
+    if (!shape) rowsArr = [];
+    else if (Array.isArray(shape)) rowsArr = shape.slice();
+    else if (typeof shape === 'string') rowsArr = shape.split('\n');
+    else rowsArr = [];
+    while (rowsArr.length > 0 && rowsArr[rowsArr.length - 1].length === 0) rowsArr.pop();
+    const rows = rowsArr.length;
+    const cols = rows > 0 ? Math.max(...rowsArr.map(r => r.length)) : 0;
+    const cell = 25;
+    const gutter = 0;
+    const totalW = cols * (cell + gutter);
+    const totalH = rows * (cell + gutter);
+    const minSize = 120;
+    const pad = 6;
+    const size = Math.max(minSize, totalW + pad * 2, totalH + pad * 2);
+    const svg = document.createElementNS(xmlns, 'svg');
+    svg.setAttribute('width', String(size));
+    svg.setAttribute('height', String(size));
+    svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-hidden', 'true');
+    // helper: map a character to a hex color
+    function charToColor(ch) {
+      // fallback: simple hash to color
+      const colors = ['#e57373','#f06292','#ba68c8','#64b5f6','#4dd0e1','#81c784','#ffd54f','#ffb74d','#a1887f','#90a4ae'];
+      if (!ch || ch === '-') return '#fff';
+      let code = ch.charCodeAt(0);
+      return colors[code % colors.length];
+    }
+    const offsetX = Math.round((size - totalW) / 2);
+    const offsetY = Math.round((size - totalH) / 2);
+    for (let r = 0; r < rows; r++) {
+      const line = rowsArr[r] || '';
+      for (let c = 0; c < cols; c++) {
+        const ch = c < line.length ? line[c] : '-';
+        if (ch == '-') continue;
+        const color = charToColor(ch);
+        const x = offsetX + c * (cell + gutter);
+        const y = offsetY + r * (cell + gutter);
+        const rect = document.createElementNS(xmlns, 'rect');
+        rect.setAttribute('x', String(x));
+        rect.setAttribute('y', String(y));
+        rect.setAttribute('width', String(cell));
+        rect.setAttribute('height', String(cell));
+        rect.setAttribute('fill', color);
+        rect.setAttribute('stroke', '#888');
+        rect.setAttribute('stroke-width', '1');
+        svg.appendChild(rect);
+      }
+    }
+    return svg;
+  }
   constructor(container) {
     this.container = container;
     this.color = {

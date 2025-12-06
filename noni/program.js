@@ -119,9 +119,15 @@ export default class Program {
 
   _startLoop() {
     const loop = () => {
+      this._loopDebug();
       this.goto.work();
       requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);
   }
+
+  _loopDebug() {
+    this.container._logTouches = this.saveData.data.logtouches;
+  }
+
 }

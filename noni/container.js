@@ -223,6 +223,12 @@ export default class Container {
   }
 
   _onFinger(action, pos, pos2) {
+    if (this._logTouches) {
+      if (action != 'hover') {
+        console.log(`CCC Finger action: ${action}, position: ${pos}, position2: ${pos2}`);
+      }
+    }
+
     if (this.onFinger) {
       this.onFinger(action, pos, pos2);
     }

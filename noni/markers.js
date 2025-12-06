@@ -194,8 +194,16 @@ export default class Markers {
   }
 
   callDelegate(method, params, defaultValue) {
+    let short = method.slice(9).toLowerCase();
+
     if (params && params.marker == null) {
       delete params.marker;
+    }
+
+    if (this._logGestures) {
+      if (short !== 'hover') {
+        console.log(`MMM Markers gesture: ${method}`, params);
+      }
     }
 
     // see if the marker has a delegate
@@ -207,7 +215,7 @@ export default class Markers {
       else {
         func = params.marker.delegate.onMarkers;
         if (typeof func === 'function') {
-            func.call(params.marker.delegate, method.slice(9).toLowerCase(), params);
+            func.call(params.marker.delegate, short, params);
         }
       }
     }
