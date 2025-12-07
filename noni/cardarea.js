@@ -45,6 +45,23 @@ export default class CardArea {
     this.x1.innerText = text;
   }
 
+    // Animate rotation of SVG pattern (clockwise, 1/10 second)
+    _rotateShape(svg) {
+      // Reset any previous transition
+      svg.style.transition = '';
+      // Get current rotation
+      let current = svg._rotation || 0;
+      let next = current + 90;
+      svg._rotation = next;
+      // Animate
+      svg.style.transition = 'transform 0.1s linear';
+      svg.style.transform = `rotate(${next}deg)`;
+      // Optionally, clean up transition after animation
+      setTimeout(() => {
+        svg.style.transition = '';
+      }, 120);
+    }
+
   onMarkers(action, params) {
     let start = 20;
     let space = 24;
@@ -64,6 +81,17 @@ export default class CardArea {
       this.show(i);
     }
     if (action === 'click') {
+      console.log('card clicked:', this.current, this.cards[this.current].card);
+      // Animate rotation of the SVG pattern on the clicked card
+      let cardDiv = this.cards[this.current];
+      // Find the d element (pattern container)
+      let d = cardDiv.d;
+      if (d) {
+        let svg = d.querySelector('svg');
+        if (svg) {
+          this._rotateShape(svg);
+        }
+      }
     }
     if (action === 'drag') {
       this.leftEdge = start + this.current * space; // track the front card edge
@@ -100,17 +128,6 @@ export default class CardArea {
     });
     a.style.paddingLeft = `calc(var(--scale) * 8px)`;
 
-    // Add SVG pattern if card.shape exists
-    if (card.shape) {
-      let svg = this.uxe.makePatternSVG(card.shape);
-      svg.style.position = 'absolute';
-      svg.style.left = '10px';
-      svg.style.top = '32px';
-      svg.style.width = '200px';
-      svg.style.height = '154px';
-      a.appendChild(svg);
-    }
-
     let b = this.uxe.box(div, {
       rect: [302, 4, 24, 24],
       borderWidth: 2,
@@ -124,13 +141,23 @@ export default class CardArea {
       radius: 4,
       text: card.text,
     });
-    let d = this.uxe.box(div, {
+    div.d = this.uxe.box(div, {
       rect: [216, 32, 104, 154],
       border: '#666666',
       borderWidth: 1,
       background: '#eeeeee',
       radius: 4,
     });
+    // Add SVG pattern if card.shape exists
+        if (card.shape) {
+      let svg = this.uxe.makePatternSVG(card.shape);
+      svg.style.position = 'absolute';
+      svg.style.left = '0';
+      svg.style.top = '0';
+      svg.style.width = '100%';
+      svg.style.height = '100%';
+      div.d.appendChild(svg);
+    }
 
     return div;
   }

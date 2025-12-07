@@ -15,9 +15,7 @@ export default class ScreenGame {
     this.parent = this.container.inner;
     this.uxe = new UxElement(this.parent);
     this.editMode = false;
-    this.meeples = new Meeples(this.parent);
     this.current = {};
-
 
     this.markers = new Markers(this);
   }
@@ -96,20 +94,37 @@ export default class ScreenGame {
       row: false,
       background: '#b0c0d0',
     });
+    this.box.style.overflow = 'visible';
+    this.box.style.background = 'linear-gradient(135deg, #f0debcff 0%, #e0d8b0 100%)';
+
+    this.backgroundLayer = this.uxe.box(this.box);
+    this.backgroundLayer.style.overflow = 'visible';
+
+    this.boardLayer = this.uxe.box(this.box);
+    this.boardLayer.style.overflow = 'visible';
+
+    this.meepleLayer = this.uxe.box(this.box);
+    this.meepleLayer.style.overflow = 'visible';
+
+    this.overlayLayer = this.uxe.box(this.box);
+    this.overlayLayer.style.overflow = 'visible';
+
+    this.particleLayer = this.uxe.box(this.box);
+    this.particleLayer.style.overflow = 'visible';
 
     this._makeHeader();
     this._makeBoardArea();
+    this.meeples = new Meeples(this.meepleLayer);
     this._makeControls();
     this._makeBins();
     this._makeCards();
-    //this._makePieces();
     this._makeParticles();
 
     this._refresh();
   }
 
   _makeHeader() {
-    let header = this.uxe.headerBar(this.box, {
+    let header = this.uxe.headerBar(this.backgroundLayer, {
       onLeftClick: () => { this.program.goto.to('main'); },
       streak: 0,
       score: 22,
@@ -117,12 +132,7 @@ export default class ScreenGame {
   }
 
   _makeBoardArea() {
-    let boardbackground = this.uxe.box(this.box, {
-      rect: [0, 48, 540, 744],
-    });
-    boardbackground.style.background = 'linear-gradient(135deg, #f0debcff 0%, #e0d8b0 100%)';
-
-    let boardRow = this.uxe.box(this.box, {
+    let boardRow = this.uxe.box(this.boardLayer, {
       rect: [0, 54, 540, 400],
       row: true,
     });
@@ -158,18 +168,18 @@ export default class ScreenGame {
     });
 
 
-    this.layer2 = this.uxe.box(this.parent, {
+    this.layer2 = this.uxe.box(this.boardLayer, {
       rect: [0, 0, 540, 960],
     });
     this.layer2.style.pointerEvents = 'none';
 
-    this.boardMarkers = this.uxe.box(this.parent, {
+    this.boardMarkers = this.uxe.box(this.boardLayer, {
       rect: [70, 54, 400, 400],
     });
   }
 
   _makeControls() {
-    this.infoArea = new InfoArea(this.box, this);
+    this.infoArea = new InfoArea(this.backgroundLayer, this);
   }
 
   _setCellUx(cellIndex, param, value) {
@@ -193,6 +203,7 @@ export default class ScreenGame {
         {
           rect: rect,
           index: i,
+          overlay: this.overlayLayer,
         }
       );
 
@@ -208,7 +219,7 @@ export default class ScreenGame {
     }
 
     let y = 464 + 48 + 8;
-    let controls = this.uxe.box(this.box, {
+    let controls = this.uxe.box(this.backgroundLayer, {
       rect: [0, y, 540, 224],
       //border: '#000000',
       row: true,
@@ -218,14 +229,14 @@ export default class ScreenGame {
     let resourceRect = [0, controlsY, 240, 224];
     this.resourceBinMarker = this.markers.add({rect: resourceRect, fixed: true,});
     this.resourceBinMarker.bin = true;
-    this.uxe.bin(this.parent, {
+    this.uxe.bin(this.backgroundLayer, {
       rect: resourceRect,
     });
 
     let buildingRect = [240, controlsY, 300, 224];
     this.buildingBinMarker = this.markers.add({rect: buildingRect, fixed: true,});
     this.buildingBinMarker.bin = true;
-    this.uxe.bin(this.parent, {
+    this.uxe.bin(this.backgroundLayer, {
       rect: buildingRect,
     });
 
@@ -252,7 +263,7 @@ export default class ScreenGame {
 
   _makeCards() {
     let y = 464 + 48 + 8 + 224
-    let cardArea = this.uxe.box(this.box, {
+    let cardArea = this.uxe.box(this.backgroundLayer, {
       rect: [0, y, 540, 216],
     });
     this.cardArea = new CardArea(cardArea, this);
@@ -265,7 +276,7 @@ export default class ScreenGame {
   }
 
   _makeParticles() {
-    this.particles = this.uxe.box(this.parent, {
+    this.particles = this.uxe.box(this.particleLayer, {
       rect: [0, 0, 540, 960],
       clickthrough: true,
     });
