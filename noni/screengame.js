@@ -431,6 +431,12 @@ export default class ScreenGame {
 //                resourceIndexes: resourceIndexes,
   }
 
+  _getPlacementsForCategory(building) {
+    // Returns an array of placements
+    let placements = this.tiny.getBuildingPlacements();
+    placements = placements.filter(p => p.card && p.card.category === building);
+    return placements;
+  }
 
   onMarkersHover(info) {
     ///console.log(`ggg onMarkersHover ${Object.keys(info)}`);
@@ -465,9 +471,18 @@ export default class ScreenGame {
       else {
         // dragging from a cell
         if (this.tiny.canUndo(cellIndex, 'resource')) {
-          this._setTargets(resource, true);
+          this._setTargets(resource, null, true);
           this.current.undo = true;
         }
+      }
+    }
+    else {
+      let building = meeple && meeple.type === 'building' ? meeple.name : null;
+      if (building) {
+        this._setTargets(null, building);
+      }
+      else {
+        this._setTargets();
       }
     }
 
@@ -526,13 +541,29 @@ export default class ScreenGame {
   selectcard(card) {
   }
 
-  _setTargets(resource, undo) {
-    let targets = this.tiny.canDoResource(null, resource, undo);
-    if (resource && targets) {
-      this.current.targets = new Set(targets.map(t => t.position));
+  _setTargets(resource, building, undo) {
+    if (resource) {
+      let targets = this.tiny.canDoResource(null, resource, undo);
+      if (resource && targets) {
+        this.current.targets = new Set(targets.map(t => t.position));
+      }
+      else {
+        delete this.current.targets;
+      }
     }
     else {
-      delete this.current.targets;
+      let placements = this._getPlacementsForCategory(building);
+      let targets = new Set();
+      placements.forEach(p => {
+        if (p.resourceIndexes) {
+          p.resourceIndexes.forEach(idx => targets.add(idx));
+        }
+      });
+      if (targets.size > 0) {
+        this.current.targets = targets;
+      } else {
+        delete this.current.targets;
+      }
     }
 
     for (let i = 0; i < 16; i++) {
@@ -576,19 +607,33 @@ export default class ScreenGame {
   onMarkersDrop(info) {
     let meeple = this.current.meeple;
     if (meeple) {
-      let marker = meeple.marker;
-      if (meeple.type === 'resource') {
-        if (
-          this.current.cellIndex != null &&
-          this.current.targets &&
-          this.current.targets.has(this.current.cellIndex)
-        ) {
+      let onTarget = (
+        this.current.cellIndex != null &&
+        this.current.targets &&
+        this.current.targets.has(this.current.cellIndex)
+      );
+
+      if (onTarget) {
+        // Dropping piece on board - make the move
+        if (meeple.type === 'resource') {
           let command = `resource ${meeple.name} ${this.current.cellIndex}`;
           this._doTinyCommand(command);
         }
-        else {
-          if (marker) {
-            let returnTo = this.current.from || this.resourceBinMarker;
+        else if (meeple.type === 'building') {
+        }
+      }
+      else {
+        // move not allowed - return marker
+        let marker = meeple.marker;
+        if (marker) {
+          let returnTo;
+          if (meeple.type === 'resource') {
+            returnTo = this.current.from || this.resourceBinMarker;
+          }
+          else if (meeple.type === 'building') {
+            returnTo = this.current.from || this.buildingBinMarker;
+          }
+          if (returnTo) {
             let rect = this.markers.getDestinationRect(
               returnTo,
               marker.rect
@@ -598,18 +643,8 @@ export default class ScreenGame {
           }
         }
       }
-      if (meeple.type === 'building') {
-        if (marker) {
-          let returnTo = this.current.from || this.buildingBinMarker;
-          let rect = this.markers.getDestinationRect(
-            returnTo,
-            marker.rect
-          );
-          this.markers.setRect(marker, rect);
-          this.meeples.sendToRect(meeple, rect);
-        }
-      }
     }
+
     this.current.last = {};
     if (this.current.meeple) {
       this.current.last.meeple = this.current.meeple;

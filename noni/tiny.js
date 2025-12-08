@@ -92,7 +92,7 @@ export default class Tiny {
 
   canDoResource(position, resource, undo) {
     // return an array of legal placements, or null
-    // undo lets us ovverride pending state
+    // undo lets us override pending state
     // position and color are optional, but if present will filter results
     // TODO detmar - not really implemented
     if (this.gameOver) {

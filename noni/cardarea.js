@@ -15,7 +15,7 @@ export default class CardArea {
     this.x0 = this.uxe.box(this.parent, {
       rect: rect,
     });
-    this.x0.style.background = 'linear-gradient(25deg, #c4a384ff 40%, #eccdabff 100%)';
+    //this.x0.style.background = 'linear-gradient(25deg, #c4a384ff 40%, #eccdabff 100%)';
     this.marker = this.screengame.markers.add({
       rect: [rect[0], rect[1] + y, rect[2], rect[3]],
       fixed: true,
@@ -63,8 +63,8 @@ export default class CardArea {
     }
 
   onMarkers(action, params) {
-    let start = 20;
-    let space = 24;
+    let start = 4;
+    let space = 28;
     let width = 326;
     let left = start + space * this.current;
     let right = left + width;
@@ -172,9 +172,8 @@ export default class CardArea {
     );
     index ??= 0;
     this.current = index;
-    let start = 20;
-    let space = 24;
-    let width = 326;
+    let start = 4;
+    let space = 28;
     for (let i = 0; i < this.cards.length; i++) {
       let x = start + space * i;
       if (offset !== null && this.current == i) {
