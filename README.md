@@ -18,3 +18,4 @@
 - [Kira](kira/)
 - [Mika](mika/)
 - [Noni](noni/)
+- [Paxi](paxi/)

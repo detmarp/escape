@@ -102,7 +102,6 @@ export default class CardArea {
       left = Math.max(start, Math.min(left, start + space * (this.cards.length - 1)));
       this.current = Math.round((left - start) / space);
       this.show(this.current, left);
-      console.log('dragging delta:', delta);
     }
   }
 

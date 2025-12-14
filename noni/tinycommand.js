@@ -15,12 +15,14 @@ export default class TinyCommand {
   }
 
   *do(commands, isUndo=false) {
-    console.log(`ooo TinyCommand do: ${commands}`);
+    if (this.tiny._logCommands) {
+      console.log(`ttt TinyCommand do: ${commands}`);
+    }
     this.actionUndos = [];
     let tokens = this.parser.tokenize(commands);
 
     if (tokens.length == 0) {
-      yield { action: 'error', error: 'empty' };
+      yield* this._yieldData({ action: 'error', error: 'empty' });
       return;
     }
 
@@ -34,11 +36,40 @@ export default class TinyCommand {
       let resource = tokens[1].string;
       let cellIndex = tokens[2].number;
       this.tiny.doResource(cellIndex, resource);
-      yield {
+      yield* this._yieldData({
         action: 'resource',
         resource: resource,
         cellIndex: cellIndex,
+      });
+      yield* this._checkPlacements();
+      yield* this._checkScores();
+      return;
+    }
+
+    if (verb == 'building') {
+      if (tokens.length < 4 || tokens[2].number == null) {
+        yield* this._syntaxError(tokens);
+        return;
+      }
+      // create a placement struct
+      let index = tokens[2].number;
+      let category = tokens[1].string;
+      let placement = {
+        placementIndexes: tokens.slice(3).map(t => t.number),
+        card: this.tiny.hand.cards.find(card => card.category === category),
       };
+      this.tiny.doCard(index, placement);
+      for (let c of placement.placementIndexes) {
+        yield* this._yieldData({
+          action: 'unresource',
+          cellIndex: c,
+        });
+      }
+      yield* this._yieldData({
+        action: 'building',
+        building: category,
+        index: index,
+      });
       yield* this._checkPlacements();
       yield* this._checkScores();
       return;
@@ -50,13 +81,13 @@ export default class TinyCommand {
         return;
       }
       this.undos = [];
-      yield { action: 'clearundo' };
+      yield* this._yieldData({ action: 'clearundo' });
       let poolAction = this.tiny.updateHandResources();
       if (poolAction) {
-        yield poolAction;
+        yield* this._yieldData(poolAction);
       }
       this.tiny.endTurn();
-      yield { action: 'endturn' };
+      yield* this._yieldData({ action: 'endturn' });
       return;
     }
 
@@ -82,24 +113,24 @@ export default class TinyCommand {
       return;
     }
 
-    yield { action: 'error', error: `unknown: ${verb}` };
+    yield* this._yieldData({ action: 'error', error: `unknown: ${verb}` });
   }
 
   *_syntaxError(tokens) {
-    yield { action: 'error', error: 'syntax' };
+    yield* this._yieldData({ action: 'error', error: 'syntax' });
   }
 
   *_checkPlacements() {
-    yield { action: 'checkplacements' };
+    yield* this._yieldData({ action: 'checkplacements' });
   }
 
   *_checkScores() {
-    yield { action: 'checkscores' };
+    yield* this._yieldData({ action: 'checkscores' });
   }
 
   *_undo(cellIndex, type) {
     if (!this.tiny.canUndo(cellIndex, type)) {
-      yield { action: 'error', error: 'cannot undo' };
+      yield* this._yieldData({ action: 'error', error: 'cannot undo' });
       return;
     }
     if (type === 'resource') {
@@ -107,7 +138,7 @@ export default class TinyCommand {
       if (resource) {
         this.tiny.board.cells[cellIndex].resource = null;
         this.tiny.pending = null;
-        yield { action: 'unresource', cellIndex: cellIndex, type: type, resource: resource };
+        yield* this._yieldData({ action: 'unresource', cellIndex: cellIndex, type: type, resource: resource });
       }
     }
   }
@@ -123,25 +154,32 @@ export default class TinyCommand {
   *_setup() {
     for (let cell of this.tiny.board.cells) {
       if (cell.resource) {
-        yield {
+        yield* this._yieldData({
           action: 'setupresource',
           resource: cell.resource,
           index: cell.index
-        };
+        });
       }
       if (cell.building) {
-        yield {
+        yield* this._yieldData({
           action: 'setupbuilding',
           building: cell.building,
           index: cell.index
-        };
+        });
       }
     }
     for (let resource of this.tiny.hand.resources.row) {
-      yield {
+      yield* this._yieldData({
         action: 'setuppool',
         resource: resource,
-      };
+      });
     }
+  }
+
+  *_yieldData(data) {
+    if (this.tiny._logActions) {
+      console.log(`ttt TinyCommand action: ${JSON.stringify(data)}`);
+    }
+    yield data;
   }
 }

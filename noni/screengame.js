@@ -140,13 +140,13 @@ export default class ScreenGame {
 
     this.leftSideBar = this.uxe.box(boardRow, {
       rect: [8, 0, 54, 400],
-      border: '#000000',
+      //border: '#000000',
     });
     this.leftSideBar.style.display = 'flex';
     this.leftSideBar.style.flexDirection = 'column';
     this.leftSideBar.style.alignItems = 'center';
     this.leftSideBar.style.gap = `${4 * this.uxe.scale}px`;
-    if (true) {
+    if (false) {
       this.editButton = this.uxe.box(this.leftSideBar, {
         size: [48, 40],
         border: '#000000',
@@ -163,8 +163,8 @@ export default class ScreenGame {
 
     let scoreArea = this.uxe.box(boardRow, {
       rect: [478, 0, 54, 400],
-      border: '#000000',
-      text: 'score',
+      //border: '#000000',
+      //text: 'score',
     });
 
 
@@ -326,6 +326,11 @@ export default class ScreenGame {
   }
 
   _action_unresource(action) {
+    // There might be a meeple at this cell still
+    let cell = this.cells[action.cellIndex];
+    let meeple = this.meeples.list.find(m => m.marker && m.marker === cell.marker);
+    if (meeple) {
+    }
   }
 
   _makeResourceMarker(resource, inMarker) {
@@ -431,10 +436,14 @@ export default class ScreenGame {
 //                resourceIndexes: resourceIndexes,
   }
 
-  _getPlacementsForCategory(building) {
+  _getPlacementsForCategory(building, cell = null) {
     // Returns an array of placements
     let placements = this.tiny.getBuildingPlacements();
     placements = placements.filter(p => p.card && p.card.category === building);
+    // If cell is given, filter to placements that include that cell
+    if (cell != null) {
+      placements = placements.filter(p => p.resourceIndexes && p.resourceIndexes.includes(cell));
+    }
     return placements;
   }
 
@@ -620,6 +629,13 @@ export default class ScreenGame {
           this._doTinyCommand(command);
         }
         else if (meeple.type === 'building') {
+          let placements = this._getPlacementsForCategory(meeple.name, this.current.cellIndex);
+          let placement = placements.length > 0 ? placements[0] : null;
+          if (placement) {
+            let command = `building ${meeple.name} ${this.current.cellIndex}`;
+            command += ' ' + placement.resourceIndexes.join(' ');
+            this._doTinyCommand(command);
+          }
         }
       }
       else {

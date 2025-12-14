@@ -128,6 +128,9 @@ export default class Program {
 
   _loopDebug() {
     this.container._logTouches = this.saveData.data.logtouches;
+    if (this.tiny) {
+      this.tiny._logCommands = this.saveData.data.logcommands;
+      this.tiny._logActions = this.saveData.data.logactions;
+    }
   }
-
 }
