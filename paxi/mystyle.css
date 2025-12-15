@@ -20,9 +20,13 @@ html, body {
   user-select: none;
   -webkit-overflow-scrolling: auto;
 }
-}
+
 *, *::before, *::after {
   box-sizing: inherit;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  -ms-touch-action: none;
 }
 
 /* Remove tap highlight on mobile */
