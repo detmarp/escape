@@ -45,6 +45,16 @@ export default class Meeples {
     return element;
   }
 
+  remove(meeple) {
+    if (meeple && meeple.parentNode) {
+      meeple.parentNode.removeChild(meeple);
+    }
+    const idx = this.list.indexOf(meeple);
+    if (idx !== -1) {
+      this.list.splice(idx, 1);
+    }
+  }
+
   updateRect(meeple, rect) {
     meeple.style.left = `calc(var(--scale) * ${rect[0]}px)`;
     meeple.style.top = `calc(var(--scale) * ${rect[1]}px)`;

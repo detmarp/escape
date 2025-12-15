@@ -328,8 +328,12 @@ export default class ScreenGame {
   _action_unresource(action) {
     // There might be a meeple at this cell still
     let cell = this.cells[action.cellIndex];
-    let meeple = this.meeples.list.find(m => m.marker && m.marker === cell.marker);
+    let meeple = this.meeples.list.find(m => m.cellIndex === action.cellIndex);
     if (meeple) {
+      if (meeple.marker) {
+        this.markers.remove(meeple.marker.id);
+      }
+      this.meeples.remove(meeple);
     }
   }
 
@@ -480,6 +484,7 @@ export default class ScreenGame {
       else {
         // dragging from a cell
         if (this.tiny.canUndo(cellIndex, 'resource')) {
+          meeple.cellIndex = null;
           this._setTargets(resource, null, true);
           this.current.undo = true;
         }
@@ -625,10 +630,12 @@ export default class ScreenGame {
       if (onTarget) {
         // Dropping piece on board - make the move
         if (meeple.type === 'resource') {
+          meeple.cellIndex = this.current.cellIndex;
           let command = `resource ${meeple.name} ${this.current.cellIndex}`;
           this._doTinyCommand(command);
         }
         else if (meeple.type === 'building') {
+          meeple.cellIndex = this.current.cellIndex;
           let placements = this._getPlacementsForCategory(meeple.name, this.current.cellIndex);
           let placement = placements.length > 0 ? placements[0] : null;
           if (placement) {

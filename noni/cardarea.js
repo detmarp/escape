@@ -81,7 +81,7 @@ export default class CardArea {
       this.show(i);
     }
     if (action === 'click') {
-      console.log('card clicked:', this.current, this.cards[this.current].card);
+      //console.log('card clicked:', this.current, this.cards[this.current].card);
       // Animate rotation of the SVG pattern on the clicked card
       let cardDiv = this.cards[this.current];
       // Find the d element (pattern container)

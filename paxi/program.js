@@ -1,37 +1,28 @@
+import Container from "./container.js";
+
 export default class Program {
   constructor(parent) {
     this.parent = parent;
   }
 
   run() {
-    // Create elements
-    const header = document.createElement('h1');
-    header.textContent = 'Welcome to Paxi';
+    this.parent.innerHTML = '';
+    this.container = new Container(this.parent);
 
-    const text = document.createElement('p');
-    text.textContent = 'This is a simple counter demo.';
+    this._animate();
+  }
 
-    const counter = document.createElement('span');
-    counter.textContent = '0';
-    counter.style.margin = '0 1em';
+  _work() {
+    this.container.work();
+    this.container.draw();
+  }
 
-    const button = document.createElement('button');
-    button.textContent = 'Increment';
-
-    let count = 0;
-    button.addEventListener('click', () => {
-      count++;
-      counter.textContent = String(count);
-    });
-
-    const container = document.createElement('div');
-    container.appendChild(header);
-    container.appendChild(text);
-    container.appendChild(button);
-    container.appendChild(counter);
-
-    // Clear parent and add container
-    this.parent.body.innerHTML = '';
-    this.parent.body.appendChild(container);
+  _animate(callback) {
+    this._work();
+    const loop = () => {
+      this._work();
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
   }
 }

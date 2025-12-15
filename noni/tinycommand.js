@@ -54,11 +54,26 @@ export default class TinyCommand {
       // create a placement struct
       let index = tokens[2].number;
       let category = tokens[1].string;
+      let undo = [{
+        action: 'unbuilding',
+        index: index,
+      }
+      ];
       let placement = {
         placementIndexes: tokens.slice(3).map(t => t.number),
         card: this.tiny.hand.cards.find(card => card.category === category),
       };
+      // save undo
+      for (let c of placement.placementIndexes) {
+        undo.push({
+          action: 'resource',
+          resource: this.tiny.board.cells[c].resource,
+          cellIndex: c,
+        });
+      }
+      // update game state
       this.tiny.doCard(index, placement);
+      // send actions
       for (let c of placement.placementIndexes) {
         yield* this._yieldData({
           action: 'unresource',
@@ -72,6 +87,7 @@ export default class TinyCommand {
       });
       yield* this._checkPlacements();
       yield* this._checkScores();
+      console.log(`uuu ${JSON.stringify(undo)}`);
       return;
     }
 
@@ -141,14 +157,6 @@ export default class TinyCommand {
         yield* this._yieldData({ action: 'unresource', cellIndex: cellIndex, type: type, resource: resource });
       }
     }
-  }
-
-  _makeUndo(action) {
-    if (action.verb === 'resource') {
-      let cellIndex = action.params[1];
-      return `unresource ${cellIndex}`;
-    }
-    return null;
   }
 
   *_setup() {
