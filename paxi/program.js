@@ -1,4 +1,5 @@
 import Container from "./container.js";
+import Controller from "./controller.js";
 
 export default class Program {
   constructor(parent) {
@@ -7,14 +8,16 @@ export default class Program {
 
   run() {
     this.parent.innerHTML = '';
-    this.container = new Container(this.parent);
+    this.container = new Container(this.parent, 3/4);
+
+    this.controller = new Controller(this, this.container);
 
     this._animate();
   }
 
   _work() {
     this.container.work();
-    this.container.draw();
+    this.controller.work();
   }
 
   _animate(callback) {

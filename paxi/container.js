@@ -1,10 +1,11 @@
 export default class Container {
-  constructor(parent) {
+  constructor(parent, aspect = 9/16) {
     this.parent = parent;
     this.outer = document.createElement('div');
     this.parent.appendChild(this.outer);
 
     this.margin = 4;
+    this.aspect = aspect;
 
     // Make parent a flex container for centering
     this.parent.style.display = 'flex';
@@ -29,18 +30,20 @@ export default class Container {
       this.parent.clientWidth,
       this.parent.clientHeight
     ];
-    // Calculate 9x16 aspect ratio that fits in parentSize
+
     let w = Math.max(100, parentSize[0] - 2 * this.margin);
     let h = Math.max(100, parentSize[1] - 2 * this.margin);
-    // Logical size
-    const logicalW = 540;
-    const logicalH = 960;
 
-    let scaleW = w / logicalW;
-    let scaleH = h / logicalH;
+    // Use this.aspect for aspect ratio
+    // Logical size: pick a base width and compute height from aspect
+    this.logicalW = 540;
+    this.logicalH = Math.round(this.logicalW / this.aspect);
+
+    let scaleW = w / this.logicalW;
+    let scaleH = h / this.logicalH;
     let scale = Math.min(scaleW, scaleH);
-    let width = Math.floor(logicalW * scale);
-    let height = Math.floor(logicalH * scale);
+    let width = Math.floor(this.logicalW * scale);
+    let height = Math.floor(this.logicalH * scale);
 
     let size = [width, height];
     if (this.outer.size &&
@@ -67,12 +70,10 @@ export default class Container {
     this.childRect.style.height = 'calc(500px * var(--scale))';
     this.childRect.style.left = 'calc(20px * var(--scale))';
     this.childRect.style.top = 'calc(20px * var(--scale))';
+    console.log(`sss ${width}x${height} scale=${scale} ${this.logicalW}x${this.logicalH}`);
   }
 
   work() {
     this._resize();
-  }
-
-  draw() {
   }
 }
