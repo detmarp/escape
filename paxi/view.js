@@ -113,7 +113,7 @@ export default class View {
       let x = 20 + i * (160 + 10);
       this.uxe.pegArea({
         position: [x, 100],
-        onClick: () => this._onTap(i),
+        onpointerdown: () => this._onTap(i),
       });
     }
 
@@ -147,19 +147,19 @@ export default class View {
   _makeControls() {
     let button1 = this.uxe.button({
       center: [140, 640],
-      onClick: () => this._onResize(-1),
+      onclick: () => this._onResize(-1),
       text: '-',
     });
     this.overlay.appendChild(button1);
     let button2 = this.uxe.button({
       center: [260, 640],
-      onClick: () => this._onResize(1),
+      onclick: () => this._onResize(1),
       text: '+',
     });
     this.overlay.appendChild(button2);
     let button3 = this.uxe.button({
       center: [380, 640],
-      onClick: () => this._onReset(),
+      onclick: () => this._onReset(),
       text: '↺',
     });
     this.overlay.appendChild(button3);

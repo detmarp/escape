@@ -10,10 +10,14 @@ export default class UxElement {
     // By default, let pointer events pass through
     div.style.pointerEvents = 'none';
 
-    // If onClick is provided, enable pointer events and attach handler
-    if (typeof params.onClick === 'function') {
+    if (typeof params.onclick === 'function') {
       div.style.pointerEvents = 'auto';
-      div.onclick = params.onClick;
+      div.onclick = params.onclick;
+    }
+
+    if (typeof params.onpointerdown === 'function') {
+      div.style.pointerEvents = 'auto';
+      div.onpointerdown = params.onpointerdown;
     }
 
     let parent = params.parent || this.parent;
