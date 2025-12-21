@@ -5,7 +5,6 @@ export default class UxElement {
 
   box(params) {
     const div = document.createElement('div');
-    this._noZoom(div);
     this._setCommon(div, params);
 
     // By default, let pointer events pass through
@@ -13,12 +12,20 @@ export default class UxElement {
 
     if (typeof params.onclick === 'function') {
       div.style.pointerEvents = 'auto';
-      div.onclick = params.onclick;
+      div.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        params.onclick(e);
+      };
     }
 
     if (typeof params.onpointerdown === 'function') {
       div.style.pointerEvents = 'auto';
-      div.onpointerdown = params.onpointerdown;
+      div.onpointerdown = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        params.onpointerdown(e);
+      };
     }
 
     let parent = params.parent || this.parent;
@@ -150,15 +157,5 @@ export default class UxElement {
       elem.style.userSelect = 'none';
       elem.style.whiteSpace = 'pre-wrap';
     }
-  }
-
-  _noZoom(el) {
-    el.addEventListener('gesturestart', e => e.preventDefault());
-    el.addEventListener('gesturechange', e => e.preventDefault());
-    el.addEventListener('gestureend', e => e.preventDefault());
-    el.addEventListener('touchstart', e => {
-      if (e.touches.length > 1) e.preventDefault();
-    }, { passive: false });
-    el.addEventListener('dblclick', e => e.preventDefault());
   }
 }
