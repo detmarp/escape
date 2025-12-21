@@ -1,6 +1,11 @@
 import Container from "./container.js";
 import Controller from "./controller.js";
 
+/* Minimal app engine
+   Manages savedata object
+   Manages requestAnimationFrame loop
+   Uses Controller to manage game logic and view
+*/
 export default class Program {
   constructor(parent) {
     this.parent = parent;

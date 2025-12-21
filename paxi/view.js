@@ -1,6 +1,35 @@
+import UxElement from './uxelement.js';
+
+/*
+  View is the visual representation of the game.
+  Injected with Paxi ux manager and parent DOM element
+*/
 export default class View {
   constructor(parent, paxi) {
     this.parent = parent;
+    this.parent.innerHTML = '';
+
+    this.background = document.createElement('div');
+    this.overlay = document.createElement('div');
+    // Style parent to allow absolute positioning inside
+    this.parent.style.position = 'relative';
+
+    // Style background for absolute positioning
+    this.background.style.position = 'absolute';
+    this.background.style.top = '0';
+    this.background.style.left = '0';
+    this.background.style.width = '100%';
+    this.background.style.height = '100%';
+    this.background.style.pointerEvents = 'none'; // Let overlay handle events
+
+    // Style overlay for normal flow, but overlapping background
+    this.overlay.style.position = 'relative';
+    this.overlay.style.zIndex = '1';
+
+    // Add both to parent, background first
+    this.parent.appendChild(this.background);
+    this.parent.appendChild(this.overlay);
+
     this.paxi = paxi;
     this.n = 0;
     this._redraw();
@@ -32,41 +61,51 @@ export default class View {
   }
 
   _redraw() {
-    this.parent.innerHTML = '';
+    this.overlay.innerHTML = '';
     this._makePegs();
     this._makeControls();
     this._makeInfo();
+
+    this.uxe = new UxElement(this.background);
+    this.uxe.box({
+      rect: [0, 0, 500, 500],
+      borderColor: 'green',
+    });
+    this.uxe.box({
+      rect: [100, 100, 200, 200],
+      borderColor: 'orange',
+    });
   }
 
   _makeInfo() {
     this.textElem = document.createElement('div');
     this.textElem.textContent = '';
-    this.parent.appendChild(this.textElem);
+    this.overlay.appendChild(this.textElem);
   }
 
   _makePegs() {
+    this.uxe = new UxElement(this.background);
+    for (let i = 0; i < 3; i++) {
+      let x = 20 + i * (160 + 10);
+      this.uxe.pegArea({
+        position: [x, 100],
+        onClick: () => this._onTap(i),
+      });
+    }
+
     this.pegLines = [];
-    this.tapBtns = [];
     for (let i = 0; i < 3; i++) {
       const row = document.createElement('div');
       row.style.display = 'flex';
       row.style.alignItems = 'center';
       row.style.gap = '0.5em';
 
-      const btn = document.createElement('button');
-      btn.textContent = 'Tap ' + (i + 1);
-      btn.onclick = () => {
-        this._onTap(i);
-      };
-      row.appendChild(btn);
-      this.tapBtns.push(btn);
-
       const line = document.createElement('div');
       line.textContent = '';
       row.appendChild(line);
       this.pegLines.push(line);
 
-      this.parent.appendChild(row);
+      this.overlay.appendChild(row);
     }
   }
 
@@ -96,7 +135,7 @@ export default class View {
     };
     this.controlsRow.appendChild(this.restartBtn);
 
-    this.parent.appendChild(this.controlsRow);
+    this.overlay.appendChild(this.controlsRow);
   }
 
   _onResize(delta) {

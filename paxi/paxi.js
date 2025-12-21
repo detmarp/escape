@@ -1,4 +1,9 @@
-/* Paxi is the logical container of the game.
+/*
+  Paxi is a general UX manager for the Tower of Hanoi game.
+
+  Injected with Hanoi game object
+  Calls back to its owner through delegate methods.
+  Manages a general UX state, but does not know the specifics of the view.
 */
 export default class Paxi {
   constructor(hanoi, delegate) {

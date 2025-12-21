@@ -2,6 +2,17 @@ import Hanoi from './hanoi.js';
 import View from './view.js';
 import Paxi from './paxi.js';
 
+/*
+  ModelView controller
+
+  Hanoi is the small internal model of the game
+  Paxi manages the state of the UX
+    Injected with Hanoi and delegate object
+    Only knows about this Controller through delegate callbacks
+    Does not know about View
+  View is the visual representation
+    Injected with Paxi and parent DOM element
+  */
 export default class Controller {
   constructor(program, container) {
     this.program = program;
