@@ -5,6 +5,7 @@ export default class UxElement {
 
   box(params) {
     const div = document.createElement('div');
+    this._noZoom(div);
     this._setCommon(div, params);
 
     // By default, let pointer events pass through
@@ -12,6 +13,9 @@ export default class UxElement {
 
     if (typeof params.onclick === 'function') {
       div.style.pointerEvents = 'auto';
+      div.style.touchAction = 'manipulation';
+      div.style.userSelect = 'none';
+      div.style.webkitUserSelect = 'none';
       div.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -21,11 +25,18 @@ export default class UxElement {
 
     if (typeof params.onpointerdown === 'function') {
       div.style.pointerEvents = 'auto';
+      div.style.touchAction = 'manipulation';
+      div.style.userSelect = 'none';
+      div.style.webkitUserSelect = 'none';
       div.onpointerdown = (e) => {
         e.preventDefault();
         e.stopPropagation();
         params.onpointerdown(e);
       };
+      // Also prevent double-tap zoom on touchend for Safari
+      div.addEventListener('touchend', function(e) {
+        if (e.touches.length < 2) e.preventDefault();
+      }, { passive: false });
     }
 
     let parent = params.parent || this.parent;
@@ -82,7 +93,7 @@ export default class UxElement {
       120,
       20,
     ];
-    params.backgroundColor = 'orange';
+    params.backgroundColor = 'red';
     let index = params.index || 0;
     let n = params.n || 10;
     let width = 60 + Math.round((index + 1) * (160 - 60) / n);
@@ -157,5 +168,15 @@ export default class UxElement {
       elem.style.userSelect = 'none';
       elem.style.whiteSpace = 'pre-wrap';
     }
+  }
+
+  _noZoom(el) {
+    el.addEventListener('gesturestart', e => e.preventDefault());
+    el.addEventListener('gesturechange', e => e.preventDefault());
+    el.addEventListener('gestureend', e => e.preventDefault());
+    el.addEventListener('touchstart', e => {
+      if (e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
+    el.addEventListener('dblclick', e => e.preventDefault());
   }
 }
