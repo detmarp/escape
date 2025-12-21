@@ -29,7 +29,7 @@ export default class UxElement {
       params.position[0],
       params.position[1],
       160,
-      300
+      420
     ];
     params.backgroundColor = 'lightgray';
     let div = this.box(params);
@@ -48,21 +48,16 @@ export default class UxElement {
 
   button(params) {
     params = {...params};
-    params.rect = [
-      params.position[0],
-      params.position[1],
-      120,
-      120,
-    ];
+    params.sizxe = [100, 100];
     params.backgroundColor = 'lightgray';
     params.borderColor = 'gray';
-    params.borderRadius = 60;
+    params.borderRadius = 50;
     let div = this.box(params);
     div.style.display = 'flex';
     div.style.alignItems = 'center';
     div.style.justifyContent = 'center';
     div.style.textAlign = 'center';
-    div.style.fontSize = 'calc(var(--scale) * 28px)';
+    div.style.fontSize = 'calc(var(--scale) * 70px)';
     div.style.fontWeight = 'bold';
     return div;
   }
@@ -75,6 +70,7 @@ export default class UxElement {
       120,
       20,
     ];
+    params.backgroundColor = 'orange';
     let index = params.index || 0;
     let n = params.n || 10;
     let width = 60 + Math.round((index + 1) * (160 - 60) / n);

@@ -62,6 +62,7 @@ export default class Hanoi {
       peg.sort((a, b) => b - a);
     }
 
+    hanoi._checkGameOver();
     return hanoi;
   }
 
@@ -104,11 +105,14 @@ export default class Hanoi {
 
     this.moves++;
 
-    if (
-      (this.pegs[0].length === 0 && (this.pegs[1].length === 0 || this.pegs[2].length === 0))
-    ) {
-      this.gameOver = true;
-    }
+    this._checkGameOver();
+  }
+
+  _checkGameOver() {
+    let over = (this.pegs[0].length === 0) &&
+      (this.pegs[1].length === 0 || this.pegs[2].length === 0);
+    this.gameOver = over;
+    return over;
   }
 
   toObject() {

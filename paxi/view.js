@@ -102,7 +102,7 @@ export default class View {
     });
 
     this.bottomText = this.uxe.topText({
-      position: [20, 440],
+      position: [20, 540],
       size: [500, 40],
       text: '',
     });
@@ -146,21 +146,21 @@ export default class View {
 
   _makeControls() {
     let button1 = this.uxe.button({
-      position: [60, 560],
+      center: [140, 640],
       onClick: () => this._onResize(-1),
       text: '-',
     });
     this.overlay.appendChild(button1);
     let button2 = this.uxe.button({
-      position: [210, 560],
+      center: [260, 640],
       onClick: () => this._onResize(1),
       text: '+',
     });
     this.overlay.appendChild(button2);
     let button3 = this.uxe.button({
-      position: [360, 560],
+      center: [380, 640],
       onClick: () => this._onReset(),
-      text: 'Restart',
+      text: '↺',
     });
     this.overlay.appendChild(button3);
   }
