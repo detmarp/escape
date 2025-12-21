@@ -38,12 +38,6 @@ export default class View {
   work() {
     this.n++;
 
-    if (this.paxi && this.paxi.hanoi && Array.isArray(this.paxi.hanoi.pegs)) {
-      for (let i = 0; i < 3; i++) {
-        this._drawRow(this.pegLines[i], i);
-      }
-    }
-
     let moves = `Moves: ${this.paxi.hanoi.moves} / ${this.paxi.hanoi.goal}`;
     this.bottomText.textContent = moves;
 
@@ -54,18 +48,39 @@ export default class View {
     }
   }
 
-  _drawRow(element, i) {
-    const peg = this.paxi.hanoi.pegs[i];
-    let text = 'Peg ' + (i + 1) + ': ';
-    if (this.paxi.selected === i && peg.length > 0) {
-      const arr = peg.slice(0, -1);
-      text += arr.join(', ');
-      if (arr.length > 0) text += ', ';
-      text += '-- ' + peg[peg.length - 1];
-    } else {
-      text += peg.join(', ');
+  _update() {
+    let diskInfo = [];
+    for (let pegIndex = 0; pegIndex < 3; pegIndex++) {
+      const peg = this.paxi.hanoi.pegs[pegIndex];
+      for (let i = 0; i < peg.length; i++) {
+        diskInfo.push({
+          peg: pegIndex,
+          selected: (this.paxi.selected === pegIndex && i === peg.length - 1),
+          i: peg[i],
+          y: i,
+        });
+      }
     }
-    element.textContent = text;
+    // Position each disk according to diskInfo
+    for (let i = 0; i < diskInfo.length; i++) {
+      const info = diskInfo[i];
+      let cx = 100 + 170 * info.peg;
+      let cy = 400 - 30 * info.y;
+      const w = 60 + 100 * (info.i) / this.paxi.hanoi.size;
+      const h = 20;
+      const n = this.paxi.hanoi.size;
+      if (info.selected) {
+        cy = 100;
+      }
+      if (this.disks[i]) {
+        let params = {
+          size: [w, h],
+          center: [cx, cy],
+        };
+        this.uxe._setSize(this.disks[i], params);
+        console.log(`${JSON.stringify(params)}, ${JSON.stringify(info)}`);
+      }
+    }
   }
 
   _redraw() {
@@ -75,6 +90,8 @@ export default class View {
     this._makePegs();
     this._makeControls();
     this._makeInfo();
+
+    this._update();
   }
 
   _makeInfo() {
@@ -114,6 +131,17 @@ export default class View {
 
       this.overlay.appendChild(row);
     }
+
+    this.disks = [];
+    let n = this.paxi.hanoi.size;
+    for (let i = 0; i < n; i++) {
+      const disk = this.uxe.disk({
+        position: [200, 300 - i * 30],
+        index: i,
+        n,
+      });
+      this.disks.push(disk);
+    }
   }
 
   _makeControls() {
@@ -149,6 +177,7 @@ export default class View {
 
   _onTap(peg) {
     this.paxi.onTap(peg);
+    this._update();
   }
 
 }

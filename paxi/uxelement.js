@@ -16,8 +16,9 @@ export default class UxElement {
       div.onclick = params.onClick;
     }
 
-    if (this.parent) {
-      this.parent.appendChild(div);
+    let parent = params.parent || this.parent;
+    if (parent) {
+      parent.appendChild(div);
     }
     return div;
   }
@@ -28,7 +29,7 @@ export default class UxElement {
       params.position[0],
       params.position[1],
       160,
-      320
+      300
     ];
     params.backgroundColor = 'lightgray';
     let div = this.box(params);
@@ -66,14 +67,51 @@ export default class UxElement {
     return div;
   }
 
-  _setCommon(elem, params) {
+  disk(params) {
+    params = {...params};
+    params.rect = [
+      params.position[0],
+      params.position[1],
+      120,
+      20,
+    ];
+    let index = params.index || 0;
+    let n = params.n || 10;
+    let width = 60 + Math.round((index + 1) * (160 - 60) / n);
+    params.borderColor = 'black';
+    let div = this.box(params);
+
+    // let inner = this.box({
+    //   size: [width, 20],
+    //   parent: div,
+    //   backgroundColor: 'orange',
+    // });
+    return div;
+  }
+
+  _setSize(elem, params) {
     params = params || {};
     let rect = [];
+    // Build a rect from
+    //   params.rect OR
+    //   params.size & params.position OR
+    //   params.size & params.center
+
     if (Array.isArray(params.rect)) {
       rect = [...params.rect];
     } else {
       let size = (Array.isArray(params.size) ? params.size : [100, 100]);
-      let position = (Array.isArray(params.position) ? params.position : [0, 0]);
+      let position;
+      if (Array.isArray(params.center)) {
+        position = [
+          params.center[0] - size[0] / 2,
+          params.center[1] - size[1] / 2
+        ];
+      } else if (Array.isArray(params.position)) {
+        position = params.position;
+      } else {
+        position = [0, 0];
+      }
       rect = [position[0], position[1], size[0], size[1]];
     }
 
@@ -82,6 +120,10 @@ export default class UxElement {
     elem.style.top = `calc(var(--scale) * ${rect[1]}px)`;
     elem.style.width = `calc(var(--scale) * ${rect[2]}px)`;
     elem.style.height = `calc(var(--scale) * ${rect[3]}px)`;
+  }
+
+  _setCommon(elem, params) {
+    this._setSize(elem, params);
 
     // Set border color, width, and rounded corners from params
     if (params.borderColor) {
