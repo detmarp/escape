@@ -37,12 +37,20 @@ export default class View {
 
   work() {
     this.n++;
-    this.textElem.textContent = `Frame: ${this.n}, Moves: ${this.paxi.hanoi.moves}/${this.paxi.hanoi.goal}, Game Over: ${this.paxi.hanoi.gameOver ? 'Yes' : 'No'}`;
 
     if (this.paxi && this.paxi.hanoi && Array.isArray(this.paxi.hanoi.pegs)) {
       for (let i = 0; i < 3; i++) {
         this._drawRow(this.pegLines[i], i);
       }
+    }
+
+    let moves = `Moves: ${this.paxi.hanoi.moves} / ${this.paxi.hanoi.goal}`;
+    this.bottomText.textContent = moves;
+
+    if (this.paxi.hanoi.gameOver) {
+      let perfect = (this.paxi.hanoi.moves === this.paxi.hanoi.goal);
+      let text = perfect ? 'Perfect!' : 'Solved!';
+      this.topText.textContent = `${text}`;
     }
   }
 
@@ -61,30 +69,29 @@ export default class View {
   }
 
   _redraw() {
+    this.uxe = new UxElement(this.background);
+
     this.overlay.innerHTML = '';
     this._makePegs();
     this._makeControls();
     this._makeInfo();
-
-    this.uxe = new UxElement(this.background);
-    this.uxe.box({
-      rect: [0, 0, 500, 500],
-      borderColor: 'green',
-    });
-    this.uxe.box({
-      rect: [100, 100, 200, 200],
-      borderColor: 'orange',
-    });
   }
 
   _makeInfo() {
-    this.textElem = document.createElement('div');
-    this.textElem.textContent = '';
-    this.overlay.appendChild(this.textElem);
+    this.topText = this.uxe.topText({
+      position: [20, 20],
+      size: [460, 40],
+      text: '',
+    });
+
+    this.bottomText = this.uxe.topText({
+      position: [20, 440],
+      size: [500, 40],
+      text: '',
+    });
   }
 
   _makePegs() {
-    this.uxe = new UxElement(this.background);
     for (let i = 0; i < 3; i++) {
       let x = 20 + i * (160 + 10);
       this.uxe.pegArea({
@@ -110,32 +117,24 @@ export default class View {
   }
 
   _makeControls() {
-    this.controlsRow = document.createElement('div');
-    this.controlsRow.style.display = 'flex';
-    this.controlsRow.style.gap = '0.5em';
-
-    this.plusBtn = document.createElement('button');
-    this.plusBtn.textContent = '-';
-    this.plusBtn.onclick = () => {
-      this._onResize(-1);
-    };
-    this.controlsRow.appendChild(this.plusBtn);
-
-    this.minusBtn = document.createElement('button');
-    this.minusBtn.textContent = '+';
-    this.minusBtn.onclick = () => {
-      this._onResize(1);
-    };
-    this.controlsRow.appendChild(this.minusBtn);
-
-    this.restartBtn = document.createElement('button');
-    this.restartBtn.textContent = 'Restart';
-    this.restartBtn.onclick = () => {
-      this._onReset();
-    };
-    this.controlsRow.appendChild(this.restartBtn);
-
-    this.overlay.appendChild(this.controlsRow);
+    let button1 = this.uxe.button({
+      position: [60, 560],
+      onClick: () => this._onResize(-1),
+      text: '-',
+    });
+    this.overlay.appendChild(button1);
+    let button2 = this.uxe.button({
+      position: [210, 560],
+      onClick: () => this._onResize(1),
+      text: '+',
+    });
+    this.overlay.appendChild(button2);
+    let button3 = this.uxe.button({
+      position: [360, 560],
+      onClick: () => this._onReset(),
+      text: 'Restart',
+    });
+    this.overlay.appendChild(button3);
   }
 
   _onResize(delta) {

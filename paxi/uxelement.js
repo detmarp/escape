@@ -35,6 +35,37 @@ export default class UxElement {
     return div;
   }
 
+  topText(params) {
+    params = {...params};
+    let div = this.box(params);
+    div.style.textAlign = 'center';
+    div.style.fontSize = 'calc(var(--scale) * 24px)';
+    div.style.fontWeight = 'bold';
+    div.style.pointerEvents = 'none';
+    return div;
+  }
+
+  button(params) {
+    params = {...params};
+    params.rect = [
+      params.position[0],
+      params.position[1],
+      120,
+      120,
+    ];
+    params.backgroundColor = 'lightgray';
+    params.borderColor = 'gray';
+    params.borderRadius = 60;
+    let div = this.box(params);
+    div.style.display = 'flex';
+    div.style.alignItems = 'center';
+    div.style.justifyContent = 'center';
+    div.style.textAlign = 'center';
+    div.style.fontSize = 'calc(var(--scale) * 28px)';
+    div.style.fontWeight = 'bold';
+    return div;
+  }
+
   _setCommon(elem, params) {
     params = params || {};
     let rect = [];
@@ -64,13 +95,17 @@ export default class UxElement {
       elem.style.borderStyle = 'solid';
     }
     if (params.borderRadius) {
-      elem.style.borderRadius = typeof params.borderRadius === 'number'
-      ? `calc(var(--scale) * ${params.borderRadius})`
-      : params.borderRadius;
+      elem.style.borderRadius = `calc(var(--scale) * ${params.borderRadius}px)`;
     }
     // Set background color from params
     if (params.backgroundColor) {
       elem.style.backgroundColor = params.backgroundColor;
+    }
+    // Set text content if params.text is provided
+    if (typeof params.text === 'string') {
+      elem.textContent = params.text;
+      elem.style.userSelect = 'none';
+      elem.style.whiteSpace = 'pre-wrap';
     }
   }
 }
