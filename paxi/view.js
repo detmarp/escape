@@ -1,4 +1,5 @@
 import UxElement from './uxelement.js';
+import Part1 from './part1.js';
 
 /*
   View is the visual representation of the game.
@@ -8,13 +9,10 @@ export default class View {
   constructor(parent, paxi) {
     this.parent = parent;
     this.parent.innerHTML = '';
-
-    this.background = document.createElement('div');
-    this.overlay = document.createElement('div');
-    // Style parent to allow absolute positioning inside
     this.parent.style.position = 'relative';
 
-    // Style background for absolute positioning
+    this.background = document.createElement('div');
+    this.parent.appendChild(this.background);
     this.background.style.position = 'absolute';
     this.background.style.top = '0';
     this.background.style.left = '0';
@@ -22,16 +20,25 @@ export default class View {
     this.background.style.height = '100%';
     this.background.style.pointerEvents = 'none'; // Let overlay handle events
 
-    // Style overlay for normal flow, but overlapping background
+    this.overlay = document.createElement('div');
+    this.parent.appendChild(this.overlay);
     this.overlay.style.position = 'relative';
     this.overlay.style.zIndex = '1';
 
-    // Add both to parent, background first
-    this.parent.appendChild(this.background);
-    this.parent.appendChild(this.overlay);
+    this.fx = document.createElement('div');
+    this.parent.appendChild(this.fx);
+    this.fx.id = 'fx';
+    this.fx.style.position = 'absolute';
+    this.fx.style.top = '0';
+    this.fx.style.left = '0';
+    this.fx.style.width = '100%';
+    this.fx.style.height = '100%';
+    this.fx.style.pointerEvents = 'none';
+    //this.part1 = new Part1(this.fx, '--scale');
 
     this.paxi = paxi;
     this.n = 0;
+
     this._redraw();
   }
 
@@ -46,6 +53,8 @@ export default class View {
       let text = perfect ? 'Perfect!' : 'Solved!';
       this.topText.textContent = `${text}`;
     }
+
+    //this.part1.work();
   }
 
   _update() {
