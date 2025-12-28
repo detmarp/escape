@@ -108,6 +108,31 @@ export default class Hanoi {
     this._checkGameOver();
   }
 
+  _onAction(action, params = {}) {
+    let command = `_onAction_${action}`;
+    if (typeof this[command] === 'function') {
+      this[command](params);
+    }
+    else {
+      console.warn(`Error action: ${JSON.stringify(action)}`);
+    }
+  }
+
+  _onAction_select(params) {
+  }
+
+  _onAction_deselect(params) {
+  }
+
+  _onAction_move(params) {
+  }
+
+  _onAction_gameover(params) {
+  }
+
+  _onAction_add(params) {
+  }
+
   _checkGameOver() {
     let over = (this.pegs[0].length === 0) &&
       (this.pegs[1].length === 0 || this.pegs[2].length === 0);

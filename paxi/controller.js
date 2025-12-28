@@ -68,6 +68,7 @@ export default class Controller {
       onSave: () => this.save(),
     };
     this.paxi = new Paxi(this.hanoi, delegate);
+    this.paxi.debug = true;
 
     this.view = new View(this.container.outer, this.paxi);
     this.save();

@@ -1,5 +1,5 @@
 import UxElement from './uxelement.js';
-import Part1 from './part1.js';
+import Tweener from './tweener.js';
 
 /*
   View is the visual representation of the game.
@@ -34,12 +34,13 @@ export default class View {
     this.fx.style.width = '100%';
     this.fx.style.height = '100%';
     this.fx.style.pointerEvents = 'none';
-    //this.part1 = new Part1(this.fx, '--scale');
+
+    this.tweener = new Tweener();
 
     this.paxi = paxi;
     this.n = 0;
 
-    this._redraw();
+    this._setup();
   }
 
   work() {
@@ -54,53 +55,86 @@ export default class View {
       this.topText.textContent = `${text}`;
     }
 
-    //this.part1.work();
-  }
+    this.tweener.work();
 
-  _update() {
-    let diskInfo = [];
-    for (let pegIndex = 0; pegIndex < 3; pegIndex++) {
-      const peg = this.paxi.hanoi.pegs[pegIndex];
-      for (let i = 0; i < peg.length; i++) {
-        diskInfo.push({
-          peg: pegIndex,
-          selected: (this.paxi.selected === pegIndex && i === peg.length - 1),
-          i: peg[i],
-          y: i,
-        });
+    if (this.paxiChunks) {
+      let chunk = this.paxiChunks.next();
+      if (chunk.done) {
+        this.paxiChunks = null;
+        this.paused = false;
       }
-    }
-    // Position each disk according to diskInfo
-    for (let i = 0; i < diskInfo.length; i++) {
-      const info = diskInfo[i];
-      let cx = 100 + 170 * info.peg;
-      let cy = 400 - 30 * info.y;
-      const w = 60 + 100 * (info.i) / this.paxi.hanoi.size;
-      const h = 20;
-      const n = this.paxi.hanoi.size;
-      if (info.selected) {
-        cy = 100;
-      }
-      if (this.disks[i]) {
-        let params = {
-          size: [w, h],
-          center: [cx, cy],
-        };
-        this.uxe._setSize(this.disks[i], params);
-        console.log(`${JSON.stringify(params)}, ${JSON.stringify(info)}`);
+      else {
+        this._doChunk(chunk.value);
       }
     }
   }
 
-  _redraw() {
+  _doChunk(chunk) {
+    if (chunk.action) {
+      let func = `_onAction_${chunk.action}`;
+      if (typeof this[func] === 'function') {
+        this[func](chunk);
+        return;
+      }
+      this._onAction_error(`No such action: ${func}`);
+      return;
+    }
+    this._onAction_error(chunk);
+  }
+
+  _onAction_error(chunk) {
+    console.log(`Error action: ${JSON.stringify(chunk)}`);
+  }
+
+  _onAction_move(chunk) {
+    let from = chunk.fromPeg;
+    let to = chunk.toPeg;
+    let diskIndex = this.paxi.hanoi.pegs[to][this.paxi.hanoi.pegs[to].length - 1];
+    let y = this.paxi.hanoi.pegs[to].length - 1;
+    let position = this._getPosition(to, y, false);
+    this.disks[diskIndex].update({ position });
+  }
+
+  _onAction_select(chunk) {
+    let peg = chunk.peg;
+    let diskIndex = this.paxi.hanoi.pegs[peg][this.paxi.hanoi.pegs[peg].length - 1];
+    let y = this.paxi.hanoi.pegs[peg].length - 1;
+    let fromPosition = this._getPosition(peg, y, false);
+    let toPosition = this._getPosition(peg, y, true);
+    this.tweener.add(this.disks[diskIndex], {
+      from: fromPosition,
+      to: toPosition,
+    });
+  }
+
+  _onAction_deselect(chunk) {
+    let peg = chunk.peg;
+    let diskIndex = this.paxi.hanoi.pegs[peg][this.paxi.hanoi.pegs[peg].length - 1];
+    let y = this.paxi.hanoi.pegs[peg].length - 1;
+    let fromPosition = this._getPosition(peg, y, true);
+    let toPosition = this._getPosition(peg, y, false);
+    this.tweener.add(this.disks[diskIndex], {
+      from: fromPosition,
+      to: toPosition,
+    });
+  }
+
+  _setup() {
     this.uxe = new UxElement(this.background);
 
     this.overlay.innerHTML = '';
     this._makePegs();
     this._makeControls();
     this._makeInfo();
+  }
 
-    this._update();
+  _getPosition(peg, height, selected) {
+    let cx = 100 + 170 * peg;
+    let cy = 400 - 30 * height;
+    if (selected) {
+      cy = 100;
+    }
+    return [cx, cy];
   }
 
   _makeInfo() {
@@ -126,48 +160,41 @@ export default class View {
       });
     }
 
-    this.pegLines = [];
-    for (let i = 0; i < 3; i++) {
-      const row = document.createElement('div');
-      row.style.display = 'flex';
-      row.style.alignItems = 'center';
-      row.style.gap = '0.5em';
-
-      const line = document.createElement('div');
-      line.textContent = '';
-      row.appendChild(line);
-      this.pegLines.push(line);
-
-      this.overlay.appendChild(row);
-    }
-
     this.disks = [];
     let n = this.paxi.hanoi.size;
-    for (let i = 0; i < n; i++) {
-      const disk = this.uxe.disk({
-        position: [200, 300 - i * 30],
-        index: i,
-        n,
-      });
-      this.disks.push(disk);
+    for (let pegIndex = 0; pegIndex < 3; pegIndex++) {
+      const peg = this.paxi.hanoi.pegs[pegIndex];
+      for (let y = 0; y < peg.length; y++) {
+        let i = peg[y];
+        let position = this._getPosition(pegIndex, y, false);
+        const disk = this.uxe.disk({
+          position,
+          index: i,
+          n,
+        });
+        this.disks[i] = disk;
+      }
     }
   }
 
   _makeControls() {
     let button1 = this.uxe.button({
-      center: [140, 640],
+      position: [140, 640],
+      centered: true,
       onclick: () => this._onResize(-1),
       text: '-',
     });
     this.overlay.appendChild(button1);
     let button2 = this.uxe.button({
-      center: [260, 640],
+      position: [260, 640],
+      centered: true,
       onclick: () => this._onResize(1),
       text: '+',
     });
     this.overlay.appendChild(button2);
     let button3 = this.uxe.button({
-      center: [380, 640],
+      position: [380, 640],
+      centered: true,
       onclick: () => this._onReset(),
       text: '↺',
     });
@@ -175,18 +202,19 @@ export default class View {
   }
 
   _onResize(delta) {
-    this.paxi.onSetSize(this.paxi.hanoi.size + delta);
+    this.paxi.systemSize(this.paxi.hanoi.size + delta);
   }
 
   _onReset() {
-    if (this.paxi && typeof this.paxi.onNewGame === 'function') {
-      this.paxi.onNewGame();
-    }
+    this.paxi.systemNewGame();
   }
 
   _onTap(peg) {
-    this.paxi.onTap(peg);
-    this._update();
+    this._doPaxiCommand('tap', { peg });
   }
 
+  _doPaxiCommand(command, params) {
+    this.paxiChunks = this.paxi.doCommand(command, params);
+    this.paused = true;
+  }
 }
