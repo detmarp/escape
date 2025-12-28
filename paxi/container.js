@@ -70,7 +70,6 @@ export default class Container {
     this.childRect.style.height = 'calc(500px * var(--scale))';
     this.childRect.style.left = 'calc(20px * var(--scale))';
     this.childRect.style.top = 'calc(20px * var(--scale))';
-    console.log(`sss ${width}x${height} scale=${scale} ${this.logicalW}x${this.logicalH}`);
   }
 
   work() {

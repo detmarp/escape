@@ -48,7 +48,11 @@ export default class Flower {
     return anim;
   }
 
-  killAnim(anim) {
+  endAnim(anim) {
+    if (!anim.kill && !anim.dead) {
+      let t = 1;
+      this._stepT(anim, t);
+    }
   }
 
   _step(anim, dt) {
@@ -56,14 +60,18 @@ export default class Flower {
       return;
     }
 
-    let state = anim.state;
     let duration = anim.duration || 1;
     anim.age = (anim.age || 0) + dt;
     let t = (anim.age / duration);
+    this._stepT(anim, t);
+  }
+
+  _stepT(anim, t) {
     if (t >= 1) {
       anim.kill = true;
       t = 1;
     }
+    let state = anim.state;
     state.t = t;
     let f = (typeof anim.f === 'function') ? anim.f(t) : () => t;
     let v = f(t);

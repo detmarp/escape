@@ -55,7 +55,9 @@ export default class Paxi {
       let peg = params.peg;
       if (peg >= 0 && peg < this.hanoi.pegs.length) {
         if (this.selected) {
+          // a disk is already selected
           let fromPeg = this.selected.peg;
+          // either move it...
           if (this.hanoi.canMove(fromPeg, peg)) {
             this.hanoi.doMove(fromPeg, peg);
             this.selected = null;
@@ -63,15 +65,18 @@ export default class Paxi {
             yield* this._doResult({ action: 'move', fromPeg, toPeg: peg });
             return;
           }
+          // ...or deselect it
           else {
             yield* this._error({ message: `Cannot move from peg ${fromPeg} to peg ${peg}` });
             this.selected = null;
-            yield* this._doResult({ action: 'deselect', peg });
+            yield* this._doResult({ action: 'deselect', peg: fromPeg });
             return;
           }
         }
         else {
+          // nothing currently selected
           if(this.hanoi.canSelect(peg)) {
+            // select this peg
             this.selected = peg;
             this.selected = {
               peg,

@@ -36,6 +36,7 @@ export default class View {
     this.fx.style.pointerEvents = 'none';
 
     this.tweener = new Tweener();
+    this.tweener.debug = true;
 
     this.paxi = paxi;
     this.n = 0;
@@ -91,8 +92,13 @@ export default class View {
     let to = chunk.toPeg;
     let diskIndex = this.paxi.hanoi.pegs[to][this.paxi.hanoi.pegs[to].length - 1];
     let y = this.paxi.hanoi.pegs[to].length - 1;
-    let position = this._getPosition(to, y, false);
-    this.disks[diskIndex].update({ position });
+    let fromPosition = this._getPosition(from, y - 1, true);
+    let toPosition = this._getPosition(to, y, false);
+    this.tweener.add(this.disks[diskIndex], {
+      duration: 0.15,
+      from: fromPosition,
+      to: toPosition,
+    });
   }
 
   _onAction_select(chunk) {
@@ -102,6 +108,7 @@ export default class View {
     let fromPosition = this._getPosition(peg, y, false);
     let toPosition = this._getPosition(peg, y, true);
     this.tweener.add(this.disks[diskIndex], {
+      duration: 0.15,
       from: fromPosition,
       to: toPosition,
     });
@@ -114,6 +121,7 @@ export default class View {
     let fromPosition = this._getPosition(peg, y, true);
     let toPosition = this._getPosition(peg, y, false);
     this.tweener.add(this.disks[diskIndex], {
+      duration: 0.15,
       from: fromPosition,
       to: toPosition,
     });
