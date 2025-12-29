@@ -2,7 +2,22 @@ export default class Flower {
   constructor(parent, scale) {
     this.anims = [];
     this.id = 0;
+    this.easing = {
+      linear: (t) => t,
+      overshootOut: (t) => {
+        const s = 1.70158;
+        return --t * t * ((s + 1) * t + s) + 1;
+      },
+      easeOutBounce: (t) => {
+        if (t < 0.6) {
+          return 2.7778 * t * t;
+        } else {
+          return 3.75 * (t - 0.8) ** 2 + 0.85;
+        }
+      },
+    };
   }
+
 
   work(dt) {
     let now = Date.now();
@@ -73,7 +88,18 @@ export default class Flower {
     }
     let state = anim.state;
     state.t = t;
-    let f = (typeof anim.f === 'function') ? anim.f(t) : () => t;
+
+    let f;
+    if (typeof anim.f === 'function') {
+      f = anim.f;
+    }
+    else {
+      f = this.easing[anim.easing];
+    }
+    if (!f) {
+      f = (t) => t;
+    }
+
     let v = f(t);
     state.v = v;
     if (typeof anim.callback === 'function') {

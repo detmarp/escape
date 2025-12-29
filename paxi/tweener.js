@@ -12,28 +12,37 @@ export default class Tweener {
     if (this.debug) {
       console.log(`Tweener add: ${JSON.stringify(params)}`);
     }
-    let id = this.id++;
-    if (element.tweenerId != null) {
-      let tween = this.tweens[element.tweenerId];
-      if (tween) {
-        this._kill(tween);
-      }
-      delete this.tweens[element.tweenerId];
-    }
+
+    this._checkEndElement(element);
+
+    let callback = params.callback ||
+      // default position tween callback
+      ((state) => {
+        let u = state.v;
+        let ux = u;
+        let uy = u;
+        if (params.ufx) {
+          ux = params.ufx(state.v);
+        }
+        if (params.ufy) {
+          uy = params.ufy(state.v);
+        }
+        let p = [
+          params.from[0] + (params.to[0] - params.from[0]) * ux,
+          params.from[1] + (params.to[1] - params.from[1]) * uy,
+        ];
+        element.update({ position: p });
+      });
+
     if (params.from && params.to) {
       let flow = this.flower.addAnim(null, {
+        easing: params.easing,
         duration: params.duration || 0.5,
         from: params.from,
         to: params.to,
-        callback: (state) => {
-          let t = state.v;
-          let p = [
-            params.from[0] + (params.to[0] - params.from[0]) * t,
-            params.from[1] + (params.to[1] - params.from[1]) * t,
-          ];
-          element.update({ position: p });
-        }
+        callback,
       });
+      let id = this.id++;
       let tween = {
         flow,
         id,
@@ -58,6 +67,16 @@ export default class Tweener {
       if (tween.flow.dead) {
         this._kill(tween);
       }
+    }
+  }
+
+  _checkEndElement(element) {
+    if (element.tweenerId != null) {
+      let tween = this.tweens[element.tweenerId];
+      if (tween) {
+        this._kill(tween);
+      }
+      delete this.tweens[element.tweenerId];
     }
   }
 

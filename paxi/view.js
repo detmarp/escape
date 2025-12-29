@@ -40,6 +40,7 @@ export default class View {
 
     this.paxi = paxi;
     this.n = 0;
+    this.tweenDuration = 0.30;
 
     this._setup();
   }
@@ -95,9 +96,25 @@ export default class View {
     let fromPosition = this._getPosition(from, y - 1, true);
     let toPosition = this._getPosition(to, y, false);
     this.tweener.add(this.disks[diskIndex], {
-      duration: 0.15,
+      duration: this.tweenDuration,
       from: fromPosition,
       to: toPosition,
+      easing: 'linear',
+      ufx: (v) => Math.max(0, Math.min(1, v * 2)),
+      ufy: (v) => {
+        if (v < 0.5) {
+          // anticipation undershoot
+          const V = v * 2;
+          const s = 4.0;
+          return 0.5 * (V * V * ((s + 1) * V - s));
+        }
+        const V = (v - 0.5) * 2;
+        if (V < 0.75) {
+          return 0.5 + 0.888 * V * V;
+        }
+        // bounce
+        return 1.0 - 2.4 * (V - 0.75) * (1.0 - V);
+      },
     });
   }
 
@@ -108,9 +125,10 @@ export default class View {
     let fromPosition = this._getPosition(peg, y, false);
     let toPosition = this._getPosition(peg, y, true);
     this.tweener.add(this.disks[diskIndex], {
-      duration: 0.15,
+      duration: this.tweenDuration,
       from: fromPosition,
       to: toPosition,
+      easing: 'overshootOut',
     });
   }
 
@@ -121,9 +139,10 @@ export default class View {
     let fromPosition = this._getPosition(peg, y, true);
     let toPosition = this._getPosition(peg, y, false);
     this.tweener.add(this.disks[diskIndex], {
-      duration: 0.15,
+      duration: this.tweenDuration,
       from: fromPosition,
       to: toPosition,
+      easing: 'easeOutBounce',
     });
   }
 
