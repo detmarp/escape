@@ -6,6 +6,9 @@
 
 ## Links
 
+- [2026/astra](2026/astra/)
+- [2026/boreal](2026/boreal/)
+
 - [Arwen](arwen/)
 - [Bryn](bryn/)
 - [Cira](cira/)
