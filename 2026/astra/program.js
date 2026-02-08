@@ -1,9 +1,12 @@
 import Astra from './astra.js';
 
 export default class Program {
-  constructor(title = 'Paxi') {
-    let astra = new Astra(title);
-    astra.init();
+  constructor(parent = document.body) {
+    this.parent = parent;
+    const title = 'Astra';
+    let astra = new Astra();
+    astra.setTitle(title);
+    astra.setFixedFullscreen();
   }
 
   run() {

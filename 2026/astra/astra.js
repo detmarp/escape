@@ -1,11 +1,25 @@
 export default class Astra {
-  constructor(title = 'Paxi') {
-    this.title = title;
+  constructor() {
+    this.title = document.title;
+    this._original = null;
+    this._styleTap = null;
+    this._listeners = [];
+    this._fullscreenActive = false;
   }
-  init() {
-    // Set document title
-    document.title = this.title;
-    // Set styles directly via JS
+
+  setTitle(title) {
+    this.title = title;
+    document.title = title;
+  }
+
+  setFixedFullscreen() {
+    if (this._fullscreenActive) return;
+    this._fullscreenActive = true;
+    // Save original state
+    this._original = {
+      docStyles: { ...document.documentElement.style },
+      bodyStyles: { ...document.body.style }
+    };
     Object.assign(document.documentElement.style, {
       height: '100%',
       boxSizing: 'border-box',
@@ -32,9 +46,9 @@ export default class Astra {
       position: 'relative',
     });
     // Remove tap highlight on mobile for a and button
-    const styleTap = document.createElement('style');
-    styleTap.textContent = `a, button { -webkit-tap-highlight-color: transparent; }`;
-    document.head.appendChild(styleTap);
+    this._styleTap = document.createElement('style');
+    this._styleTap.textContent = `a, button { -webkit-tap-highlight-color: transparent; }`;
+    document.head.appendChild(this._styleTap);
     // Set styles for all elements
     const all = document.querySelectorAll('*');
     all.forEach(el => {
@@ -45,10 +59,33 @@ export default class Astra {
       el.style.msTouchAction = 'none';
     });
     // Prevent iOS pinch/double-tap zoom and context menu
-    ['gesturestart', 'gesturechange', 'gestureend', 'contextmenu'].forEach(function(type) {
-      document.addEventListener(type, function(e) {
-        e.preventDefault();
-      }, { passive: false });
+    ['gesturestart', 'gesturechange', 'gestureend', 'contextmenu'].forEach(type => {
+      const fn = e => e.preventDefault();
+      document.addEventListener(type, fn, { passive: false });
+      this._listeners.push({ type, fn });
     });
+  }
+
+  reset() {
+    if (!this._fullscreenActive) return;
+    this._fullscreenActive = false;
+    // Restore document styles
+    if (this._original && this._original.docStyles) {
+      Object.assign(document.documentElement.style, this._original.docStyles);
+    }
+    if (this._original && this._original.bodyStyles) {
+      Object.assign(document.body.style, this._original.bodyStyles);
+    }
+    // Remove styleTap
+    if (this._styleTap && this._styleTap.parentNode) {
+      this._styleTap.parentNode.removeChild(this._styleTap);
+      this._styleTap = null;
+    }
+    // Remove event listeners
+    this._listeners.forEach(({ type, fn }) => {
+      document.removeEventListener(type, fn, { passive: false });
+    });
+    this._listeners = [];
+    this._original = null;
   }
 }
