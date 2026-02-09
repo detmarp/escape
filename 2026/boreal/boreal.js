@@ -8,22 +8,14 @@ export default class Boreal {
     Object.assign(document.documentElement.style, {
       WebkitTextSizeAdjust: '100%',
       msTextSizeAdjust: '100%',
-      overflow: scrollable ? 'auto' : 'hidden',
     });
     Object.assign(document.body.style, {
       fontFamily: 'sans-serif',
       fontSize: '16px',
       lineHeight: '1.6',
       margin: '0',
-      height: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      position: 'fixed',
-      width: '100%',
-      top: '0',
-      left: '0',
-      overflowY: scrollable ? 'auto' : 'hidden',
-      WebkitOverflowScrolling: scrollable ? 'touch' : '',
+      padding: '0',
+      overflow: 'hidden',
     });
     const css = `
       .header {

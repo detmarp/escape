@@ -25,8 +25,8 @@ export default class ScreenMain {
     new Boreal(root);
 
     root.style.textAlign = 'left';
-    root.style.margin = '2em 0 0 2em';
-    root.style.maxHeight = '100vh';
+    root.style.padding = '2em';
+    root.style.height = '100vh';
     root.style.overflowY = 'auto';
     root.style.WebkitOverflowScrolling = 'touch';
     root.style.boxSizing = 'border-box';
