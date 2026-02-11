@@ -15,7 +15,6 @@ export default class Boreal {
       lineHeight: '1.6',
       margin: '0',
       padding: '0',
-      overflow: 'hidden',
     });
     const css = `
       .header {
@@ -48,9 +47,7 @@ export default class Boreal {
       .scroll-area {
         height: 100%;
         overflow-y: auto;
-        padding: 16px;
         box-sizing: border-box;
-        -webkit-overflow-scrolling: touch;
       }
       /* Hide scrollbar for Chrome, Safari and Opera */
       body::-webkit-scrollbar {

@@ -37,8 +37,3 @@ export default class Program {
     }
   }
 }
-
-// Example usage
-new Astra('Boreal').setFixedFullscreen();
-const app = new Program();
-app.run();

@@ -26,9 +26,6 @@ export default class ScreenMain {
 
     root.style.textAlign = 'left';
     root.style.padding = '2em';
-    root.style.height = '100vh';
-    root.style.overflowY = 'auto';
-    root.style.WebkitOverflowScrolling = 'touch';
     root.style.boxSizing = 'border-box';
 
     root.appendChild(this._element('h1', 'Heading 1'));
