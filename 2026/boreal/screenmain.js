@@ -4,84 +4,94 @@ export default class ScreenMain {
   constructor(parent = document.body, params = {}) {
     this.parent = parent;
     this.params = params;
-    this.root = this._render(params.goto);
+    this.previewScreens = [];
+    this.root = this._render();
     this.parent.appendChild(this.root);
   }
 
-  _panel(label, onClick) {
-    const panel = document.createElement('div');
-    panel.style.width = '400px';
-    panel.style.maxWidth = '95vw';
-    panel.style.height = '100px';
-    panel.style.border = '1px solid #bbb';
-    panel.style.background = '#fafafa';
-    panel.textContent = label;
-    if (onClick) panel.onclick = onClick;
+  init() {
+    for (const screen of this.previewScreens) {
+      if (typeof screen.init === 'function') {
+        screen.init();
+      }
+    }
+  }
+
+  term() {
+    for (const screen of this.previewScreens) {
+      if (typeof screen.term === 'function') {
+        screen.term();
+      }
+    }
+  }
+
+  _panel(name, config, onClick) {
+    const panel = this._makeLayer0();
+    const preview = this._makeLayer1(panel);
+    const baseParams = { program: this.params.program };
+    const previewParams = { ...baseParams, ...(config.params || {}), nooverlay: true };
+    console.log(`Preview for ${name}:`, previewParams);
+    const screenInstance = new config.class(preview, previewParams);
+    this.previewScreens.push(screenInstance);
+    this._makeLayer2(panel, onClick);
     return panel;
   }
 
-  _render(goto) {
+  _makeLayer0() {
+    // Layer 0: Parent container (sets size)
+    const panel = document.createElement('div');
+    panel.style.width = '90%';
+    panel.style.maxWidth = '95vw';
+    panel.style.height = '150px';
+    panel.style.border = '1px solid #bbb';
+    panel.style.position = 'relative';
+    panel.style.overflow = 'hidden';
+    panel.style.background = '#fafafa';
+    return panel;
+  }
+
+  _makeLayer1(parent) {
+    // Layer 1: Preview container (matches parent bounds)
+    const preview = document.createElement('div');
+    preview.style.position = 'absolute';
+    preview.style.top = '0';
+    preview.style.left = '0';
+    preview.style.width = '100%';
+    preview.style.height = '100%';
+    preview.style.pointerEvents = 'none';
+    parent.appendChild(preview);
+    return preview;
+  }
+
+  _makeLayer2(parent, onClick) {
+    // Layer 2: Overlay button (catches clicks)
+    const overlay = document.createElement('div');
+    overlay.style.position = 'absolute';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.cursor = 'pointer';
+    overlay.style.background = 'transparent';
+    if (onClick) overlay.onclick = onClick;
+    parent.appendChild(overlay);
+    return overlay;
+  }
+
+  _render() {
     const root = document.createElement('div');
-    new Boreal(root);
 
     root.style.textAlign = 'left';
     root.style.padding = '2em';
     root.style.boxSizing = 'border-box';
 
-    root.appendChild(this._element('h1', 'Heading 1'));
-    root.appendChild(this._element('h2', 'Heading 2'));
+    root.appendChild(this._element('h1', 'Boreal Screens'));
 
-    root.appendChild(this._element('p', 'aaa'));
-    root.appendChild(this._element('p', 'bbb'));
-    root.appendChild(this._element('p', 'ccc'));
-
-    let label1 = this._element(null, '');
-    root.appendChild(label1);
-
-    root.appendChild(this._button('Button 1', () => {
-      label1.textContent = 'Button 1 clicked';
-    }));
-    root.appendChild(this._button('Button 2', () => {
-      label1.textContent = 'Button 2 clicked';
-    }));
-
-    root.appendChild(this._panel('Go to HTML Screen', () => goto && goto('html')));
-    root.appendChild(this._panel('Go to DOM Screen', () => goto && goto('dom')));
-    root.appendChild(this._panel('Go to Canvas Screen', () => goto && goto('canvas')));
-    root.appendChild(this._panel('Go to 3D Screen', () => goto && goto('threed')));
-
-    let jabberwock = [
-      `Twas brillig, and the slithy toves
-Did gyre and gimble in the wabe;
-All mimsy were the borogoves,
-And the mome raths outgrabe.`,
-      `Beware the Jabberwock, my son!
-The jaws that bite, the claws that catch!
-Beware the Jubjub bird, and shun
-The frumious Bandersnatch!`,
-      `He took his vorpal sword in hand;
-Long time the manxome foe he sought—
-So rested he by the Tumtum tree,
-And stood awhile in thought.`,
-      `And, as in uffish thought he stood,
-The Jabberwock, with eyes of flame,
-Came whiffling through the tulgey wood,
-And burbled as it came!`,
-      `One, two! One, two! And through and through
-The vorpal blade went snicker-snack!
-He left it dead, and with its head
-He went galumphing back.`,
-      `And hast thou slain the Jabberwock?
-Come to my arms, my beamish boy!
-O frabjous day! Callooh! Callay!'
-He chortled in his joy.`,
-      `'Twas brillig, and the slithy toves
-Did gyre and gimble in the wabe;
-All mimsy were the borogoves,
-And the mome raths outgrabe.`,
-    ];
-    for (let line of jabberwock) {
-      root.appendChild(this._element('p', line));
+    const screens = this.params.program.screens;
+    for (const [name, config] of Object.entries(screens)) {
+      if (name !== 'main') {
+        root.appendChild(this._panel(name, config, () => this.params.program.goto(name)));
+      }
     }
 
     return root;

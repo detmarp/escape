@@ -42,12 +42,15 @@ export default class ScreenHtml {
 
   _render() {
     this.root = document.createElement('div');
-    this.boreal = new Boreal(this.root);
+
+    if (!this.params.nostyle) {
+      this.boreal = new Boreal(this.root);
+    }
     this.parent.appendChild(this.root);
 
     if (!this.params.nooverlay) {
       const homeButton = this._element('button', '< Home');
-      homeButton.onclick = () => this.params.goto('main');
+      homeButton.onclick = () => this.params.program.goto('main');
     }
 
     this._element('h1', 'html');

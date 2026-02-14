@@ -2,8 +2,16 @@ class ScreenCanvas {
   constructor(parent = document.body, params = {}) {
     this.parent = parent;
     this.params = params;
-    this.root = this._render(params.goto);
+    this.root = this._render();
     this.parent.appendChild(this.root);
+  }
+
+  init() {
+    // No initialization needed for static screen
+  }
+
+  term() {
+    // No cleanup needed for static screen
   }
 
   _panel(label, onClick) {
@@ -18,7 +26,7 @@ class ScreenCanvas {
     return panel;
   }
 
-  _render(goto) {
+  _render() {
     const root = document.createElement('div');
     root.style.textAlign = 'left';
     root.style.margin = '2em 0 0 2em';
@@ -28,7 +36,7 @@ class ScreenCanvas {
     title.style.marginBottom = '2em';
     root.appendChild(title);
 
-    root.appendChild(this._panel('< main', () => goto && goto('main')));
+    root.appendChild(this._panel('< main', () => this.params.program && this.params.program.goto('main')));
 
     return root;
   }

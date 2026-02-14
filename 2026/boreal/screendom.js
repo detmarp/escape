@@ -2,7 +2,7 @@ export default class ScreenDom {
   constructor(parent = document.body, params = {}) {
     this.parent = parent;
     this.params = params;
-    this.root = this._render(params.goto);
+    this.root = this._render();
     this.parent.appendChild(this.root);
     this._running = false;
     this._rafId = null;
@@ -44,7 +44,7 @@ export default class ScreenDom {
     return panel;
   }
 
-  _render(goto) {
+  _render() {
     const root = document.createElement('div');
     root.style.textAlign = 'left';
     root.style.margin = '2em 0 0 2em';

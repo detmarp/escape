@@ -17,6 +17,12 @@ export default class Boreal {
     });
     this.parent.classList.add('boreal');
     const css = `
+      .boreal > * {
+        margin-bottom: 2px;
+      }
+      .boreal > *:last-child {
+        margin-bottom: 0;
+      }
       .header {
         padding: 16px;
         border-bottom: 1px solid #ccc;
@@ -61,17 +67,6 @@ export default class Boreal {
       .text-line {
         margin-bottom: 8px;
         padding: 4px 0;
-      }
-      .clear-button {
-        position: fixed;
-        bottom: 16px;
-        right: 16px;
-        background: #d73a49;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        z-index: 100;
-      }
-      .clear-button:hover {
-        background: #cb2431;
       }
     `;
     const style = document.createElement('style');

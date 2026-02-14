@@ -6,27 +6,29 @@ import screenCanvas from './screencanvas.js';
 import screenThreed from './screenthreed.js';
 
 export default class Program {
+  screens = {
+    'main': { class: screenMain, params: { hello: 'there' } },
+    'html2': { class: screenHtml, params: { nostyle: true } },
+    'html': { class: screenHtml },
+    'dom': { class: screenDom },
+    'canvas': { class: screenCanvas },
+    'threed': { class: screenThreed },
+  };
+
   constructor(root = document.body) {
     this.root = root;
     this.current = null;
   }
 
   run() {
-    this.goto('html');
+    this.goto('main');
   }
 
   goto(name) {
-    const screens = {
-      'main': { class: screenMain, params: { hello: 'there' } },
-      'html': { class: screenHtml },
-      'dom': { class: screenDom },
-      'canvas': { class: screenCanvas },
-      'threed': { class: screenThreed },
-    };
     const baseParams = {
-      goto: this.goto.bind(this),
+      program: this,
     };
-    const screen = screens[name];
+    const screen = this.screens[name];
     if (screen) {
       const params = { ...baseParams, ...(screen.params || {}) };
       this._gotoScreen(screen.class, params);
