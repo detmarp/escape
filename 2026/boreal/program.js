@@ -1,6 +1,7 @@
 import Astra from '../astra/astra.js';
 import screenMain from './screenmain.js';
 import screenDom from './screendom.js';
+import screenHtml from './screenhtml.js';
 import screenCanvas from './screencanvas.js';
 import screenThreed from './screenthreed.js';
 
@@ -11,29 +12,38 @@ export default class Program {
   }
 
   run() {
-    this.goto('main');
+    this.goto('html');
   }
 
-  goto(screen) {
-    let params = {
+  goto(name) {
+    const screens = {
+      'main': { class: screenMain, params: { hello: 'there' } },
+      'html': { class: screenHtml },
+      'dom': { class: screenDom },
+      'canvas': { class: screenCanvas },
+      'threed': { class: screenThreed },
+    };
+    const baseParams = {
       goto: this.goto.bind(this),
     };
-    if (screen == 'main') {
-      this.root.innerHTML = '';
-      const mainScreen = new screenMain(this.root, params);
+    const screen = screens[name];
+    if (screen) {
+      const params = { ...baseParams, ...(screen.params || {}) };
+      this._gotoScreen(screen.class, params);
     }
-    else if (screen == 'dom') {
-      this.root.innerHTML = '';
-      const domScreen = new screenDom(this.root, params);
-      domScreen.init();
+  }
+
+  _gotoScreen(className, params) {
+    if (this.current) {
+      if (typeof this.current.term === 'function') {
+        this.current.term();
+      }
+      this.current = null;
     }
-    else if (screen == 'canvas') {
-      this.root.innerHTML = '';
-      const canvasScreen = new screenCanvas(this.root, params);
-    }
-    else if (screen == 'threed') {
-      this.root.innerHTML = '';
-      const threedScreen = new screenThreed(this.root, params);
+    this.root.innerHTML = '';
+    this.current = new className(this.root, params);
+    if (typeof this.current.init === 'function') {
+      this.current.init();
     }
   }
 }

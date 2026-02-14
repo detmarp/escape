@@ -45,6 +45,7 @@ export default class ScreenMain {
       label1.textContent = 'Button 2 clicked';
     }));
 
+    root.appendChild(this._panel('Go to HTML Screen', () => goto && goto('html')));
     root.appendChild(this._panel('Go to DOM Screen', () => goto && goto('dom')));
     root.appendChild(this._panel('Go to Canvas Screen', () => goto && goto('canvas')));
     root.appendChild(this._panel('Go to 3D Screen', () => goto && goto('threed')));

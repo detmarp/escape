@@ -5,24 +5,24 @@ export default class Boreal {
   }
 
   _setup(scrollable) {
-    Object.assign(document.documentElement.style, {
+    Object.assign(this.parent.style, {
       WebkitTextSizeAdjust: '100%',
       msTextSizeAdjust: '100%',
-    });
-    Object.assign(document.body.style, {
       fontFamily: 'sans-serif',
       fontSize: '16px',
       lineHeight: '1.6',
       margin: '0',
       padding: '0',
+      whiteSpace: 'pre-wrap',
     });
+    this.parent.classList.add('boreal');
     const css = `
       .header {
         padding: 16px;
         border-bottom: 1px solid #ccc;
         flex-shrink: 0;
       }
-      button {
+      .boreal button {
         font-size: 16px;
         padding: 12px 24px;
         color: white;
@@ -36,7 +36,7 @@ export default class Boreal {
         user-select: none;
         background: #007acc;
       }
-      button:hover {
+      .boreal button:hover {
         background: #005a9e;
       }
       .container {
