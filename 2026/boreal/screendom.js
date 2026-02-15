@@ -1,4 +1,3 @@
-import Astra from '../astra/astra.js';
 import Boreal from './boreal.js';
 
 export default class ScreenDom {
@@ -12,10 +11,6 @@ export default class ScreenDom {
   }
 
   init() {
-    if (!this.params.demomode) {
-      this.astra = new Astra('DOM Screen');
-      this.astra.setFixedFullscreen();
-    }
     this._loop();
   }
 
@@ -23,10 +18,6 @@ export default class ScreenDom {
     if (this._rafId) {
       cancelAnimationFrame(this._rafId);
       this._rafId = null;
-    }
-    if (this.astra) {
-      this.astra.reset();
-      this.astra = null;
     }
     if (this.root) {
       this.root.style.background = '';

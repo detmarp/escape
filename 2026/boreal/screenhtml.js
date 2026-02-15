@@ -87,7 +87,26 @@ Did gyre and gimble in the wabe;
 All mimsy were the borogoves,
 And the mome raths outgrabe.`,
     ];
+    this._element('h2', 'html');
     for (let line of jabberwock) {
+      this._element('p', line);
+    }
+
+    let pooh = [
+      `"Owl," said Christopher Robin, "I am going to give a party."`,
+      `"You are, are you?" said Owl.`,
+      `"And it's to be a special sort of party, because it's because of what Pooh did when he did what he did to save Piglet from the flood."`,
+      `"Oh, that's what it's for, is it?" said Owl.`,
+      `"Yes, so will you tell Pooh as quickly as you can, and all the others, because it will be to-morrow."`,
+      `"Oh, it will, will it?" said Owl, still being as helpful as possible.`,
+      `"So will you go and tell them, Owl?"`,
+      `Owl tried to think of something very wise to say, but couldn't, so he flew off to tell the others. And the first person he told was Pooh.`,
+      `"Pooh," he said, "Christopher Robin is giving a party."`,
+      `"Oh!" said Pooh. And then seeing that Owl expected him to say something else, he said "Will there be those little cake things with pink sugar icing?"`,
+      `Owl felt that it was rather beneath him to talk about little cake things with pink sugar icing, so he told Pooh exactly what Christopher Robin had said, and flew off to Eeyore.`,
+    ];
+    this._element('h2', 'Winnie-the-Pooh');
+    for (let line of pooh) {
       this._element('p', line);
     }
 

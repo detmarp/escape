@@ -42,8 +42,28 @@ export default class Program {
       }
       this.current = null;
     }
+
+    // Clean up Astra if it exists
+    if (this.astra) {
+      this.astra.reset();
+      this.astra = null;
+    }
+
     this.root.innerHTML = '';
-    this.current = new className(this.root, params);
+
+    // Always create a screenRoot div
+    const screenRoot = document.createElement('div');
+    screenRoot.style.width = '100%';
+    screenRoot.style.height = '100%';
+    this.root.appendChild(screenRoot);
+
+    // Apply Astra if requested
+    if (params.astra) {
+      this.astra = new Astra('Screen');
+      this.astra.setFixedFullscreen();
+    }
+
+    this.current = new className(screenRoot, params);
     if (typeof this.current.init === 'function') {
       this.current.init();
     }

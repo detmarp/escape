@@ -1,5 +1,3 @@
-import Astra from '../astra/astra.js';
-
 class ScreenCanvas {
   constructor(parent = document.body, params = {}) {
     this.parent = parent;
@@ -9,17 +7,11 @@ class ScreenCanvas {
   }
 
   init() {
-    if (!this.params.demomode) {
-      this.astra = new Astra('Canvas Screen');
-      this.astra.setFixedFullscreen();
-    }
+    // No initialization needed for static screen
   }
 
   term() {
-    if (this.astra) {
-      this.astra.reset();
-      this.astra = null;
-    }
+    // No cleanup needed for static screen
   }
 
   _panel(label, onClick) {

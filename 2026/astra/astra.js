@@ -20,6 +20,21 @@ export default class Astra {
       docStyles: { ...document.documentElement.style },
       bodyStyles: { ...document.body.style }
     };
+
+    // Store elements and their original styles
+    this._styledElements = [];
+    const all = document.querySelectorAll('*');
+    all.forEach(el => {
+      this._styledElements.push({
+        element: el,
+        originalBoxSizing: el.style.boxSizing,
+        originalUserSelect: el.style.userSelect,
+        originalWebkitUserSelect: el.style.WebkitUserSelect,
+        originalTouchAction: el.style.touchAction,
+        originalMsTouchAction: el.style.msTouchAction,
+      });
+    });
+
     Object.assign(document.documentElement.style, {
       height: '100%',
       boxSizing: 'border-box',
@@ -50,7 +65,6 @@ export default class Astra {
     this._styleTap.textContent = `a, button { -webkit-tap-highlight-color: transparent; }`;
     document.head.appendChild(this._styleTap);
     // Set styles for all elements
-    const all = document.querySelectorAll('*');
     all.forEach(el => {
       el.style.boxSizing = 'inherit';
       el.style.userSelect = 'none';
@@ -69,6 +83,7 @@ export default class Astra {
   reset() {
     if (!this._fullscreenActive) return;
     this._fullscreenActive = false;
+
     // Restore document styles
     if (this._original && this._original.docStyles) {
       Object.assign(document.documentElement.style, this._original.docStyles);
@@ -76,11 +91,25 @@ export default class Astra {
     if (this._original && this._original.bodyStyles) {
       Object.assign(document.body.style, this._original.bodyStyles);
     }
+
+    // Restore individual element styles
+    if (this._styledElements) {
+      this._styledElements.forEach(({ element, originalBoxSizing, originalUserSelect, originalWebkitUserSelect, originalTouchAction, originalMsTouchAction }) => {
+        element.style.boxSizing = originalBoxSizing;
+        element.style.userSelect = originalUserSelect;
+        element.style.WebkitUserSelect = originalWebkitUserSelect;
+        element.style.touchAction = originalTouchAction;
+        element.style.msTouchAction = originalMsTouchAction;
+      });
+      this._styledElements = null;
+    }
+
     // Remove styleTap
     if (this._styleTap && this._styleTap.parentNode) {
       this._styleTap.parentNode.removeChild(this._styleTap);
       this._styleTap = null;
     }
+
     // Remove event listeners
     this._listeners.forEach(({ type, fn }) => {
       document.removeEventListener(type, fn, { passive: false });
