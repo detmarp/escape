@@ -1,3 +1,5 @@
+import Astra from '../astra/astra.js';
+
 class ScreenThreed {
   constructor(parent = document.body, params = {}) {
     this.parent = parent;
@@ -7,11 +9,17 @@ class ScreenThreed {
   }
 
   init() {
-    // No initialization needed for static screen
+    if (!this.params.demomode) {
+      this.astra = new Astra('3D Screen');
+      this.astra.setFixedFullscreen();
+    }
   }
 
   term() {
-    // No cleanup needed for static screen
+    if (this.astra) {
+      this.astra.reset();
+      this.astra = null;
+    }
   }
 
   _panel(label, onClick) {

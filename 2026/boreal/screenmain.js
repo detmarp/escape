@@ -29,8 +29,7 @@ export default class ScreenMain {
     const panel = this._makeLayer0();
     const preview = this._makeLayer1(panel);
     const baseParams = { program: this.params.program };
-    const previewParams = { ...baseParams, ...(config.params || {}), nooverlay: true };
-    console.log(`Preview for ${name}:`, previewParams);
+    const previewParams = { ...baseParams, ...(config.params || {}), demomode: true };
     const screenInstance = new config.class(preview, previewParams);
     this.previewScreens.push(screenInstance);
     this._makeLayer2(panel, onClick);

@@ -1,24 +1,32 @@
+import Astra from '../astra/astra.js';
+import Boreal from './boreal.js';
+
 export default class ScreenDom {
   constructor(parent = document.body, params = {}) {
     this.parent = parent;
     this.params = params;
     this.root = this._render();
     this.parent.appendChild(this.root);
-    this._running = false;
     this._rafId = null;
     this._frame = 0;
   }
 
   init() {
-    this._running = true;
+    if (!this.params.demomode) {
+      this.astra = new Astra('DOM Screen');
+      this.astra.setFixedFullscreen();
+    }
     this._loop();
   }
 
   term() {
-    this._running = false;
     if (this._rafId) {
       cancelAnimationFrame(this._rafId);
       this._rafId = null;
+    }
+    if (this.astra) {
+      this.astra.reset();
+      this.astra = null;
     }
     if (this.root) {
       this.root.style.background = '';
@@ -26,36 +34,79 @@ export default class ScreenDom {
   }
 
   _loop() {
-    if (!this._running) return;
     this._frame++;
-    this.root.style.background = (this._frame % 2 === 0) ? 'red' : 'yellow';
+
+    // Update info display
+    if (this.infoDiv) {
+      const rect = this.root.getBoundingClientRect();
+      const size = `Size: ${Math.round(rect.width)}, ${Math.round(rect.height)}`;
+      const frame = `Frame: ${this._frame}`;
+      this.infoDiv.textContent = `${size}\n${frame}`;
+    }
+
     this._rafId = requestAnimationFrame(() => this._loop());
   }
 
-  _panel(label, onClick) {
-    const panel = document.createElement('div');
-    panel.style.width = '400px';
-    panel.style.maxWidth = '95vw';
-    panel.style.height = '100px';
-    panel.style.border = '1px solid #bbb';
-    panel.style.background = '#fafafa';
-    panel.textContent = label;
-    if (onClick) panel.onclick = onClick;
-    return panel;
+  _div0() {
+    const div = document.createElement('div');
+    div.style.width = '100%';
+    div.style.height = '100%';
+    div.style.position = 'relative';
+    return div;
+  }
+
+  _div1(parent) {
+    const div = document.createElement('div');
+    div.style.position = 'absolute';
+    div.style.top = '2px';
+    div.style.left = '2px';
+    div.style.right = '2px';
+    div.style.bottom = '2px';
+    div.style.background = '#e0e0e0';
+    div.style.border = '1px solid #666';
+    div.style.borderRadius = '4px';
+    div.style.boxSizing = 'border-box';
+
+    // Info text div
+    this.infoDiv = document.createElement('div');
+    this.infoDiv.style.position = 'absolute';
+    this.infoDiv.style.top = '8px';
+    this.infoDiv.style.right = '8px';
+    this.infoDiv.style.fontFamily = 'monospace';
+    this.infoDiv.style.fontSize = '12px';
+    this.infoDiv.style.lineHeight = '1.2';
+    this.infoDiv.style.whiteSpace = 'pre';
+    this.infoDiv.style.textAlign = 'right';
+    div.appendChild(this.infoDiv);
+
+    parent.appendChild(div);
+    return div;
+  }
+
+  _div2(parent) {
+    const div = document.createElement('div');
+    div.style.position = 'absolute';
+    div.style.width = '100%';
+    div.style.height = '100%';
+    div.style.boxSizing = 'border-box';
+
+    new Boreal(div);
+
+    if (!this.params.demomode) {
+      const homeButton = document.createElement('button');
+      homeButton.textContent = '< Home';
+      homeButton.onclick = () => this.params.program && this.params.program.goto('main');
+      div.appendChild(homeButton);
+    }
+
+    parent.appendChild(div);
+    return div;
   }
 
   _render() {
-    const root = document.createElement('div');
-    root.style.textAlign = 'left';
-    root.style.margin = '2em 0 0 2em';
-
-    const title = document.createElement('h2');
-    title.textContent = 'dom screen';
-    title.style.marginBottom = '2em';
-    root.appendChild(title);
-
-    root.appendChild(this._panel('< main', () => goto && goto('main')));
-
+    const root = this._div0();
+    this._div1(root);
+    this._div2(root);
     return root;
   }
 }

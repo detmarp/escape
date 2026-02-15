@@ -48,7 +48,7 @@ export default class ScreenHtml {
     }
     this.parent.appendChild(this.root);
 
-    if (!this.params.nooverlay) {
+    if (!this.params.demomode) {
       const homeButton = this._element('button', '< Home');
       homeButton.onclick = () => this.params.program.goto('main');
     }

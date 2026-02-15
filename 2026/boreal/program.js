@@ -9,10 +9,10 @@ export default class Program {
   screens = {
     'main': { class: screenMain, params: { hello: 'there' } },
     'html2': { class: screenHtml, params: { nostyle: true } },
-    'html': { class: screenHtml },
-    'dom': { class: screenDom },
-    'canvas': { class: screenCanvas },
-    'threed': { class: screenThreed },
+    'html': { class: screenHtml, },
+    'dom': { class: screenDom, params: { astra: true, } },
+    'canvas': { class: screenCanvas, params: { astra: true, } },
+    'threed': { class: screenThreed, params: { astra: true, } },
   };
 
   constructor(root = document.body) {
