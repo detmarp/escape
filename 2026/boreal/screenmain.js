@@ -84,7 +84,7 @@ export default class ScreenMain {
     root.style.padding = '2em';
     root.style.boxSizing = 'border-box';
 
-    root.appendChild(this._element('h1', 'Boreal Screens'));
+    root.appendChild(this._element('h1', 'Boreal Screens - 1'));
 
     const screens = this.params.program.screens;
     for (const [name, config] of Object.entries(screens)) {

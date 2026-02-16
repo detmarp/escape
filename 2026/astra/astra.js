@@ -18,7 +18,7 @@ export default class Astra {
     // Save only the minimal properties we actually modify
     this._original = {
       html: { height: document.documentElement.style.height },
-      body: { 
+      body: {
         height: document.body.style.height,
         margin: document.body.style.margin,
         padding: document.body.style.padding,
