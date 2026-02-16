@@ -13,6 +13,8 @@ export default class Program {
     const pre = document.createElement('pre');
     pre.textContent = `This page is initted using astra.js
 
+Astra is a lightweight class that transforms web pages into fullscreen app-like experiences by disabling browser scrolling and mobile gestures.
+
 It's meant to be non-scrollable, nonzoomable,
 a nice fixed window to do a web or mobile app.
 `;

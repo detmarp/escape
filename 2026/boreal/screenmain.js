@@ -84,7 +84,11 @@ export default class ScreenMain {
     root.style.padding = '2em';
     root.style.boxSizing = 'border-box';
 
-    root.appendChild(this._element('h1', 'Boreal Screens - 1'));
+    let header = this._element();
+    new Boreal(header);
+    root.appendChild(header);
+    header.appendChild(this._element('h1', 'Boreal Screens'));
+    header.appendChild(this._element('p', `Boreal is a lightweight class that applies consistent CSS styling, typography, and UI components to DOM elements for clean, modern web interfaces with standardized buttons and layouts.`));
 
     const screens = this.params.program.screens;
     for (const [name, config] of Object.entries(screens)) {
