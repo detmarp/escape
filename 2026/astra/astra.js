@@ -2,7 +2,6 @@ export default class Astra {
   constructor() {
     this.title = document.title;
     this._original = null;
-    this._styleTap = null;
     this._listeners = [];
     this._fullscreenActive = false;
   }
@@ -15,64 +14,28 @@ export default class Astra {
   setFixedFullscreen() {
     if (this._fullscreenActive) return;
     this._fullscreenActive = true;
-    // Save original state
+
+    // Save only the minimal properties we actually modify
     this._original = {
-      docStyles: { ...document.documentElement.style },
-      bodyStyles: { ...document.body.style }
+      html: { height: document.documentElement.style.height },
+      body: { 
+        height: document.body.style.height,
+        margin: document.body.style.margin,
+        padding: document.body.style.padding,
+        overflow: document.body.style.overflow,
+        touchAction: document.body.style.touchAction,
+      }
     };
 
-    // Store elements and their original styles
-    this._styledElements = [];
-    const all = document.querySelectorAll('*');
-    all.forEach(el => {
-      this._styledElements.push({
-        element: el,
-        originalBoxSizing: el.style.boxSizing,
-        originalUserSelect: el.style.userSelect,
-        originalWebkitUserSelect: el.style.WebkitUserSelect,
-        originalTouchAction: el.style.touchAction,
-        originalMsTouchAction: el.style.msTouchAction,
-      });
-    });
+    // Apply minimal fullscreen styles
+    document.documentElement.style.height = '100%';
+    document.body.style.height = '100%';
+    document.body.style.margin = '0';
+    document.body.style.padding = '0';
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
 
-    Object.assign(document.documentElement.style, {
-      height: '100%',
-      boxSizing: 'border-box',
-      scrollBehavior: 'smooth',
-    });
-    Object.assign(document.body.style, {
-      height: '100%',
-      margin: '0',
-      padding: '0',
-      boxSizing: 'border-box',
-      fontFamily: `system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif`,
-      fontSize: '16px',
-      background: '#fff',
-      color: '#111',
-      overflow: 'hidden',
-      overscrollBehavior: 'none',
-      touchAction: 'none',
-      userSelect: 'none',
-      WebkitFontSmoothing: 'antialiased',
-      MozOsxFontSmoothing: 'grayscale',
-      WebkitUserSelect: 'none',
-      msTouchAction: 'none',
-      WebkitOverflowScrolling: 'auto',
-      position: 'relative',
-    });
-    // Remove tap highlight on mobile for a and button
-    this._styleTap = document.createElement('style');
-    this._styleTap.textContent = `a, button { -webkit-tap-highlight-color: transparent; }`;
-    document.head.appendChild(this._styleTap);
-    // Set styles for all elements
-    all.forEach(el => {
-      el.style.boxSizing = 'inherit';
-      el.style.userSelect = 'none';
-      el.style.WebkitUserSelect = 'none';
-      el.style.touchAction = 'none';
-      el.style.msTouchAction = 'none';
-    });
-    // Prevent iOS pinch/double-tap zoom and context menu
+    // Prevent iOS gestures
     ['gesturestart', 'gesturechange', 'gestureend', 'contextmenu'].forEach(type => {
       const fn = e => e.preventDefault();
       document.addEventListener(type, fn, { passive: false });
@@ -84,30 +47,14 @@ export default class Astra {
     if (!this._fullscreenActive) return;
     this._fullscreenActive = false;
 
-    // Restore document styles
-    if (this._original && this._original.docStyles) {
-      Object.assign(document.documentElement.style, this._original.docStyles);
-    }
-    if (this._original && this._original.bodyStyles) {
-      Object.assign(document.body.style, this._original.bodyStyles);
-    }
-
-    // Restore individual element styles
-    if (this._styledElements) {
-      this._styledElements.forEach(({ element, originalBoxSizing, originalUserSelect, originalWebkitUserSelect, originalTouchAction, originalMsTouchAction }) => {
-        element.style.boxSizing = originalBoxSizing;
-        element.style.userSelect = originalUserSelect;
-        element.style.WebkitUserSelect = originalWebkitUserSelect;
-        element.style.touchAction = originalTouchAction;
-        element.style.msTouchAction = originalMsTouchAction;
-      });
-      this._styledElements = null;
-    }
-
-    // Remove styleTap
-    if (this._styleTap && this._styleTap.parentNode) {
-      this._styleTap.parentNode.removeChild(this._styleTap);
-      this._styleTap = null;
+    // Restore the minimal properties
+    if (this._original) {
+      document.documentElement.style.height = this._original.html.height || '';
+      document.body.style.height = this._original.body.height || '';
+      document.body.style.margin = this._original.body.margin || '';
+      document.body.style.padding = this._original.body.padding || '';
+      document.body.style.overflow = this._original.body.overflow || '';
+      document.body.style.touchAction = this._original.body.touchAction || '';
     }
 
     // Remove event listeners
