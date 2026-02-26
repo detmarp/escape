@@ -39,13 +39,13 @@ export default class ScreenMain {
   _makeLayer0() {
     // Layer 0: Parent container (sets size)
     const panel = document.createElement('div');
-    panel.style.width = '90%';
-    panel.style.maxWidth = '95vw';
-    panel.style.height = '150px';
+    panel.style.width = '300px';
+    panel.style.height = '300px';
     panel.style.border = '1px solid #bbb';
     panel.style.position = 'relative';
     panel.style.overflow = 'hidden';
     panel.style.background = '#fafafa';
+    panel.style.flexShrink = '0';
     return panel;
   }
 
@@ -90,10 +90,18 @@ export default class ScreenMain {
     header.appendChild(this._element('h1', 'Boreal Screens'));
     header.appendChild(this._element('p', `Boreal is a lightweight class that applies consistent CSS styling, typography, and UI components to DOM elements for clean, modern web interfaces with standardized buttons and layouts.`));
 
+    // Create divb container for panels
+    const divb = document.createElement('div');
+    divb.style.display = 'flex';
+    divb.style.flexWrap = 'wrap';
+    divb.style.gap = '4px';
+    divb.style.marginTop = '2em';
+    root.appendChild(divb);
+
     const screens = this.params.program.screens;
     for (const [name, config] of Object.entries(screens)) {
       if (name !== 'main') {
-        root.appendChild(this._panel(name, config, () => this.params.program.goto(name)));
+        divb.appendChild(this._panel(name, config, () => this.params.program.goto(name)));
       }
     }
 

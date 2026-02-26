@@ -11,10 +11,11 @@ export default class Boreal {
       fontFamily: `"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`,
       fontSize: '15px',
       lineHeight: '1.5',
-      margin: '0',
+      margin: '0 auto',
       padding: '0',
       whiteSpace: 'pre-wrap',
       color: '#1a1a1a',
+      maxWidth: '800px',
     });
     this.parent.classList.add('boreal');
     const css = `

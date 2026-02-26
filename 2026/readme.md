@@ -7,25 +7,15 @@
 [escape repo](https://github.com/detmarp/escape)
 
 ## Links
-- [Arwen](arwen/)
-- [Bryn](bryn/)
-- [Cira](cira/)
-- [Dax](dax/)
-- [Eartha](eartha/)
-- [Faye](faye/)
-- [Gaia](gaia/)
-- [Harp](harp/)
-- [Juno](juno/)
-- [Kira](kira/)
-- [Mika](mika/)
-- [Noni](noni/)
-- [Paxi](paxi/)
+- [astra](astra/) - fixed app page demo
+- [boreal](boreal/) - standard portable style demo
+- [celest](celest/)
 
 ## name list
 
-- astra - aria - aurora - aster
-- bryn - bellis - brisa - boreal
-- cira - celest - cyra - calla
+- aria - aurora - aster
+- bryn - bellis - brisa
+- cira - cyra - calla
 - dax - dione - dara - dria
 - eartha - elara - eira - ember
 - faye - freya - flora - fira
