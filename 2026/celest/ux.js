@@ -6,6 +6,7 @@ export default class Ux {
     let parent = params.parent || document.body;
     let div = document.createElement('div');
     parent.appendChild(div);
+    div.style.userSelect = 'none';
     this._setId(div, params);
     this._setSize(div, params);
     this._setColor(div, params);

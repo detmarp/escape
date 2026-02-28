@@ -1,6 +1,5 @@
 export default class Celest {
     constructor(containerDiv, logicalW, logicalH, options = {}) {
-        console.log('Celest constructor:', { containerDiv, logicalW, logicalH });
         this.containerDiv = containerDiv;
         this.logicalW = logicalW;
         this.logicalH = logicalH;
@@ -67,7 +66,6 @@ export default class Celest {
         }
 
         this.rafId = requestAnimationFrame(this.tick);
-        console.log(`xxx ${JSON.stringify(this.logicalSize)} ${JSON.stringify({width: rect.width, height: rect.height})}`);
     }
 
     _resize(rect = null) {

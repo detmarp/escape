@@ -1,5 +1,4 @@
 import Ux from './ux.js';
-import Celest from './celest.js';
 import MainLayout from './mainlayout.js';
 
 export default class ScreenMain {
@@ -11,10 +10,7 @@ export default class ScreenMain {
   init() {
     this.ux = new Ux();
     this._render();
-    this.celest = new Celest(this.outer, 300, 400);
-    this.celest.init();
-
-    this.layout = new MainLayout(this.celest.inner);
+    this.layout = new MainLayout(this.outer);
   }
 
   term() {
