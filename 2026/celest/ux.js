@@ -1,15 +1,42 @@
+// Ux is a set of div-formatting functions.
 export default class Ux {
   static id = 0;
   static nextHue = 0;
 
   div(params = {}) {
     let parent = params.parent || document.body;
-    let div = document.createElement('div');
+    let elementType = params.type || 'div';
+    let div = document.createElement(elementType);
     parent.appendChild(div);
     div.style.userSelect = 'none';
     this._setId(div, params);
     this._setSize(div, params);
     this._setColor(div, params);
+    this._setBorder(div, params);
+    if (params.onclick) {
+      div.addEventListener('click', params.onclick);
+    }
+    return div;
+  }
+
+  wireframe(parent = null, params = {}) {
+    parent ||= params.parent || document.body;
+    let div = this.div({...params, parent});
+
+    const layer = (parent, color) => this.div({
+      parent,
+      prefix: 'wireframe',
+      background: this._nextPastel(),
+      border: color,
+      fill:true,
+    });
+
+
+    let inner1 = layer(div, '#000');
+    let inner2 = layer(inner1, '#fff');
+    let inner3 = layer(inner2, '#000');
+    inner3.textContent = inner3.id;
+
     return div;
   }
 
@@ -19,9 +46,9 @@ export default class Ux {
   }
 
   _setSize(el, params = {}) {
-    if (!params.size && !params.position) {
+    if (params.fill) {
       this._fillParent(el);
-    } else {
+    } else if (params.size || params.position) {
       this._absolutePosition(el, params);
     }
   }
@@ -46,32 +73,43 @@ export default class Ux {
 
   _setColor(el, params = {}) {
     if (params.background) el.style.backgroundColor = params.background;
-    if (params.border) el.style.border = params.border;
     if (params.color) el.style.color = params.color;
     if (params.text) el.textContent = params.text;
   }
 
-  _nextPastel() {
-    let hue = Math.round((Ux.nextHue++ * 37) % 256 * 360 / 256);
-    return `hsl(${hue}, 45%, 85%)`;
-  }
+  _setBorder(el, params = {}) {
+    // make a border, but as a child div so it doesn't mess with sibling layout margins
+    // use: border (color), radius that uses the calc sizing, and borderwidth
+    if (!params.border && !params.borderWidth && !params.radius) return;
 
-  wireframe(parent = null, params = {}) {
-    parent ||= params.parent || document.body;
-    let div = this.div({...params, parent});
+    const borderDiv = document.createElement('div');
+    el.appendChild(borderDiv);
 
-    const layer = (parent) => this.div({
-      parent,
-      prefix: 'wireframe',
-      background: this._nextPastel(),
-      border: '1px solid rgba(0,0,0,0.3)'
+    Object.assign(borderDiv.style, {
+      position: 'absolute',
+      inset: '0',
+      pointerEvents: 'none',
+      boxSizing: 'border-box'
     });
 
-    let inner1 = layer(div);
-    let inner2 = layer(inner1);
-    let inner3 = layer(inner2);
-    inner3.textContent = inner3.id;
+    if (params.border) {
+      const width = params.borderWidth || 1;
+      const color = params.border; // border is just the color string
+      borderDiv.style.border = `calc(${width} * var(--logic-w)) solid ${color}`;
+    } else if (params.borderWidth) {
+      const width = params.borderWidth;
+      const color = params.borderColor || '#000';
+      borderDiv.style.border = `calc(${width} * var(--logic-w)) solid ${color}`;
+    }
 
-    return div;
+    if (params.radius) {
+      borderDiv.style.borderRadius = `calc(${params.radius} * var(--logic-w))`;
+    }
   }
+
+  _nextPastel() {
+    let hue = Math.round(((Ux.nextHue++ * 13) % 256 * 360 / 256 + 0) % 360);
+    return `hsl(${hue}, 50%, 80%)`;
+  }
+
 }

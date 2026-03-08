@@ -27,19 +27,15 @@ export default class Celest {
         this.inner.style.left = '50%';
         this.inner.style.transform = 'translate(-50%, -50%)';
 
-        // Event hooks
         this.onResize = options.onResize || null;
         this.onFrame = options.onFrame || null;
-
-        // Bind methods
-        this.tick = this.tick.bind(this);
     }
 
     init() {
         if (this.rafId) return;
 
         this._resize();
-        this.tick(true);
+        this._tick(true);
     }
 
     term() {
@@ -53,19 +49,17 @@ export default class Celest {
         this.inner.style.removeProperty(`${this.cssVarPrefix}-h`);
     }
 
-    tick(first = true) {
+    _tick(first = true) {
         if (!first && !this.rafId) return;
 
-        // Always resize every frame
         const rect = this.containerDiv.getBoundingClientRect();
         this._resize(rect);
 
-        // Call frame callback if provided
         if (this.onFrame) {
             this.onFrame(performance.now());
         }
 
-        this.rafId = requestAnimationFrame(this.tick);
+        this.rafId = requestAnimationFrame(this._tick.bind(this, false));
     }
 
     _resize(rect = null) {

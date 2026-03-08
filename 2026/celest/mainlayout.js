@@ -1,12 +1,13 @@
-import Ux from './ux.js';
+import Ux2 from './ux2.js';
 import Celest from './celest.js';
 
 export default class MainLayout {
-  constructor(parent = document.body, params = {}) {
+  constructor(parent = document.body, delegate) {
     this.size = [360, 640];
 
     this.parent = parent;
-    this.ux = new Ux();
+    this.ux = new Ux2();
+    this.delegate = delegate;
 
     this.celest = new Celest(this.parent, this.size[0], this.size[1]);
     this.celest.init();
@@ -18,7 +19,7 @@ export default class MainLayout {
     let heights = {
       gap: 2,
       buttonGap: 4,
-      sectionGap: 8,
+      sectionGap: 12,
       header: 16,
       status: 40,
       dice: 85,
@@ -37,8 +38,20 @@ export default class MainLayout {
     this._makeButtons(y, heights.buttons, heights.gap, heights.sectionGap, heights.buttonGap);
   }
 
+  updateScore(score, options = {}) {
+  }
+
+  updateSlot(i, label, value, state) {
+    const button = this.buttons?.[i];
+    if (!button) return;
+
+    button.innerText = `${label}\n${value}\n${state}`;
+    button.style.whiteSpace = 'pre-line';
+   }
+
   _makeHeader(y, height) {
     this.header = this._div({
+      wireframe: true,
       parent: this.outer,
       position: [0, y],
       size: [this.size[0], height]
@@ -46,7 +59,11 @@ export default class MainLayout {
   }
 
   _makeStatus(y, height) {
+    // Score area
     this.status = this._div({
+      border: '#0d0',
+      radius: 8,
+      text: '0',
       parent: this.outer,
       position: [0, y],
       size: [this.size[0], height]
@@ -54,15 +71,46 @@ export default class MainLayout {
   }
 
   _makeDice(y, height) {
-    this.dice = this._div({
+    // Dice and Roll button
+    this.dice = this.ux.section({
       parent: this.outer,
+      border: '#0d0',
+      radius: 8,
       position: [0, y],
       size: [this.size[0], height]
+    });
+    this.dice.dice = this.ux.div({
+      parent: this.dice,
+      text: '0 0 0 0 0',
+      fill: true,
+    });
+    let tempHolds = this.ux.div({
+      parent: this.dice,
+      position: [0, 30],
+      size: [200, 50],
+      background: '#ddd',
+    });
+    for (let i = 0; i < 5; i++) {
+      this.ux.div({
+        parent: tempHolds,
+        type: 'button',
+        text: `Hold ${i + 1}`,
+        onclick: () => this.delegate.onHold(i),
+      });
+    }
+    this.ux.div({
+      parent: this.dice,
+      type: 'button',
+      text: 'Roll',
+      position: [240, 10],
+      size: [80, 30],
+      onclick: () => this.delegate.onRoll(),
     });
   }
 
   _makeHistory(y, height) {
     this.history = this._div({
+      wireframe: true,
       parent: this.outer,
       position: [0, y],
       size: [this.size[0], height]
@@ -71,6 +119,7 @@ export default class MainLayout {
 
   _makeButtons(y, buttonsHeight, gap, sectionGap, buttonGap) {
     this.buttonArea = this._div({
+      wireframe: true,
       parent: this.outer,
       position: [0, y],
       size: [this.size[0], buttonsHeight]
@@ -93,8 +142,10 @@ export default class MainLayout {
 
       let button = this._button({
         parent: this.buttonArea,
+        type: 'button',
         position: [x, buttonY],
-        size: [buttonWidth, baseButtonHeight]
+        size: [buttonWidth, baseButtonHeight],
+        text: `Btn ${i + 1}`,
       });
       this.buttons.push(button);
     }
@@ -102,13 +153,13 @@ export default class MainLayout {
 
   _div(params) {
     let div = this.ux.div(params);
-    this.ux.wireframe(div);
+    if (params.wireframe) this.ux.wireframe(div);
     return div;
   }
 
   _button(params) {
     let button = this.ux.div(params);
-    this.ux.wireframe(button);
+    if (params.wireframe) this.ux.wireframe(button);
     return button;
   }
 }

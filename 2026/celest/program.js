@@ -1,19 +1,34 @@
 import Astra from '../astra/astra.js';
-import screenMain from './screenmain.js';
+import ScreenMain from './screenmain.js';
+import Fiver from './fiver.js';
 
 export default class Program {
   screens = {
-    'main': { class: screenMain, params: { hello: 'there', astra: true, } },
+    'main': { class: ScreenMain, params: { hello: 'there', astra: true, } },
   };
 
   constructor(root = document.body) {
     this.root = root;
     this.current = null;
+    this.rafId = null;
+    this.lastTime = 0;
+    this.startTime = 0;
+    this.frame = 0;
     document.title = 'Celest';
   }
 
   run() {
+    this.newGame();
     this.goto('main');
+    this._tick();
+  }
+
+  stop() {
+    if (this.rafId) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+      this.startTime = 0;
+    }
   }
 
   goto(name) {
@@ -27,7 +42,28 @@ export default class Program {
     }
   }
 
+  _tick() {
+    const currentTime = performance.now();
+
+    if (!this.startTime) {
+      this.startTime = currentTime;
+    }
+
+    const dt = this.lastTime ? currentTime - this.lastTime : 0;
+    this.lastTime = currentTime;
+    this.frame++;
+
+    const elapsedSeconds = (currentTime - this.startTime) / 1000;
+
+    if (this.current && typeof this.current.work === 'function') {
+      this.current.work(dt, elapsedSeconds, this.frame);
+    }
+
+    this.rafId = requestAnimationFrame(this._tick.bind(this));
+  }
+
   _gotoScreen(className, params) {
+    params.program = this;
     if (this.current) {
       if (typeof this.current.term === 'function') {
         this.current.term();
@@ -59,5 +95,9 @@ export default class Program {
     if (typeof this.current.init === 'function') {
       this.current.init();
     }
+  }
+
+  newGame() {
+    this.fiver = new Fiver();
   }
 }
