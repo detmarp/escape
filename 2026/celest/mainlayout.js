@@ -45,7 +45,7 @@ export default class MainLayout {
     const button = this.buttons?.[i];
     if (!button) return;
 
-    button.innerText = `${label}\n${value}\n${state}`;
+    button.append(`${label}\n${value}\n${state}`);
     button.style.whiteSpace = 'pre-line';
    }
 
@@ -146,6 +146,9 @@ export default class MainLayout {
         position: [x, buttonY],
         size: [buttonWidth, baseButtonHeight],
         text: `Btn ${i + 1}`,
+        left: `left text`,
+        right: `right text`,
+        slotType: i === 0 ? 'green' : undefined,
       });
       this.buttons.push(button);
     }
@@ -158,8 +161,7 @@ export default class MainLayout {
   }
 
   _button(params) {
-    let button = this.ux.div(params);
-    if (params.wireframe) this.ux.wireframe(button);
+    let button = this.ux.slot(params);
     return button;
   }
 }

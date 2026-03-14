@@ -98,6 +98,11 @@ export default class Program {
   }
 
   newGame() {
-    this.fiver = new Fiver();
+    let params = {
+      rules: {
+        maxRolls: 0,
+      }
+    };
+    this.fiver = new Fiver(params);
   }
 }

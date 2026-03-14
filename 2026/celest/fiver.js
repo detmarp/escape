@@ -6,13 +6,21 @@
 // it does not, for example, know which dice the player is "keeping". it just sijply knows the rules of fiver (yahtzee)
 // it's ok for the actions returned by command to include helper actions, like {action:roll, dice:[0,1,4]}, then follwed by {action"dice", values:[1,1,3,6,2]}
 export default class Fiver {
-  constructor() {
+  constructor(params = {}) {
+    this._setRules(params.rules);
     this.reset();
+  }
+
+  _setRules(rules = {}) {
+    this.rules = {
+      maxRolls: 3,
+      ...rules
+    };
   }
 
   reset() {
     this.dice = [undefined, undefined, undefined, undefined, undefined];
-    this.rollsRemaining = 3;
+    this.roll = 0;
     this.scores = {
       ones: null, twos: null, threes: null, fours: null, fives: null, sixes: null,
       threeOfKind: null, fourOfKind: null, fullHouse: null, smallStraight: null,
@@ -50,7 +58,7 @@ export default class Fiver {
   }
 
   *_processRoll(diceToRoll) {
-    if (this.rollsRemaining <= 0) {
+    if (this.rules.maxRolls > 0 && this.roll >= this.rules.maxRolls) {
       yield* this._error('No rolls remaining');
       return;
     }
@@ -71,9 +79,9 @@ export default class Fiver {
       this.dice[i] = Math.floor(Math.random() * 6) + 1;
     }
 
-    this.rollsRemaining--;
+    this.roll++;
     yield { action: 'dice', values: [...this.dice] };
-    yield { action: 'rollsRemaining', value: this.rollsRemaining };
+    yield { action: 'roll', value: this.roll };
   }
 
   *_processScore(category) {
@@ -100,7 +108,7 @@ export default class Fiver {
     yield { action: 'scored', category: cat, value: score };
 
     // Start next turn
-    this.rollsRemaining = 3;
+    this.roll = 0;
     this.turn++;
 
     // Check if game is over
@@ -167,7 +175,7 @@ export default class Fiver {
   getState() {
     return {
       dice: [...this.dice],
-      rollsRemaining: this.rollsRemaining,
+      roll: this.roll,
       scores: { ...this.scores },
       turn: this.turn,
       gameOver: this.gameOver,
