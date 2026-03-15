@@ -85,7 +85,6 @@ export default class Ux {
     const borderDiv = document.createElement('div');
     this._setId(borderDiv, {prefix: 'border', parent: el});
     el.append(borderDiv);
-    console.log(`eee appended border div ${borderDiv.id} to ${el.id}`);
 
     Object.assign(borderDiv.style, {
       position: 'absolute',
@@ -107,7 +106,6 @@ export default class Ux {
     if (params.radius) {
       borderDiv.style.borderRadius = this._scaledSize(params.radius);
     }
-    console.log(`zzz border style: ${JSON.stringify(borderDiv.style.borderRadius)}`);
   }
 
   _nextPastel() {

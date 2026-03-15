@@ -30,11 +30,18 @@ export default class Mediator {
   _action(action) {
     console.log(`aaa Action from helper: ${JSON.stringify(action)}`);
     switch (action.action) {
+      case 'slot':
+        let label = action.label;
+        let value = action.value !== undefined ? String(action.value) : '';
+        let type = action.type || '';
+        this.layout.updateSlot(action.index, label, value, type);
+        break;
       case 'dice':
         this._setDice(action.dice);
         break;
     }
   }
+
   _setAll() {
     this._setButtons();
     this.layout.updateScore(this.fiver.totalScore);

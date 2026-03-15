@@ -23,8 +23,8 @@ export default class Fiver {
     this.roll = 0;
     this.scores = {
       ones: null, twos: null, threes: null, fours: null, fives: null, sixes: null,
-      threeOfKind: null, fourOfKind: null, fullHouse: null, smallStraight: null,
-      largeStraight: null, yahtzee: null, chance: null
+      threeofkind: null, fourofkind: null, fullhouse: null, smallstraight: null,
+      largestraight: null, yahtzee: null, chance: null
     };
     this.turn = 1;
     this.gameOver = false;
@@ -32,6 +32,7 @@ export default class Fiver {
   }
 
   *command(str) {
+    console.log(`ccc Fiver command received: ${str}`);
     const parts = str.trim().split(' ');
     const action = parts[0].toLowerCase();
 

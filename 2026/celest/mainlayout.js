@@ -45,7 +45,11 @@ export default class MainLayout {
     const button = this.buttons?.[i];
     if (!button) return;
 
-    button.append(`${label}\n${value}\n${state}`);
+    button.update({
+      left: label,
+      right: value,
+      slotType: state,
+    });
     button.style.whiteSpace = 'pre-line';
    }
 
@@ -145,10 +149,10 @@ export default class MainLayout {
         type: 'button',
         position: [x, buttonY],
         size: [buttonWidth, baseButtonHeight],
-        text: `Btn ${i + 1}`,
         left: `left text`,
         right: `right text`,
         slotType: i === 0 ? 'green' : undefined,
+        onclick: () => this.delegate.onSlot(i),
       });
       this.buttons.push(button);
     }

@@ -31,6 +31,7 @@ export default class ScreenMain {
   }
 
   onSlot(index) {
+    console.log(`sss Slot ${index} clicked`);
     this.mediator.command(`slot ${index}`);
   }
 
