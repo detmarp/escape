@@ -30,6 +30,13 @@ export default class FiverHelper {
     ];
   }
 
+  _resetDiceState() {
+    // Reset all dice to unrolled state
+    for (let i = 0; i < 5; i++) {
+      this.dice[i] = { value: undefined, hold: false, rolling: false };
+    }
+  }
+
   *command(str) {
     console.log(`bbb Helper command received: ${str}`);
     const parts = str.trim().split(' ');
@@ -237,6 +244,11 @@ export default class FiverHelper {
   *_updateAndYieldDice(diceValues) {
     for (let i = 0; i < 5; i++) {
       this.dice[i].value = diceValues[i];
+      // Reset hold state when dice are reset (undefined values)
+      if (diceValues[i] === undefined) {
+        this.dice[i].hold = false;
+        this.dice[i].rolling = false;
+      }
     }
     yield* this._yieldDice();
   }
@@ -252,6 +264,14 @@ export default class FiverHelper {
       action: 'fromfiver',
       value: result,
     };
+
+    // Handle special fiver actions that need helper state updates
+    switch (result.action) {
+      case 'dice':
+        // Update helper dice state when fiver sends new dice values
+        yield* this._updateAndYieldDice(result.values);
+        break;
+    }
   }
 
   *_error(message) {

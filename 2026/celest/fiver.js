@@ -108,9 +108,12 @@ export default class Fiver {
 
     yield { action: 'scored', category: cat, value: score };
 
-    // Start next turn
+    // Start next turn - reset dice and roll count
+    this.dice = [undefined, undefined, undefined, undefined, undefined];
     this.roll = 0;
     this.turn++;
+
+    yield { action: 'dice', values: [...this.dice] };
 
     // Check if game is over
     if (Object.values(this.scores).every(s => s !== null)) {

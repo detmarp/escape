@@ -48,14 +48,18 @@ export default class Mediator {
   }
 
   _setDice(dice) {
-    let text = '';
     for (let i = 0; i < 5; i++) {
-      const dieObj = this.helper.dice[i];
-      const rolling = dieObj.rolling ? 'R' : '';
-      const debugStr = dieObj.hold ? `[${dieObj.value}]${rolling}` : `${dieObj.value}${rolling}`;
-      text += `${debugStr} `;
+      const dieObj = dice[i];
+      let state = 'normal';
+
+      if (dieObj.rolling) {
+        state = 'rolling';
+      } else if (dieObj.hold) {
+        state = 'held';
+      }
+
+      this.layout.updateDice(i, dieObj.value, state);
     }
-    this.layout.dice.dice.textContent = text;
   }
 
   _setButtons() {

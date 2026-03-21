@@ -41,6 +41,12 @@ export default class MainLayout {
   updateScore(score, options = {}) {
   }
 
+  updateDice(dieIndex, value, state) {
+    if (this.diceElements && this.diceElements[dieIndex]) {
+      this.diceElements[dieIndex].update({ value, state });
+    }
+  }
+
   updateSlot(i, label, value, state) {
     const button = this.buttons?.[i];
     if (!button) return;
@@ -81,27 +87,41 @@ export default class MainLayout {
       border: '#0d0',
       radius: 8,
       position: [0, y],
-      size: [this.size[0], height]
+      size: [this.size[0], height],
+      value: 1,
     });
-    this.dice.dice = this.ux.div({
-      parent: this.dice,
-      text: '0 0 0 0 0',
-      fill: true,
-    });
-    let tempHolds = this.ux.div({
-      parent: this.dice,
-      position: [0, 30],
-      size: [200, 50],
-      background: '#ddd',
-    });
+
+    // Store dice elements for later updates
+    this.diceElements = [];
     for (let i = 0; i < 5; i++) {
-      this.ux.div({
-        parent: tempHolds,
-        type: 'button',
-        text: `Hold ${i + 1}`,
+      let die = this.ux.die({
+        parent: this.dice,
+        position: [i * 40 + 10, 10],
+        size: [40, 55],
         onclick: () => this.delegate.onHold(i),
+        state: 'normal',
       });
+      this.diceElements.push(die);
     }
+    // this.dice.dice = this.ux.div({
+    //   parent: this.dice,
+    //   text: '0 0 0 0 0',
+    //   fill: true,
+    // });
+    // let tempHolds = this.ux.div({
+    //   parent: this.dice,
+    //   position: [0, 30],
+    //   size: [200, 50],
+    //   background: '#ddd',
+    // });
+    // for (let i = 0; i < 5; i++) {
+    //   this.ux.div({
+    //     parent: tempHolds,
+    //     type: 'button',
+    //     text: `Hold ${i + 1}`,
+    //     onclick: () => this.delegate.onHold(i),
+    //   });
+    // }
     this.ux.div({
       parent: this.dice,
       type: 'button',

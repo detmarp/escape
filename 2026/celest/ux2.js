@@ -103,5 +103,74 @@ export default class Ux2 extends Ux {
   }
 
   die(params = {}) {
+    let p = {
+      ...params,
+      type: 'button',
+      size: [40, 55],
+      radius: 6,
+    };
+
+    let button = this.div(p);
+    button.style.borderRadius = this._scaledSize(6);
+    button.style.cursor = 'pointer';
+
+    button.update = (params = {}) => {
+      const value = params.value;
+      const state = params.state || 'normal'; // normal, held, rolling, blank
+
+      // Handle visibility and content for unrolled dice
+      if (value === undefined || value === null) {
+        button.style.visibility = 'hidden';
+        return;
+      } else {
+        button.style.visibility = 'visible';
+      }
+
+      // Set die value text
+      button.valueText.textContent = value.toString();
+
+      // Set colors and borders based on state
+      let background = '#f0f0f0'; // Light gray default
+      let border = `${this._scaledSize(1)} solid #ccc`;
+
+      switch (state) {
+        case 'held':
+          background = '#d4edda'; // Light green for held
+          border = `${this._scaledSize(3)} solid #28a745`; // Thick green border
+          break;
+        case 'rolling':
+          background = '#fff3cd'; // Light yellow for rolling
+          border = `${this._scaledSize(2)} solid #ffc107`; // Medium yellow border
+          break;
+        case 'normal':
+        default:
+          // Keep defaults
+          break;
+      }
+
+      button.style.backgroundColor = background;
+      button.style.border = border;
+    };
+
+    // Create text element for die value
+    button.valueText = this.div({
+      parent: button,
+      position: [0, 0],
+      size: [40, 55],
+    });
+
+    // Style the value text
+    button.valueText.style.fontSize = this._scaledSize(24);
+    button.valueText.style.fontWeight = 'bold';
+    button.valueText.style.display = 'flex';
+    button.valueText.style.alignItems = 'center';
+    button.valueText.style.justifyContent = 'center';
+    button.valueText.style.textAlign = 'center';
+    button.valueText.style.pointerEvents = 'none'; // Let clicks pass through
+
+    // Initialize with params
+    button.update(params);
+
+    return button;
   }
 }
