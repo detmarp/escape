@@ -1,19 +1,15 @@
 
 [escape site](https://detmarp.github.io/escape) | [escape repo](https://github.com/detmarp/escape) | [detmarp site](https://detmarp.github.io) | [detmarp.github.io repo](https://github.com/detmarp/detmarp.github.io) | [detmarp GitHub profile](https://github.com/detmarp)
 
-[<< detmarp.github.io](https://detmarp.github.io)
-&nbsp; | &nbsp;
-[this page](https://detmarp.github.io/escape)
-&nbsp; | &nbsp;
-[repo](https://github.com/detmarp/escape)
+2023-
 
 ## Links
 
 - [2026](2026)
-- [2026/astra](2026/astra/) - fixed app page demo
-- [2026/boreal](2026/boreal/) - standard portable style demo
-- [2026/celest](2026/celest/) - css-layout game example
-
+  - [2026/astra](2026/astra/) - fixed app page demo
+  - [2026/boreal](2026/boreal/) - standard portable style demo
+  - [2026/celest](2026/celest/) - css-layout game example
+2024
 - [Arwen](arwen/)
 - [Bryn](bryn/)
 - [Cira](cira/)
@@ -27,3 +23,5 @@
 - [Mika](mika/)
 - [Noni](noni/)
 - [Paxi](paxi/)
+2023
+- [2023](2024/)
