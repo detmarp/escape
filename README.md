@@ -9,19 +9,19 @@
   - [2026/astra](2026/astra/) - fixed app page demo
   - [2026/boreal](2026/boreal/) - standard portable style demo
   - [2026/celest](2026/celest/) - css-layout game example
-2024
-- [Arwen](arwen/)
-- [Bryn](bryn/)
-- [Cira](cira/)
-- [Dax](dax/)
-- [Eartha](eartha/)
-- [Faye](faye/)
-- [Gaia](gaia/)
-- [Harp](harp/)
-- [Juno](juno/)
-- [Kira](kira/)
-- [Mika](mika/)
-- [Noni](noni/)
-- [Paxi](paxi/)
-2023
-- [2023](2024/)
+- 2024
+  - [Arwen](arwen/)
+  - [Bryn](bryn/)
+  - [Cira](cira/)
+  - [Dax](dax/)
+  - [Eartha](eartha/)
+  - [Faye](faye/)
+  - [Gaia](gaia/)
+  - [Harp](harp/)
+  - [Juno](juno/)
+  - [Kira](kira/)
+  - [Mika](mika/)
+  - [Noni](noni/)
+  - [Paxi](paxi/)
+- 2023
+  - [2023](2024/)
