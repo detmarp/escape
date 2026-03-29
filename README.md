@@ -1,3 +1,6 @@
+
+[escape site](https://detmarp.github.io/escape) | [escape repo](https://github.com/detmarp/escape) | [detmarp site](https://detmarp.github.io) | [detmarp.github.io repo](https://github.com/detmarp/detmarp.github.io) | [detmarp GitHub profile](https://github.com/detmarp)
+
 [<< detmarp.github.io](https://detmarp.github.io)
 &nbsp; | &nbsp;
 [this page](https://detmarp.github.io/escape)
