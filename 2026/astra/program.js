@@ -26,6 +26,8 @@ a nice fixed window to do a web or mobile app.
     pre.style.padding = '1em';
     pre.style.borderRadius = '8px';
     pre.style.boxShadow = '0 2px 8px #0001';
+    pre.style.whiteSpace = 'pre-wrap';
+    pre.style.wordWrap = 'break-word';
     document.body.appendChild(pre);
   }
 }
