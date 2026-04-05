@@ -97,9 +97,7 @@ export default class ScreenSettings {
 
   reset() {
     // Reset both settings and history
-    this.params.program.settings = {};
-    this.params.program.history = {};
-    this.params.program.save();
+    this.params.program.reset();
   }
 
   clearSettings() {

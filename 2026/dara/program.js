@@ -9,12 +9,12 @@ import Persist from './persist.js';
 
 export default class Program {
   screens = {
-    'main': { class: ScreenMain, params: { hello: 'there', astra: true, } },
-    'settings': { class: ScreenSettings, params: { astra: true } },
-    'demo': { class: ScreenDemo, params: { astra: true } },
-    'test': { class: ScreenTest, params: { astra: true } },
-    'setup': { class: ScreenSetup, params: { astra: true } },
-    'home': { class: ScreenHome, params: { astra: true } },
+    'main': { class: ScreenMain, params: { hello: 'there', astra: false, } },
+    'settings': { class: ScreenSettings, params: { astra: false } },
+    'demo': { class: ScreenDemo, params: { astra: false } },
+    'test': { class: ScreenTest, params: { astra: false } },
+    'setup': { class: ScreenSetup, params: { astra: false } },
+    'home': { class: ScreenHome, params: { astra: false } },
   };
 
   constructor(root = document.body) {
@@ -30,7 +30,23 @@ export default class Program {
 
   run() {
     this.load();
-    this.goto('main');
+
+    const urlParams = new URLSearchParams(window.location.search);
+
+    if (urlParams.has('reset')) {
+      this.reset();
+      urlParams.delete('reset');
+      window.history.replaceState({}, '', window.location.pathname + (urlParams.toString() ? '?' + urlParams : ''));
+    }
+
+    const mode = urlParams.get('mode');
+    const targetScreen = mode || 'main';
+
+    this.settings.count = (this.settings.count ?? 0) + 1;
+    this.settings.lastRun = Date.now();
+    this.save();
+
+    this.goto(targetScreen);
     this._tick();
   }
 
@@ -51,6 +67,7 @@ export default class Program {
 
   save() {
     this._normalize();
+    this.settings.lastSave = Date.now();
     this.persist.data = {
       settings: { ...this.settings },
       history: { ...this.history },
@@ -63,15 +80,35 @@ export default class Program {
     this.settings = { ...this.settings };
   }
 
+  reset() {
+    this.persist.clear();
+    this.load();
+  }
+
   goto(name) {
     const baseParams = {
       program: this,
     };
-    const screen = this.screens[name];
+
+    const screen = this.screens[name] || this.screens['main'];
+    const actualName = this.screens[name] ? name : 'main';
+
     if (screen) {
       const params = { ...baseParams, ...(screen.params || {}) };
+      this._updateUrl(actualName);
       this._gotoScreen(screen.class, params);
     }
+  }
+
+  _updateUrl(screenName) {
+    const url = new URL(window.location);
+
+    if (screenName === 'main') {
+      url.searchParams.delete('mode');
+    } else {
+      url.searchParams.set('mode', screenName);
+    }
+    window.history.replaceState({}, '', url.toString());
   }
 
   _tick() {
@@ -111,13 +148,11 @@ export default class Program {
 
     this.root.innerHTML = '';
 
-    // Always create a screenRoot div
     const screenRoot = document.createElement('div');
     screenRoot.style.width = '100%';
     screenRoot.style.height = '100%';
     this.root.appendChild(screenRoot);
 
-    // Apply Astra if requested
     if (params.astra) {
       this.astra = new Astra('Screen');
       this.astra.setFixedFullscreen();
