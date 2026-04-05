@@ -1,3 +1,8 @@
+// Boreal is a lightweight class that applies consistent CSS styling, typography,
+// and UI components to DOM elements for clean, modern web interfaces with
+// standardized buttons and layouts. It aims to provide a minimal, opinionated
+// design system for rapid prototyping and simple web applications.
+
 export default class Boreal {
   constructor(parent, { scrollable = true } = {}) {
     this.parent = parent;

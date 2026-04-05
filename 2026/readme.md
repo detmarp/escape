@@ -10,13 +10,14 @@
 - [astra](astra/) - fixed app page demo
 - [boreal](boreal/) - standard portable style demo
 - [celest](celest/)
+- [dara](dara/)
 
 ## name list
 
 - aria - aurora - aster
 - bryn - bellis - brisa
 - cira - cyra - calla
-- dax - dione - dara - dria
+- dax - dione - dria
 - eartha - elara - eira - ember
 - faye - freya - flora - fira
 - gaia - galen - gemma - glint
