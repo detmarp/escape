@@ -5,6 +5,9 @@ import ScreenDemo from './screendemo.js';
 import ScreenTest from './screentest.js';
 import ScreenSetup from './screensetup.js';
 import ScreenHome from './screenhome.js';
+import ScreenDom from './screendom.js';
+import ScreenCanvas1 from './screencanvas1.js';
+import ScreenCanvas2 from './screencanvas2.js';
 import Persist from './persist.js';
 
 export default class Program {
@@ -15,6 +18,9 @@ export default class Program {
     'test': { class: ScreenTest, params: { astra: false } },
     'setup': { class: ScreenSetup, params: { astra: false } },
     'home': { class: ScreenHome, params: { astra: false } },
+    'dom': { class: ScreenDom, params: { astra: true } },
+    'canvas1': { class: ScreenCanvas1, params: { astra: false } },
+    'canvas2': { class: ScreenCanvas2, params: { astra: false } },
   };
 
   constructor(root = document.body) {

@@ -49,4 +49,62 @@ export default class Ux2 extends Ux {
     return hr;
   }
 
+  text2(params = {}) {
+    const { size = [100, 20], position = [0, 0], ...restParams } = params;
+
+    let div = this.div({
+      ...restParams,
+      type: 'div'
+    });
+
+    // Apply logical positioning and sizing using Celest CSS variables
+    Object.assign(div.style, {
+      position: 'absolute',
+      left: `calc(${position[0]} * var(--logic-w, 1px))`,
+      top: `calc(${position[1]} * var(--logic-h, 1px))`,
+      width: `calc(${size[0]} * var(--logic-w, 1px))`,
+      height: `calc(${size[1]} * var(--logic-h, 1px))`,
+      fontSize: `calc(12 * var(--logic-h, 1px))`,
+      lineHeight: `calc(14 * var(--logic-h, 1px))`,
+      overflow: 'hidden',
+      textAlign: 'left',
+      verticalAlign: 'top',
+      display: 'flex',
+      alignItems: 'flex-start',
+      justifyContent: 'flex-start'
+    });
+
+    return div;
+  }
+
+  button2(params = {}) {
+    const { size = [80, 30], position = [0, 0], ...restParams } = params;
+
+    let button = this.div({
+      ...restParams,
+      type: 'button'
+    });
+
+    // Apply logical positioning and sizing using Celest CSS variables
+    Object.assign(button.style, {
+      position: 'absolute',
+      left: `calc(${position[0]} * var(--logic-w, 1px))`,
+      top: `calc(${position[1]} * var(--logic-h, 1px))`,
+      width: `calc(${size[0]} * var(--logic-w, 1px))`,
+      height: `calc(${size[1]} * var(--logic-h, 1px))`,
+      fontSize: `calc(12 * var(--logic-h, 1px))`,
+      lineHeight: `calc(${size[1]} * var(--logic-h, 1px))`,
+      borderRadius: `calc(${Math.min(4, size[1] * 0.15)} * var(--logic-h, 1px))`,
+      border: `calc(1 * var(--logic-h, 1px)) solid #ccc`,
+      padding: `calc(${size[1] * 0.1} * var(--logic-h, 1px)) calc(${size[0] * 0.1} * var(--logic-w, 1px))`,
+      margin: '0',
+      boxSizing: 'border-box',
+      cursor: 'pointer',
+      textAlign: 'center',
+      overflow: 'hidden'
+    });
+
+    return button;
+  }
+
 }
