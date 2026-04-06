@@ -50,6 +50,27 @@ export default class Ux2 extends Ux {
   }
 
   header(params = {}) {
+    let p = {
+      size: [360, 24],
+      position: [0, 0],
+      background: `#ccc`,
+      ...params,
+    };
+    let div = this.div(p);
+
+    let homeBButton = this.button2({
+      parent: div,
+      size: [40, 22],
+      position: [1, 1],
+      text: '🏠',
+      onclick: () => {
+        if (params.onhome) {
+          params.onhome();
+        }
+      }
+    });
+
+    return div;
   }
 
   text2(params = {}) {
@@ -81,33 +102,51 @@ export default class Ux2 extends Ux {
   }
 
   button2(params = {}) {
-    const { size = [80, 30], position = [0, 0], ...restParams } = params;
-
-    let button = this.div({
-      ...restParams,
-      type: 'button'
+    let outer = this.div({
+      parent: params.parent,
+      type: 'div'
     });
 
-    // Apply logical positioning and sizing using Celest CSS variables
-    Object.assign(button.style, {
+    Object.assign(outer.style, {
       position: 'absolute',
-      left: `calc(${position[0]} * var(--logic-w, 1px))`,
-      top: `calc(${position[1]} * var(--logic-h, 1px))`,
-      width: `calc(${size[0]} * var(--logic-w, 1px))`,
-      height: `calc(${size[1]} * var(--logic-h, 1px))`,
+      left: `calc(${params.position[0]} * var(--logic-w, 1px))`,
+      top: `calc(${params.position[1]} * var(--logic-h, 1px))`,
+      width: `calc(${params.size[0]} * var(--logic-w, 1px))`,
+      height: `calc(${params.size[1]} * var(--logic-h, 1px))`
+    });
+
+    let inner = this.div({
+      parent: outer,
+      type: 'button',
+      text: params.text,
+    });
+
+    Object.assign(inner.style, {
+      position: 'absolute',
+      left: `calc(1 * var(--logic-w, 1px))`,
+      top: `calc(1 * var(--logic-h, 1px))`,
+      width: `calc(${params.size[0] - 2} * var(--logic-w, 1px))`,
+      height: `calc(${params.size[1] - 2} * var(--logic-h, 1px))`,
+      border: `calc(1 * var(--logic-h, 1px)) solid #000`,
+      borderRadius: `calc(4 * var(--logic-h, 1px))`,
+      backgroundColor: '#ccf',
+      color: '#FFFFFF',
       fontSize: `calc(12 * var(--logic-h, 1px))`,
-      lineHeight: `calc(${size[1]} * var(--logic-h, 1px))`,
-      borderRadius: `calc(${Math.min(4, size[1] * 0.15)} * var(--logic-h, 1px))`,
-      border: `calc(1 * var(--logic-h, 1px)) solid #ccc`,
-      padding: `calc(${size[1] * 0.1} * var(--logic-h, 1px)) calc(${size[0] * 0.1} * var(--logic-w, 1px))`,
-      margin: '0',
-      boxSizing: 'border-box',
-      cursor: 'pointer',
       textAlign: 'center',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      margin: '0',
+      padding: '0',
       overflow: 'hidden'
     });
 
-    return button;
+    if (params.onclick) {
+      inner.onclick = params.onclick;
+    }
+
+    return outer;
   }
 
 }

@@ -23,24 +23,13 @@ export default class ScreenDom {
 
     this.header = this.ux.header({
       parent: this.celest.inner,
-    });
-    Object.assign(this.header.style, {
-      position: 'absolute',
-      left: 'calc(0 * var(--logic-w, 1px))',
-      top: 'calc(0 * var(--logic-h, 1px))',
-      width: 'calc(360 * var(--logic-w, 1px))',
-      height: 'calc(20 * var(--logic-h, 1px))'
+      onhome: () => this.params.program.goto('main')
     });
 
     this.bottom = this.ux.div({
-      parent: this.celest.inner
-    });
-    Object.assign(this.bottom.style, {
-      position: 'absolute',
-      left: 'calc(0 * var(--logic-w, 1px))',
-      top: 'calc(20 * var(--logic-h, 1px))',
-      width: 'calc(360 * var(--logic-w, 1px))',
-      height: 'calc(620 * var(--logic-h, 1px))'
+      parent: this.celest.inner,
+      size: [360, 620],
+      position: [0, 20],
     });
 
     new Boreal(this.bottom);

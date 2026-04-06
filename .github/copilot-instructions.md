@@ -1,5 +1,8 @@
 # Code Generation Instructions
 
+## Use trailing commas
+- When syntax allows, use trailing commas in multi-line object and array literals.
+
 ## Code Style Preferences
 
 - **No comments in code**: Never add comments to code unless explicitly requested by the user
@@ -14,7 +17,7 @@
 
 ## Examples
 
-❌ **Don't do this:**
+**Don't do this:**
 ```javascript
 // Create canvas element
 this.canvas = document.createElement('canvas');
@@ -22,7 +25,7 @@ this.canvas = document.createElement('canvas');
 this.ctx = this.canvas.getContext('2d');
 ```
 
-✅ **Do this instead:**
+**Do this instead:**
 ```javascript
 this.canvas = document.createElement('canvas');
 this.ctx = this.canvas.getContext('2d');

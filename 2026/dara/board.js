@@ -18,6 +18,12 @@ export default class Board {
 
     this.parent.appendChild(this.canvas);
 
+    // Add click listener if onclick provided
+    if (this.params.onclick) {
+      this.canvas.addEventListener('click', this.params.onclick);
+      this.canvas.style.cursor = 'pointer';
+    }
+
     // Set canvas size
     this._resize();
 

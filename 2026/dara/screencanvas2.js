@@ -11,7 +11,9 @@ export default class ScreenCanvas2 {
   init() {
     ScreenCanvas2.count++;
 
-    this.board = new Board(this.parent);
+    this.board = new Board(this.parent, {
+      onclick: () => this.params.program.goto('main')
+    });
     this.board.init();
 
   }
