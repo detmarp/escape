@@ -26,39 +26,28 @@ export default class Board {
 
     // Set canvas size
     this._resize();
-
-    // Add resize listener
-    this._resizeObserver = new ResizeObserver(() => this._resize());
-    this._resizeObserver.observe(this.parent);
   }
 
   term() {
-    if (this._resizeObserver) {
-      this._resizeObserver.disconnect();
-    }
   }
 
   update(dt, time, frame) {
-    // Clear and fill with alternating colors based on frame
-    const color = (frame % 2 === 0) ? '#FFA500' : '#FF0000'; // orange or red
+    this._resize();
 
-    this.ctx.fillStyle = color;
+    this.ctx.fillStyle = `#fa0`;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Calculate logical scale
-    const scaleX = this.canvas.width / this.logicalW;
-    const scaleY = this.canvas.height / this.logicalH;
-    const scale = Math.min(scaleX, scaleY);
+    const largerDimension = Math.max(this.canvas.width, this.canvas.height);
+    const scale = 1000 / largerDimension;
 
-    // Draw debug text in blue
     this.ctx.fillStyle = '#0000FF';
-    this.ctx.font = `${30 * scale}px monospace`;
+    this.ctx.font = `${20 * scale}px monospace`;
 
     const lines = [
       `Canvas actual: ${this.canvas.width}x${this.canvas.height}`,
       `dt: ${dt.toFixed(3)}, time: ${time.toFixed(3)}, frame: ${frame}`,
-      `Canvas logical scale: ${scale.toFixed(3)}`,
-      `Canvas logical: ${this.logicalW}x${this.logicalH}`
+      `Canvas logical size: ${(this.canvas.width * scale).toFixed(0)}x${(this.canvas.height * scale).toFixed(0)}`,
+      `Scale (1000/larger): ${scale.toFixed(3)}`
     ];
 
     lines.forEach((line, index) => {

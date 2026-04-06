@@ -9,7 +9,7 @@
 - **Clean minimal code**: Focus on writing self-explanatory, clean code without commentary
 - **Let code speak**: Variable names, function names, and structure should be clear enough without comments
 
-## When Comments Are Acceptable
+## When Code Comments Are Acceptable
 
 - Only when the user explicitly asks for comments or documentation
 - For complex algorithms where the logic is truly non-obvious

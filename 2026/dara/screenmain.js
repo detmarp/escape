@@ -19,6 +19,10 @@ export default class ScreenMain {
       text: 'Main'
     });
 
+    this.ux.div({
+      text: 'Game framework with screen routing, responsive design, and canvas support. Built with custom JavaScript helpers for rapid web game prototyping.'
+    });
+
     let menu = this.ux.stack({gap: 4});
 
     const menuItems = ['home', 'settings', 'demo', 'test', 'setup', 'dom', 'canvas1', 'canvas2'];
