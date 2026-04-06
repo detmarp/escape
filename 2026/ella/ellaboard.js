@@ -1,4 +1,4 @@
-export default class Board {
+export default class EllaBoard {
   constructor(parent, params = {}) {
     this.parent = parent;
     this.params = params;
@@ -48,7 +48,7 @@ export default class Board {
       `Canvas actual: ${this.canvas.width}x${this.canvas.height}`,
       `dt: ${dt.toFixed(3)}, time: ${time.toFixed(3)}, frame: ${frame}`,
       `Canvas logical size: ${(this.canvas.width * scale).toFixed(0)}x${(this.canvas.height * scale).toFixed(0)}`,
-      `Scale (1000/larger): ${scale.toFixed(3)}`
+      //`Scale (1000/larger): ${scale.toFixed(3)}`
     ];
 
     lines.forEach((line, index) => {

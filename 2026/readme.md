@@ -11,6 +11,7 @@
 - [boreal](boreal/) - standard portable style demo
 - [celest](celest/)
 - [dara](dara/)
+- [ella](ella/)
 
 ## name list
 
@@ -18,7 +19,7 @@
 - bryn - bellis - brisa
 - cira - cyra - calla
 - dax - dione - dria
-- eartha - elara - eira - ember
+- eartha - eira - ember
 - faye - freya - flora - fira
 - gaia - galen - gemma - glint
 - harp - halo - hestia - hydra

@@ -7,7 +7,7 @@
 - [2026](2026)
   - [2026/astra](2026/astra/) - fixed app page demo
   - [2026/boreal](2026/boreal/) - standard portable style demo
-  - [2026/celest](2026/celest/) - css-layout game example
+  - [2026/ella](2026/ella/) - battleship
 - 2024
   - [Arwen](arwen/)
   - [Bryn](bryn/)
