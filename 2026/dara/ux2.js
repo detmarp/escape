@@ -49,6 +49,9 @@ export default class Ux2 extends Ux {
     return hr;
   }
 
+  header(params = {}) {
+  }
+
   text2(params = {}) {
     const { size = [100, 20], position = [0, 0], ...restParams } = params;
 

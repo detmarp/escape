@@ -1,5 +1,4 @@
-import Boreal from '../boreal/boreal.js';
-import Ux2 from './ux2.js';
+import Board from './board.js';
 
 export default class ScreenCanvas1 {
   static count = 0;
@@ -7,40 +6,25 @@ export default class ScreenCanvas1 {
   constructor(parent, params) {
     this.parent = parent;
     this.params = params;
-    this.ux = new Ux2(this.parent);
   }
 
   init() {
     ScreenCanvas1.count++;
-    new Boreal(this.parent);
 
-    this.ux.div({
-      type: 'h1',
-      text: 'Canvas Game 1'
-    });
-
-    this.ux.div({
-      type: 'button',
-      text: 'main',
-      onclick: () => this.params.program.goto('main')
-    });
-
-    this.info = this.ux.cornerInfo({
-      parent: this.parent,
-    });
+    this.board = new Board(this.parent);
+    this.board.init();
 
   }
 
-  term() {}
+  term() {
+    if (this.board) {
+      this.board.term();
+    }
+  }
 
   work(dt, time, frame) {
-    this.info.update({
-      text: [
-        `count: ${ScreenCanvas1.count}`,
-        `frame: ${frame}`,
-        `time: ${time.toFixed(3)}`,
-        `dt: ${dt.toFixed(3)}`
-      ].join('\n')
-    });
+    if (this.board) {
+      this.board.update(dt, time, frame);
+    }
   }
 }

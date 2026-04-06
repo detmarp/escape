@@ -19,8 +19,8 @@ export default class Program {
     'setup': { class: ScreenSetup, params: { astra: false } },
     'home': { class: ScreenHome, params: { astra: false } },
     'dom': { class: ScreenDom, params: { astra: true } },
-    'canvas1': { class: ScreenCanvas1, params: { astra: false } },
-    'canvas2': { class: ScreenCanvas2, params: { astra: false } },
+    'canvas1': { class: ScreenCanvas1, params: { astra: true } },
+    'canvas2': { class: ScreenCanvas2, params: { astra: true } },
   };
 
   constructor(root = document.body) {
