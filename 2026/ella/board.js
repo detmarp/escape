@@ -9,22 +9,17 @@ export default class Board {
   init() {
     // Create canvas element
     this.canvas = document.createElement('canvas');
+    this.parent.appendChild(this.canvas);
     this.ctx = this.canvas.getContext('2d');
-
-    // Style and append canvas
     this.canvas.style.width = '100%';
     this.canvas.style.height = '100%';
     this.canvas.style.display = 'block';
 
-    this.parent.appendChild(this.canvas);
-
-    // Add click listener if onclick provided
     if (this.params.onclick) {
       this.canvas.addEventListener('click', this.params.onclick);
       this.canvas.style.cursor = 'pointer';
     }
 
-    // Set canvas size
     this._resize();
   }
 

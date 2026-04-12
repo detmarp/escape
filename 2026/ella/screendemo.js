@@ -2,6 +2,8 @@ import EllaBoard from './ellaboard.js';
 import Boreal from '../boreal/boreal.js';
 import Ux2 from './ux2.js';
 import Celest from '../celest/celest.js';
+import WorkTree from './worktree.js';
+import DrawShip from './drawship.js';
 
 export default class ScreenDemo {
   static count = 0;
@@ -20,12 +22,12 @@ export default class ScreenDemo {
     this.celest.outer.style.backgroundColor = '#456';
     this.celest.inner.style.backgroundColor = '#fdb';
 
+    this.workTree = new WorkTree();
+
     this.ux = new Ux2(this.celest.inner);
 
-    this.header = this.ux.header({
-      parent: this.celest.inner,
-      onhome: () => this.params.program.goto('main')
-    });
+    this._makeHeader();
+    this._makeFooter();
 
     this.bottom = this.ux.div({
       parent: this.celest.inner,
@@ -40,6 +42,88 @@ export default class ScreenDemo {
     });
     this.board.init();
 
+    this.workTree.clear();
+
+    let gridStart0 = { position: [20, 20], };
+    let gridStart1 = { position: [60, 300], };
+
+    this.workTree.add(null, gridStart0);
+    this.workTree.add(null, gridStart1);
+
+    let grid0 = new DrawShip();
+    this.workTree.add(gridStart0, grid0);
+
+    let grid1 = new DrawShip();
+    this.workTree.add(gridStart1, grid1);
+
+    let a = {
+      position: [200, 300],
+      size: [100, 100],
+    };
+    let b = {
+      position: [40, 40],
+      size: [50, 50],
+    };
+    this.workTree.add(null, a);
+    this.workTree.add(a, b);
+  }
+
+  term() {
+    if (this.board) {
+      this.board.term();
+    }
+  }
+
+  work(dt, time, frame) {
+    this.board.update(dt, time, frame);
+
+    this.workTree.call('work', dt, time, frame);
+
+    let touch;
+    while ((touch = this.board.getTouch()) !== null) {
+      this._doTouch(touch);
+    }
+
+    this.workTree.call('draw', this.board.ctx);
+  }
+
+  _doTouch(touch) {
+    let t = { ...touch };
+
+    if (t.position) {
+      t.position = [
+        Math.floor(t.position[0] / this.board.scale),
+        Math.floor(t.position[1] / this.board.scale),
+      ];
+    }
+
+    if (t.start) {
+      t.start = [
+        Math.floor(t.start[0] / this.board.scale),
+        Math.floor(t.start[1] / this.board.scale),
+      ];
+    }
+
+
+    if (t.action == 'down') {
+      this.capture = this.workTree.find(t.position);
+    }
+    else if (t.action == 'end') {
+      this.capture = null;
+    }
+    if (this.capture) {
+      console.log(`ddd Touch: ${JSON.stringify(t)}`);
+    }
+  }
+
+  _makeHeader() {
+    this.header = this.ux.header({
+      parent: this.celest.inner,
+      onhome: () => this.params.program.goto('main')
+    });
+  }
+
+  _makeFooter() {
     this.footer = this.ux.div({
       size: [360, 30],
       position: [0, 610],
@@ -75,18 +159,5 @@ export default class ScreenDemo {
       parent: this.footer,
       text: 'Restart',
     });
-
-  }
-
-  term() {
-    if (this.board) {
-      this.board.term();
-    }
-  }
-
-  work(dt, time, frame) {
-    if (this.board) {
-      this.board.update(dt, time, frame);
-    }
   }
 }
