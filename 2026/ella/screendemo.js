@@ -4,6 +4,8 @@ import Ux2 from './ux2.js';
 import Celest from '../celest/celest.js';
 import WorkTree from './worktree.js';
 import DrawShip from './drawship.js';
+import ShipGame from './shipgame.js';
+import BotA from './bota.js';
 
 export default class ScreenDemo {
   static count = 0;
@@ -11,6 +13,7 @@ export default class ScreenDemo {
   constructor(parent, params) {
     this.parent = parent;
     this.params = params;
+    this._newGame();
   }
 
   init() {
@@ -40,32 +43,10 @@ export default class ScreenDemo {
     this.board = new EllaBoard(this.bottom, {
       onclick: () => this.params.program.goto('main')
     });
+
     this.board.init();
 
-    this.workTree.clear();
-
-    let gridStart0 = { position: [20, 20], };
-    let gridStart1 = { position: [60, 300], };
-
-    this.workTree.add(null, gridStart0);
-    this.workTree.add(null, gridStart1);
-
-    let grid0 = new DrawShip();
-    this.workTree.add(gridStart0, grid0);
-
-    let grid1 = new DrawShip();
-    this.workTree.add(gridStart1, grid1);
-
-    let a = {
-      position: [200, 300],
-      size: [100, 100],
-    };
-    let b = {
-      position: [40, 40],
-      size: [50, 50],
-    };
-    this.workTree.add(null, a);
-    this.workTree.add(a, b);
+    this._refresh();
   }
 
   term() {
@@ -158,6 +139,38 @@ export default class ScreenDemo {
       position: [160, 1],
       parent: this.footer,
       text: 'Restart',
+      onclick: () => this._onRestart(),
     });
+  }
+
+  _onRestart() {
+    this._newGame();
+    this._refresh();
+  }
+
+  _refresh() {
+    this.workTree.clear();
+
+    let gridStart0 = { position: [20, 20], };
+    let gridStart1 = { position: [60, 300], };
+
+    this.workTree.add(null, gridStart0);
+    this.workTree.add(null, gridStart1);
+
+    let grid0 = new DrawShip(this.game.boards[0]);
+    this.workTree.add(gridStart0, grid0);
+
+    let grid1 = new DrawShip(this.game.boards[1]);
+    this.workTree.add(gridStart1, grid1);
+  }
+
+  _newGame() {
+    this.game = new ShipGame();
+
+    let bot0 = new BotA(this.game, 0);
+    bot0.placeShips();
+
+    let bot1 = new BotA(this.game, 1);
+    bot1.placeShips();
   }
 }

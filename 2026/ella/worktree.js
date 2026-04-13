@@ -1,7 +1,7 @@
 // A simple tree structure to manage work items that need to be updated and drawn each frame.
 export default class WorkTree {
   constructor() {
-    this.debug = true;
+    this.debug = false;
   }
 
   clear() {
