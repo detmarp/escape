@@ -70,8 +70,8 @@ export default class DrawShip {
   }
 
   _crosshairs(ctx, gridX, gridY) {
-    ctx.strokeStyle = '#0a0';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#df0';
+    ctx.lineWidth = 4;
 
     const x = gridX * this.cellSize;
     const y = gridY * this.cellSize;

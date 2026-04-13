@@ -58,6 +58,11 @@ export default class ScreenDemo {
   work(dt, time, frame) {
     this.board.update(dt, time, frame);
 
+    let bot0 = new BotA(this.game, 0);
+    let bot1 = new BotA(this.game, 1);
+    bot0.setTarget();
+    bot1.setTarget();
+
     this.workTree.call('work', dt, time, frame);
 
     let touch;
@@ -168,9 +173,8 @@ export default class ScreenDemo {
     this.game = new ShipGame();
 
     let bot0 = new BotA(this.game, 0);
-    bot0.placeShips();
-
     let bot1 = new BotA(this.game, 1);
+    bot0.placeShips();
     bot1.placeShips();
   }
 }

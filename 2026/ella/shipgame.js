@@ -21,5 +21,8 @@ export default class ShipGame {
 
     this.boards[0]._update();
     this.boards[1]._update();
+
+    this.turn = 0;
+    this.gameOver = false;
   }
 }

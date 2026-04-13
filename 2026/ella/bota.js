@@ -15,17 +15,34 @@ export default class BotA {
   constructor(game, id) {
     this.game = game;
     this.id = id;
+    this.other = 1 - id;
   }
 
   placeShips() {
-    let ships = this.chooseShips();
+    let ships = this._chooseShips();
     for (let ship of ships) {
       this.game.boards[this.id].ships.push(ship);
     }
     this.game.boards[this.id]._update();
   }
 
-  chooseShips() {
+  startTurn() {
+    this.game.boards[this.other].cursor = null;
+  }
+
+  setTarget() {
+    let target = null;
+    if (this.id == this.game.turn) {
+       target = this._chooseTarget();
+    }
+    this.game.boards[this.other].cursor = target;
+  }
+
+  _chooseTarget() {
+    return [_rnd(10), _rnd(10)];
+  }
+
+  _chooseShips() {
     let board = new ShipBoard(this.game);
 
     for (let item of this.game.fleet) {
