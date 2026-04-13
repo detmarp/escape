@@ -13,7 +13,12 @@ export default class DrawShip {
     this._grid(ctx);
 
 
-    // Draw random markers
+    for (let ship of this.board.ships) {
+      for (let cell of ship.cells) {
+        this._shipCell(ctx, cell[0], cell[1]);
+      }
+    }
+
     for (let i = 0; i < this.board.shots.length; i++) {
       const shot = this.board.shots[i];
       const gridX = shot.position[0];
@@ -22,19 +27,13 @@ export default class DrawShip {
       this._marker(ctx, gridX, gridY, type, ooscale);
     }
 
-    for (let ship of this.board.ships) {
-      for (let cell of ship.cells) {
-        this._shipCell(ctx, cell[0], cell[1]);
-      }
-    }
-
     for (let row of this.board.cells) {
       for (let cell of row) {
         if (cell.adjacent) {
-          this._drawX(ctx, cell.x, cell.y, false);
+          //this._drawX(ctx, cell.x, cell.y, false);
         }
         if (cell.diagonal) {
-          this._drawX(ctx, cell.x, cell.y, true);
+          //this._drawX(ctx, cell.x, cell.y, true);
         }
       }
     }

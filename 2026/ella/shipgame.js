@@ -25,4 +25,19 @@ export default class ShipGame {
     this.turn = 0;
     this.gameOver = false;
   }
+
+  shoot(target, position) {
+    let board = this.boards[target];
+    let cell = board.cells[position[1]] && board.cells[position[1]][position[0]];
+    let hit = false;
+    if (cell && cell.ship) {
+      hit = true;
+    }
+    board.shots.push({
+      position,
+      hit: hit,
+    });
+
+    this.turn = 1 - this.turn;
+  }
 }

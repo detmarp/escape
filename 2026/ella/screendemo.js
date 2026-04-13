@@ -55,13 +55,31 @@ export default class ScreenDemo {
     }
   }
 
+  _nextTurn() {
+    if (this.game.gameOver) return;
+
+    let player = this.game.turn;
+    let other = 1 - player;
+    let bot = new BotA(this.game, player);
+
+    if (!this.game.boards[other].cursor) {
+      bot.startTurn
+      bot.setTarget();
+      this.game.boards[other]._update();
+    }
+    else if (this.game.boards[other].cursor) {
+      let position = this.game.boards[other].cursor;
+      this.game.boards[other].cursor = null;
+      this.game.shoot(other, position);
+      this.game.boards[other]._update();
+    }
+
+  }
+
   work(dt, time, frame) {
     this.board.update(dt, time, frame);
 
-    let bot0 = new BotA(this.game, 0);
-    let bot1 = new BotA(this.game, 1);
-    bot0.setTarget();
-    bot1.setTarget();
+    this._nextTurn();
 
     this.workTree.call('work', dt, time, frame);
 
