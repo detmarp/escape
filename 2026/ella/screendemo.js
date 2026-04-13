@@ -35,7 +35,7 @@ export default class ScreenDemo {
     this.bottom = this.ux.div({
       parent: this.celest.inner,
       size: [360, 580],
-      position: [0, 30],
+      position: [0, 60],
     });
 
     new Boreal(this.bottom);
@@ -107,7 +107,7 @@ export default class ScreenDemo {
   _makeFooter() {
     this.footer = this.ux.div({
       size: [360, 30],
-      position: [0, 610],
+      position: [0, 30],
       border: `#222`,
     });
     this.ux.button2({
