@@ -106,7 +106,7 @@ export default class DrawShip {
     const y = (gridY + 0.5) * this.cellSize;
     const radius = 6;
 
-    ctx.fillStyle = type === 'hit' ? '#FF0000' : '#000000';
+    ctx.fillStyle = type === 'hit' ? '#FF0000' : '#fff';
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, 2 * Math.PI);
     ctx.fill();
@@ -134,7 +134,7 @@ export default class DrawShip {
   }
 
   _shipCell(ctx, gridX, gridY) {
-    const margin = 3;
+    const margin = 2;
     const x = gridX * this.cellSize + margin;
     const y = gridY * this.cellSize + margin;
     const size = this.cellSize - margin * 2;

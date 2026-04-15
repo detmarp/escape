@@ -39,7 +39,14 @@ export default class BotA {
   }
 
   _chooseTarget() {
-    return [_rnd(10), _rnd(10)];
+    let empty = [];
+    for (let y = 0; y < 10; y++) {
+      for (let x = 0; x < 10; x++) {
+        let cell = this.game.boards[this.other].cells[y][x];
+        if (!cell.shot) empty.push([x, y]);
+      }
+    }
+    return empty.length ? empty[_rnd(empty.length)] : null;
   }
 
   _chooseShips() {

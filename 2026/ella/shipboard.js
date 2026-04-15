@@ -24,7 +24,9 @@ export default class ShipBoard {
     // rebuild cells
     this.cells = Array(10).fill().map((_, y) => Array(10).fill().map((_, x) => ({ x, y })));
 
+    this.shipCellCount = 0;
     for (let ship of this.ships) {
+      this.shipCellCount += ship.size;
       for (let i = 0; i < ship.size; i++) {
         const x = ship.position[0] + ship.dx * i;
         const y = ship.position[1] + ship.dy * i;
@@ -36,6 +38,7 @@ export default class ShipBoard {
         }
       }
     }
+
     for (let ship of this.ships) {
       for (let i = 0; i < ship.size; i++) {
         const adjacent = [ [-1, 0], [1, 0], [0, -1], [0, 1] ];
@@ -63,12 +66,16 @@ export default class ShipBoard {
       }
     }
 
+    this.hitCount = 0;
     for (let shot of this.shots) {
       const [x, y] = shot.position;
       let cell = this.cells[y] && this.cells[y][x];
       if (cell) {
         cell.shot = true;
         cell.hit = shot.hit;
+        if (shot.hit) {
+          this.hitCount++;
+        }
       }
     }
   }

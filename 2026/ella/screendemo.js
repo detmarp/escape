@@ -56,14 +56,22 @@ export default class ScreenDemo {
   }
 
   _nextTurn() {
-    if (this.game.gameOver) return;
+    if (this._stateAge('gameover') > 2) {
+      this._onRestart();
+      return;
+    }
+
+    if (this.game.gameOver) {
+      this._setState('gameover');
+      return;
+    }
 
     let player = this.game.turn;
     let other = 1 - player;
     let bot = new BotA(this.game, player);
 
     if (!this.game.boards[other].cursor) {
-      bot.startTurn
+      bot.startTurn();
       bot.setTarget();
       this.game.boards[other]._update();
     }
@@ -73,7 +81,6 @@ export default class ScreenDemo {
       this.game.shoot(other, position);
       this.game.boards[other]._update();
     }
-
   }
 
   work(dt, time, frame) {
@@ -166,6 +173,21 @@ export default class ScreenDemo {
     });
   }
 
+  _setState(state) {
+    if (this.state !== state) {
+      this.state = state;
+      this.stateTime = Date.now();
+    }
+  }
+
+  _stateAge(state = null) {
+    if (state && this.state !== state) {
+      return 0;
+    }
+    if (!this.stateTime) return 0;
+    return (Date.now() - this.stateTime) / 1000;
+  }
+
   _onRestart() {
     this._newGame();
     this._refresh();
@@ -185,6 +207,8 @@ export default class ScreenDemo {
 
     let grid1 = new DrawShip(this.game.boards[1]);
     this.workTree.add(gridStart1, grid1);
+
+    this._setState('start');
   }
 
   _newGame() {

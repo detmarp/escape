@@ -30,14 +30,29 @@ export default class ShipGame {
     let board = this.boards[target];
     let cell = board.cells[position[1]] && board.cells[position[1]][position[0]];
     let hit = false;
+
+    if (!cell || cell.shot) {
+      return;
+    }
+
     if (cell && cell.ship) {
       hit = true;
     }
-    board.shots.push({
+    let shot = {
       position,
       hit: hit,
-    });
+    };
+    board.shots.push(shot);
+    board._update();
 
-    this.turn = 1 - this.turn;
+    if (hit && board.hitCount >= board.shipCellCount) {
+      this.gameOver = true;
+    }
+
+    if (!this.gameOver && (!hit || !this.rules.continueAfterHit)) {
+      this.turn = 1 - this.turn;
+    }
+
+    return shot;
   }
 }
