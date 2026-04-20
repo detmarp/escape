@@ -124,7 +124,7 @@ export default class Program {
       this.startTime = currentTime;
     }
 
-    const dt = this.lastTime ? currentTime - this.lastTime : 0;
+    const dt = (this.lastTime ? currentTime - this.lastTime : 0) / 1000;
     this.lastTime = currentTime;
     this.frame++;
 

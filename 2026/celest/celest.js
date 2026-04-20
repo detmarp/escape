@@ -1,3 +1,6 @@
+// version 2026-04-18
+// Write a concise class description
+
 export default class Celest {
     constructor(containerDiv, logicalW, logicalH, options = {}) {
         this.containerDiv = containerDiv;

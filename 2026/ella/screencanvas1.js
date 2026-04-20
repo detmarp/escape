@@ -1,7 +1,7 @@
 import Board from './board.js';
-import Boreal from '../boreal/boreal.js';
 import Ux2 from './ux2.js';
 import Celest from '../celest/celest.js';
+import NodeTree from './nodetree.js';
 
 export default class ScreenCanvas1 {
   static count = 0;
@@ -18,7 +18,7 @@ export default class ScreenCanvas1 {
     this.celest.init();
 
     this.celest.outer.style.backgroundColor = '#8B4A8B';
-    this.celest.inner.style.backgroundColor = '#F5F5DC';
+    this.celest.inner.style.backgroundColor = '#8b8b8b';
 
     this.ux = new Ux2(this.celest.inner);
 
@@ -29,16 +29,19 @@ export default class ScreenCanvas1 {
 
     this.bottom = this.ux.div({
       parent: this.celest.inner,
-      size: [360, 620],
-      position: [0, 24],
+      size: [360, 610],
+      position: [0, 30],
     });
-
-    new Boreal(this.bottom);
 
     this.board = new Board(this.bottom, {
-      onclick: () => this.params.program.goto('main')
     });
     this.board.init();
+
+    this.nodeTree = new NodeTree({
+      canvas: this.board.canvas,
+    });
+
+    this._setupScene();
   }
 
   term() {
@@ -48,8 +51,56 @@ export default class ScreenCanvas1 {
   }
 
   work(dt, time, frame) {
-    if (this.board) {
-      this.board.update(dt, time, frame);
+    this.board.update();
+    this.nodeTree.update();
+  }
+
+  _setupScene() {
+    function _rect(ctx, color, r) {
+      // local helper
+      ctx.fillStyle = color;
+      ctx.fillRect(r[0], r[1], r[2], r[3]);
     }
+
+    let topSquare = this.nodeTree.add(
+      { draw: function(ctx) { _rect(ctx, '#f005', [0, 0, this._node.size[0], this._node.size[1]]); }, },
+      null,
+      { size: [320, 320], position: [20, 20], }
+    );
+
+    this.nodeTree.add(
+      { draw: function(ctx) { _rect(ctx, '#08f5', [0, 0, 60, 60]); }, },
+      topSquare._node,
+      { position: [10, 10], }
+    );
+
+    this.nodeTree.add(
+      { draw: function(ctx) { _rect(ctx, '#0ff', [0, 0, 60, 60]); }, },
+      topSquare._node,
+      { position: [90, 10], }
+    );
+
+    this.nodeTree.add(
+      {
+        draw: function(ctx) { _rect(ctx, '#ff0', [0, 0, 60, 60]); },
+        work: function() {
+          this._node.position = [160 + Math.random() * 4, 10 + Math.random() * 4];
+        },
+      },
+      topSquare._node,
+      { position: [160, 10], }
+    );
+
+    this.nodeTree.add(
+      {
+        draw: function(ctx) { _rect(ctx, '#f08', [-30, -30, 60, 60]); },
+        work: function() {
+          this._node.rotation = Math.PI * this._node.age * 0.5;
+        },
+      },
+      topSquare._node,
+      { position: [240 + 40, 40], offset: [0, 0],}
+    );
+
   }
 }

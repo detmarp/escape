@@ -4,6 +4,7 @@ import Ux2 from './ux2.js';
 import Celest from '../celest/celest.js';
 import WorkTree from './worktree.js';
 import DrawShip from './drawship.js';
+import DrawX from './drawx.js';
 import ShipGame from './shipgame.js';
 import BotA from './bota.js';
 
@@ -204,6 +205,9 @@ export default class ScreenDemo {
 
     let grid0 = new DrawShip(this.game.boards[0]);
     this.workTree.add(gridStart0, grid0);
+
+    let x = new DrawX();
+    this.workTree.add(gridStart0, x);
 
     let grid1 = new DrawShip(this.game.boards[1]);
     this.workTree.add(gridStart1, grid1);

@@ -4,6 +4,7 @@ export default class Board {
     this.params = params;
     this.logicalW = 360;
     this.logicalH = 640;
+    this.frame = 0;
   }
 
   init() {
@@ -26,28 +27,31 @@ export default class Board {
   term() {
   }
 
-  update(dt, time, frame) {
+  update() {
+    this.frame++;
     this._resize();
 
     this.ctx.fillStyle = `#fa0`;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-    const largerDimension = Math.max(this.canvas.width, this.canvas.height);
-    const scale = 1000 / largerDimension;
-    const ooscale = 1 / scale;
+    this.ctx.fillStyle = `#ff0`;
+    this.ctx.fillRect(10, 10, 340, 590);
 
     this.ctx.fillStyle = '#0000FF';
-    this.ctx.font = `${20 * ooscale}px monospace`;
+    this.ctx.font = `10px monospace`;
 
+    let logical = [
+      this.canvas.width * this.scale,
+      this.canvas.height * this.scale,
+    ];
     const lines = [
-      `Canvas actual: ${this.canvas.width}x${this.canvas.height}`,
-      `dt: ${dt.toFixed(3)}, time: ${time.toFixed(3)}, frame: ${frame}`,
-      `Canvas logical size: ${(this.canvas.width * scale).toFixed(0)}x${(this.canvas.height * scale).toFixed(0)}`,
-      `Scale (1000/larger): ${scale.toFixed(3)}`
+      `Canvas actual:  ${this.canvas.width} x ${this.canvas.height}`,
+      `Canvas logical: ${logical[0].toFixed(1)} x ${logical[1].toFixed(1)}`,
+      `Scale: ${this.scale.toFixed(3)}`,
+      `Frame: ${this.frame}`,
     ];
 
     lines.forEach((line, index) => {
-      this.ctx.fillText(line, 10 * ooscale, (30 + index * 40) * ooscale);
+      this.ctx.fillText(line, 14, (24 + index * 16));
     });
   }
 
@@ -55,5 +59,8 @@ export default class Board {
     const rect = this.parent.getBoundingClientRect();
     this.canvas.width = rect.width;
     this.canvas.height = rect.height;
+    this.scale = this.canvas.width / 360;
+    // actually set the canvas draw scale
+    this.ctx.setTransform(this.scale, 0, 0, this.scale, 0, 0);
   }
 }
