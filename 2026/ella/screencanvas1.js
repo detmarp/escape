@@ -61,6 +61,17 @@ export default class ScreenCanvas1 {
       ctx.fillStyle = color;
       ctx.fillRect(r[0], r[1], r[2], r[3]);
     }
+    function _circ(ctx, color, c, r) {
+      // local helper
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(c[0], c[1], r, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+    function _rnd(n) {
+     // int random helper
+     return Math.floor(Math.random() * n);
+    }
 
     let topSquare = this.nodeTree.add(
       { draw: function(ctx) { _rect(ctx, '#f005', [0, 0, this._node.size[0], this._node.size[1]]); }, },
@@ -102,5 +113,41 @@ export default class ScreenCanvas1 {
       { position: [240 + 40, 40], offset: [0, 0],}
     );
 
+    this.nodeTree.add(
+      {
+        draw: function(ctx) { _circ(ctx, '#80f', [0, 0], this.r); },
+        work: function() {
+          this.r = 25 + 20 * Math.sin(Math.PI * 2 * this._node.t);
+        },
+      },
+      topSquare._node,
+      {
+        position: [0 + 40, 80 + 40],
+        period: 4,
+      }
+    );
+
+    function _makeTtlTest0(parent) {
+      // make this just like the plum pulse above
+      return this.nodeTree.add(
+        {
+          draw: function(ctx) { _circ(ctx, '#f00a', [0, 0], this.r); },
+          work: function() {
+            this.r = 5 + 40 * Math.sin(Math.PI * this._node.t);
+          },
+          term: function() {
+            _makeTtlTest0.call(self, parent);
+          }
+        },
+        parent,
+        {
+          position: [_rnd(4) * 80 + 40, _rnd(4) * 80 + 40],
+          ttl: 1,
+        }
+      );
+    }
+
+    const self = this;
+    _makeTtlTest0.call(this, topSquare._node);
   }
 }

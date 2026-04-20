@@ -43,11 +43,29 @@ export default class NodeTree {
     }
   }
 
+  _removeNode(node) {
+    if (node.parent) {
+      let idx = node.parent.children.indexOf(node);
+      if (idx !== -1) {
+        node.parent.children.splice(idx, 1);
+      }
+    }
+    if (node.object && node.object.term) {
+      node.object.term();
+    }
+  }
+
   update() {
     this._work();
     this._draw();
     if (this.debug) {
       this._debugDraw();
+    }
+    // do 'kill' cleanup here
+    for (let node of this.flat) {
+      if (node.kill) {
+        this._removeNode(node);
+      }
     }
   }
 
@@ -77,7 +95,7 @@ export default class NodeTree {
     for (let node of this.flat) {
       if (!node.inited) {
         if (node.object && node.object.init) {
-          needInit |= [];
+          needInit ??= [];
           needInit.push(node);
         }
         else {
@@ -96,8 +114,20 @@ export default class NodeTree {
 
     // do work
     for (let node of this.flat) {
+      node.age += dt;
       if (node.object && node.object.work) {
-        node.age += dt;
+        if (node.ttl) {
+          node.t = node.age / node.ttl;
+          if (node.age > node.ttl) {
+            node.t = 1;
+            node.kill = true;
+          }
+        } else if (node.period) {
+          node.t = (node.age % node.period) / node.period;
+        } else {
+          node.t = 0;
+        }
+
         node.object.work(dt, this.frame);
       }
     }
