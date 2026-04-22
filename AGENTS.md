@@ -21,8 +21,7 @@
 ```javascript
 // Create canvas element
 this.canvas = document.createElement('canvas');
-// Set context
-this.ctx = this.canvas.getContext('2d');
+this.ctx = this.canvas.getContext('2d');  // Set context
 ```
 
 **Do this instead:**

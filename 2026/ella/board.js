@@ -31,17 +31,12 @@ export default class Board {
     this.frame++;
     this._resize();
 
-    this.ctx.fillStyle = `#fa0`;
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    this.ctx.fillStyle = `#ff0`;
-    this.ctx.fillRect(10, 10, 340, 590);
-
-    this.ctx.fillStyle = '#0000FF';
+    this.ctx.fillStyle = '#eef';
     this.ctx.font = `10px monospace`;
 
     let logical = [
-      this.canvas.width * this.scale,
-      this.canvas.height * this.scale,
+      this.canvas.width / this.scale,
+      this.canvas.height / this.scale,
     ];
     const lines = [
       `Canvas actual:  ${this.canvas.width} x ${this.canvas.height}`,
@@ -51,7 +46,7 @@ export default class Board {
     ];
 
     lines.forEach((line, index) => {
-      this.ctx.fillText(line, 14, (24 + index * 16));
+      this.ctx.fillText(line, 2, (2 + 30 - 10) + index * 16);
     });
   }
 

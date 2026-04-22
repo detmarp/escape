@@ -1,6 +1,6 @@
 // class NodeTree
 // A simple Unity-inpired tree of transform nodes.
-// For Canvas 2d useage.
+// For Canvas 2d usage.
 // With lists of children and components.
 // With support for recursive work and draw traversal.
 // Intrinsic TTL support, generator support.
@@ -22,10 +22,12 @@ export default class NodeTree {
     this.ctx = canvas.getContext('2d');
   }
 
-  add(object = {}, parent = null, params = {}) {
-    parent = parent || this.root;
-    if (!parent.children) {
-      parent.children = [];
+  add(object, parent, params = {}) {
+    object ??= {};
+    parent ??= this.root;
+
+    if (parent.tree !== this) {
+      throw new Error('Parent node is not in this NodeTree');
     }
 
     let node = this._newNode(object, params);
@@ -78,6 +80,7 @@ export default class NodeTree {
     const dt = (now - this.lastTime) / 1000;
     this.lastTime = now;
     this.frame++;
+    let time = this.lastTime / 1000;
 
     this.flat = [];
 
@@ -128,7 +131,7 @@ export default class NodeTree {
           node.t = 0;
         }
 
-        node.object.work(dt, this.frame);
+        node.object.work(dt, time, this.frame);
       }
     }
   }
@@ -136,21 +139,24 @@ export default class NodeTree {
   _draw() {
     // walk the tree, not the flat list
     const walk = (node) => {
+      if (!node.inited) {
+        return;
+      }
       let transform = null;
-      if (node.object && node.object.draw) {
-        if (node.position || node.rotation || node.offset) {
-          transform = true;
-          this.ctx.save();
-          if (node.position) {
-            this.ctx.translate(node.position[0], node.position[1]);
-          }
-          if (node.rotation) {
-            this.ctx.rotate(node.rotation);
-          }
-          if (node.offset) {
-            this.ctx.translate(-node.offset[0], -node.offset[1]);
-          }
+      if (node.position || node.rotation || node.offset) {
+        transform = true;
+        this.ctx.save();
+        if (node.position) {
+          this.ctx.translate(node.position[0], node.position[1]);
         }
+        if (node.rotation) {
+          this.ctx.rotate(node.rotation);
+        }
+        if (node.offset) {
+          this.ctx.translate(-node.offset[0], -node.offset[1]);
+        }
+      }
+      if (node.object && node.object.draw) {
         node.object.draw(this.ctx);
       }
       if (node.children) {
@@ -164,8 +170,8 @@ export default class NodeTree {
   }
 
   _debugDraw() {
-    console.log(`ddd ${this.frame} ${this.flat.length}`);
-    for (let node of this.flat) {
+      //console.log(`ddd ${this.frame} ${this.flat.length}`);
+      for (let node of this.flat) {
       let position = node.screenPosition || node.position || [0, 0];
       if (node.size) {
         // draw green rect
@@ -193,6 +199,7 @@ export default class NodeTree {
       parent: null,
       children: [],
       age: 0,
+      tree: this,
     };
   }
 }

@@ -1,9 +1,10 @@
 // version 2026-04-11
 // A class to do some finger drag stuff, for a mobile web page canvas.
-// on desktop we use the left and right mouse buttons to simulate touches.
-// onChangeCallback(touches, type) is called when the touch state changes
-//   where touches is an array of {start: [x,y], end: [x,y]}
-//   and type is one of: start, move, end, none.
+// Multi finger support, with mouse simulation for desktop testing.
+// On desktop we use the left and right mouse buttons to simulate touches.
+// Call onChangeCallback(touches, type) when the state changes
+//   touches: array of {start: [x,y], end: [x,y]}
+//   type: one of: start, move, end, none.
 
 export default class Mytouch {
   constructor(canvas, onChangeCallback = null) {

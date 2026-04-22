@@ -2,6 +2,7 @@ import Board from './board.js';
 import Ux2 from './ux2.js';
 import Celest from '../celest/celest.js';
 import NodeTree from './nodetree.js';
+import OceanFx from './oceanfx.js';
 
 export default class ScreenCanvas1 {
   static count = 0;
@@ -55,7 +56,18 @@ export default class ScreenCanvas1 {
     this.nodeTree.update();
   }
 
+  _setupOcean() {
+    let root = this.nodeTree.add(
+      null,
+      null,
+      { position: [60, 320], }
+    );
+    this.nodeTree.add(new OceanFx(), root._node);
+  }
+
   _setupScene() {
+    this._setupOcean();
+
     function _rect(ctx, color, r) {
       // local helper
       ctx.fillStyle = color;
@@ -74,9 +86,9 @@ export default class ScreenCanvas1 {
     }
 
     let topSquare = this.nodeTree.add(
-      { draw: function(ctx) { _rect(ctx, '#f005', [0, 0, this._node.size[0], this._node.size[1]]); }, },
+      { draw: function(ctx) { _rect(ctx, '#f40a', [0, 0, this._node.size[0], this._node.size[1]]); }, },
       null,
-      { size: [320, 320], position: [20, 20], }
+      { size: [240, 240], position: [(360-240)/2, 20], }
     );
 
     this.nodeTree.add(
@@ -86,7 +98,7 @@ export default class ScreenCanvas1 {
     );
 
     this.nodeTree.add(
-      { draw: function(ctx) { _rect(ctx, '#0ff', [0, 0, 60, 60]); }, },
+      { draw: function(ctx) { _rect(ctx, '#0ffa', [0, 0, 60, 60]); }, },
       topSquare._node,
       { position: [90, 10], }
     );
@@ -110,7 +122,7 @@ export default class ScreenCanvas1 {
         },
       },
       topSquare._node,
-      { position: [240 + 40, 40], offset: [0, 0],}
+      { position: [0 + 40, 80 + 40], offset: [0, 0],}
     );
 
     this.nodeTree.add(
@@ -122,7 +134,7 @@ export default class ScreenCanvas1 {
       },
       topSquare._node,
       {
-        position: [0 + 40, 80 + 40],
+        position: [80 + 40, 80 + 40],
         period: 4,
       }
     );
@@ -141,7 +153,7 @@ export default class ScreenCanvas1 {
         },
         parent,
         {
-          position: [_rnd(4) * 80 + 40, _rnd(4) * 80 + 40],
+          position: [_rnd(3) * 80 + 40, _rnd(3) * 80 + 40],
           ttl: 1,
         }
       );
