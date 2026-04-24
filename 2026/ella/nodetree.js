@@ -22,26 +22,37 @@ export default class NodeTree {
     this.ctx = canvas.getContext('2d');
   }
 
-  add(object, parent, params = {}) {
-    object ??= {};
+  // Helper func to add a just a node, not an actor.
+  addNode(params, parent) {
+    return this.addActor({
+      node: params
+    }, parent);
+  }
+
+  addActor(actor, parent, params = {}) {
+    actor ??= {};
     parent ??= this.root;
 
     if (parent.tree !== this) {
       throw new Error('Parent node is not in this NodeTree');
     }
 
-    let node = this._newNode(object, params);
+    let p = {
+      ...actor.node,
+      ...params,
+    };
+    let node = this._newNode(actor, p);
 
     parent.children.push(node);
     node.parent = parent;
-    object._node = node;
+    actor._node = node;
 
-    return object;
+    return actor;
   }
 
-  remove(object) {
-    if (object && object._node) {
-      object._node.kill = true;
+  remove(actor) {
+    if (actor && actor._node) {
+      actor._node.kill = true;
     }
   }
 
@@ -52,8 +63,8 @@ export default class NodeTree {
         node.parent.children.splice(idx, 1);
       }
     }
-    if (node.object && node.object.term) {
-      node.object.term();
+    if (node.actor && node.actor.term) {
+      node.actor.term();
     }
   }
 
@@ -97,7 +108,7 @@ export default class NodeTree {
     let needInit = null;
     for (let node of this.flat) {
       if (!node.inited) {
-        if (node.object && node.object.init) {
+        if (node.actor && node.actor.init) {
           needInit ??= [];
           needInit.push(node);
         }
@@ -110,7 +121,7 @@ export default class NodeTree {
     // do inits
     if (needInit) {
       for (let node of needInit) {
-        node.object.init();
+        node.actor.init();
         node.inited = true;
       }
     }
@@ -118,7 +129,7 @@ export default class NodeTree {
     // do work
     for (let node of this.flat) {
       node.age += dt;
-      if (node.object && node.object.work) {
+      if (node.actor && node.actor.work) {
         if (node.ttl) {
           node.t = node.age / node.ttl;
           if (node.age > node.ttl) {
@@ -131,7 +142,7 @@ export default class NodeTree {
           node.t = 0;
         }
 
-        node.object.work(dt, time, this.frame);
+        node.actor.work(dt, time, this.frame);
       }
     }
   }
@@ -156,8 +167,8 @@ export default class NodeTree {
           this.ctx.translate(-node.offset[0], -node.offset[1]);
         }
       }
-      if (node.object && node.object.draw) {
-        node.object.draw(this.ctx);
+      if (node.actor && node.actor.draw) {
+        node.actor.draw(this.ctx);
       }
       if (node.children) {
         node.children.forEach(walk);
@@ -194,7 +205,7 @@ export default class NodeTree {
 
       ...params,
 
-      object: obj,
+      actor: obj,
       id: NodeTree.id++,
       parent: null,
       children: [],

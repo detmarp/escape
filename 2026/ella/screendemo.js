@@ -7,6 +7,8 @@ import DrawShip from './drawship.js';
 import DrawX from './drawx.js';
 import ShipGame from './shipgame.js';
 import BotA from './bota.js';
+import NodeTree from './nodetree.js';
+import Table from './actor/table.js';
 
 export default class ScreenDemo {
   static count = 0;
@@ -39,13 +41,17 @@ export default class ScreenDemo {
       position: [0, 60],
     });
 
-    new Boreal(this.bottom);
-
     this.board = new EllaBoard(this.bottom, {
       onclick: () => this.params.program.goto('main')
     });
 
     this.board.init();
+
+    this.nodeTree = new NodeTree({
+      canvas: this.board.canvas,
+    });
+    this.table = new Table();
+    this.nodeTree.addActor(this.table, null);
 
     this._refresh();
   }
@@ -97,6 +103,8 @@ export default class ScreenDemo {
     }
 
     this.workTree.call('draw', this.board.ctx);
+
+    this.nodeTree.update();
   }
 
   _doTouch(touch) {

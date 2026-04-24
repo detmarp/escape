@@ -40,7 +40,7 @@ function _randf(a, b) {
   return a + Math.random() * (b - a);
 }
 
-export default class OceanFx {
+export default class Ocean {
   constructor() {
   }
 
@@ -49,6 +49,25 @@ export default class OceanFx {
       let w = this._makeWave();
       this._node.tree.addActor(w, this._node);
     }
+
+    this._node.tree.addActor({
+      draw: function(ctx) {
+        ctx.strokeStyle = '#ddd';
+        // draw a 10x10 grid 1px thin lines
+        for (let x = 0; x <= 240; x += 24) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, 240);
+          ctx.stroke();
+        }
+        for (let y = 0; y <= 240; y += 24) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(240, y);
+          ctx.stroke();
+        }
+      },
+    }, this._node);
   }
 
   work(dt, time) {

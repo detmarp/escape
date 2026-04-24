@@ -57,12 +57,12 @@ export default class ScreenCanvas1 {
   }
 
   _setupOcean() {
-    let root = this.nodeTree.add(
+    let root = this.nodeTree.addActor(
       null,
       null,
       { position: [60, 320], }
     );
-    this.nodeTree.add(new OceanFx(), root._node);
+    this.nodeTree.addActor(new OceanFx(), root._node);
   }
 
   _setupScene() {
@@ -85,25 +85,25 @@ export default class ScreenCanvas1 {
      return Math.floor(Math.random() * n);
     }
 
-    let topSquare = this.nodeTree.add(
+    let topSquare = this.nodeTree.addActor(
       { draw: function(ctx) { _rect(ctx, '#f40a', [0, 0, this._node.size[0], this._node.size[1]]); }, },
       null,
       { size: [240, 240], position: [(360-240)/2, 20], }
     );
 
-    this.nodeTree.add(
+    this.nodeTree.addActor(
       { draw: function(ctx) { _rect(ctx, '#08f5', [0, 0, 60, 60]); }, },
       topSquare._node,
       { position: [10, 10], }
     );
 
-    this.nodeTree.add(
+    this.nodeTree.addActor(
       { draw: function(ctx) { _rect(ctx, '#0ffa', [0, 0, 60, 60]); }, },
       topSquare._node,
       { position: [90, 10], }
     );
 
-    this.nodeTree.add(
+    this.nodeTree.addActor(
       {
         draw: function(ctx) { _rect(ctx, '#ff0', [0, 0, 60, 60]); },
         work: function() {
@@ -114,7 +114,7 @@ export default class ScreenCanvas1 {
       { position: [160, 10], }
     );
 
-    this.nodeTree.add(
+    this.nodeTree.addActor(
       {
         draw: function(ctx) { _rect(ctx, '#f08', [-30, -30, 60, 60]); },
         work: function() {
@@ -125,7 +125,7 @@ export default class ScreenCanvas1 {
       { position: [0 + 40, 80 + 40], offset: [0, 0],}
     );
 
-    this.nodeTree.add(
+    this.nodeTree.addActor(
       {
         draw: function(ctx) { _circ(ctx, '#80f', [0, 0], this.r); },
         work: function() {
@@ -141,7 +141,7 @@ export default class ScreenCanvas1 {
 
     function _makeTtlTest0(parent) {
       // make this just like the plum pulse above
-      return this.nodeTree.add(
+      return this.nodeTree.addActor(
         {
           draw: function(ctx) { _circ(ctx, '#f00a', [0, 0], this.r); },
           work: function() {
