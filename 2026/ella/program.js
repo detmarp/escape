@@ -1,13 +1,13 @@
 import Astra from '../astra/astra.js';
-import ScreenMain from './screenmain.js';
-import ScreenSettings from './screensettings.js';
-import ScreenDemo from './screendemo.js';
-import ScreenTest from './screentest.js';
-import ScreenSetup from './screensetup.js';
-import ScreenHome from './screenhome.js';
-import ScreenDom from './screendom.js';
-import ScreenCanvas1 from './screencanvas1.js';
-import ScreenCanvas2 from './screencanvas2.js';
+import ScreenMain from './screen/screenmain.js';
+import ScreenSettings from './screen/screensettings.js';
+import ScreenDemo from './screen/screendemo.js';
+import ScreenTest from './screen/screentest.js';
+import ScreenSetup from './screen/screensetup.js';
+import ScreenHome from './screen/screenhome.js';
+import ScreenDom from './screen/screendom.js';
+import ScreenCanvas1 from './screen/screencanvas1.js';
+import ScreenCanvas2 from './screen/screencanvas2.js';
 import Persist from './persist.js';
 
 export default class Program {
