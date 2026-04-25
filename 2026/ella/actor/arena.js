@@ -1,6 +1,7 @@
 import Ocean from "./ocean.js";
 import OneBoat from "./oneboat.js";
 import Temp from "./temp.js";
+import Surface from "./surface.js";
 
 function _dot(ctx, color, position) {
   ctx.fillStyle = color;
@@ -29,6 +30,7 @@ function _toPosition(cell) {
 export default class Arena {
   constructor(board) {
     this.board = board;
+    this.seenShots = new Set();
   }
 
   added() {
@@ -36,24 +38,21 @@ export default class Arena {
     let ocean = new Ocean();
     this._node.tree.addActor(ocean, this._node);
 
-    let self = this;
-    this.below = this._node.addActor({
-      draw: function(ctx) {
-        if (self.board) {
-          for (let s of self.board.shots) {
-            let hit = s.hit;
-            let color = hit ? '#f00' : '#00f';
-            _dot(ctx, color, _toPosition(s.position));
-          }
-        }
-      }
-    });
+    this.below = this._node.addActor({});
+    this.surface = new Surface();
+    this.below._node.addActor(this.surface);
 
     if (this.board) {
       for (let b of this.board.ships) {
         this._node.addActor(new OneBoat(b));
       }
     }
+
+    this.above = this._node.addActor({});
+  }
+
+  _addShot(shot) {
+    this.surface.addShot(shot);
   }
 
   init() {
@@ -61,6 +60,16 @@ export default class Arena {
   }
 
   work(dt, time) {
+    if (this.board) {
+      if (this.board.shots.length > this.seenShots.size) {
+        for (let s of this.board.shots) {
+          if (!this.seenShots.has(s)) {
+            this.seenShots.add(s);
+            this._addShot(s);
+          }
+        }
+      }
+    }
   }
 
   draw(ctx) {
