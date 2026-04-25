@@ -47,6 +47,10 @@ export default class NodeTree {
     node.parent = parent;
     actor._node = node;
 
+    if (actor.added) {
+      actor.added();
+    }
+
     return actor;
   }
 
@@ -211,6 +215,10 @@ export default class NodeTree {
       children: [],
       age: 0,
       tree: this,
+      addActor(actor, params) {
+        // helper to add an actor to this node
+        return this.tree.addActor(actor, this, params);
+      }
     };
   }
 }

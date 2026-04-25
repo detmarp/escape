@@ -1,7 +1,10 @@
 import ShipBoard from './shipboard.js';
 
 export default class ShipGame {
+  static _id = 0;
+
   constructor() {
+    this.id = ShipGame._id++;
     this.boards = [
       new ShipBoard(this),
       new ShipBoard(this),

@@ -2,9 +2,6 @@ import EllaBoard from '../ellaboard.js';
 import Boreal from '../../boreal/boreal.js';
 import Ux2 from '../ux2.js';
 import Celest from '../../celest/celest.js';
-import WorkTree from '../worktree.js';
-import DrawShip from '../drawship.js';
-import DrawX from '../drawx.js';
 import ShipGame from '../shipgame.js';
 import BotA from '../bota.js';
 import NodeTree from '../nodetree.js';
@@ -16,7 +13,6 @@ export default class ScreenDemo {
   constructor(parent, params) {
     this.parent = parent;
     this.params = params;
-    this._newGame();
   }
 
   init() {
@@ -27,8 +23,6 @@ export default class ScreenDemo {
 
     this.celest.outer.style.backgroundColor = '#456';
     this.celest.inner.style.backgroundColor = '#fdb';
-
-    this.workTree = new WorkTree();
 
     this.ux = new Ux2(this.celest.inner);
 
@@ -50,9 +44,8 @@ export default class ScreenDemo {
     this.nodeTree = new NodeTree({
       canvas: this.board.canvas,
     });
-    this.table = new Table();
-    this.nodeTree.addActor(this.table, null);
 
+    this._newGame();
     this._refresh();
   }
 
@@ -68,25 +61,27 @@ export default class ScreenDemo {
       return;
     }
 
-    if (this.game.gameOver) {
-      this._setState('gameover');
-      return;
-    }
+    if (this.game) {
+      if (this.game.gameOver) {
+        this._setState('gameover');
+        return;
+      }
 
-    let player = this.game.turn;
-    let other = 1 - player;
-    let bot = new BotA(this.game, player);
+      let player = this.game.turn;
+      let other = 1 - player;
+      let bot = new BotA(this.game, player);
 
-    if (!this.game.boards[other].cursor) {
-      bot.startTurn();
-      bot.setTarget();
-      this.game.boards[other]._update();
-    }
-    else if (this.game.boards[other].cursor) {
-      let position = this.game.boards[other].cursor;
-      this.game.boards[other].cursor = null;
-      this.game.shoot(other, position);
-      this.game.boards[other]._update();
+      if (!this.game.boards[other].cursor) {
+        bot.startTurn();
+        bot.setTarget();
+        this.game.boards[other]._update();
+      }
+      else if (this.game.boards[other].cursor) {
+        let position = this.game.boards[other].cursor;
+        this.game.boards[other].cursor = null;
+        this.game.shoot(other, position);
+        this.game.boards[other]._update();
+      }
     }
   }
 
@@ -95,14 +90,10 @@ export default class ScreenDemo {
 
     this._nextTurn();
 
-    this.workTree.call('work', dt, time, frame);
-
     let touch;
     while ((touch = this.board.getTouch()) !== null) {
       this._doTouch(touch);
     }
-
-    this.workTree.call('draw', this.board.ctx);
 
     this.nodeTree.update();
   }
@@ -126,10 +117,8 @@ export default class ScreenDemo {
 
 
     if (t.action == 'down') {
-      this.capture = this.workTree.find(t.position);
     }
     else if (t.action == 'end') {
-      this.capture = null;
     }
     if (this.capture) {
       console.log(`ddd Touch: ${JSON.stringify(t)}`);
@@ -203,22 +192,9 @@ export default class ScreenDemo {
   }
 
   _refresh() {
-    this.workTree.clear();
-
-    let gridStart0 = { position: [20, 20], };
-    let gridStart1 = { position: [60, 300], };
-
-    this.workTree.add(null, gridStart0);
-    this.workTree.add(null, gridStart1);
-
-    let grid0 = new DrawShip(this.game.boards[0]);
-    this.workTree.add(gridStart0, grid0);
-
-    let x = new DrawX();
-    this.workTree.add(gridStart0, x);
-
-    let grid1 = new DrawShip(this.game.boards[1]);
-    this.workTree.add(gridStart1, grid1);
+    this.nodeTree.clear();
+    let table = new Table(this.game);
+    this.nodeTree.addActor(table);
 
     this._setState('start');
   }

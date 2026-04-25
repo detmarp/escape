@@ -18,7 +18,7 @@ function _curve(ctx, color, points) {
   if (points.length < 2) return;
 
   ctx.strokeStyle = color;
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(points[0][0], points[0][1]);
 
@@ -45,7 +45,7 @@ export default class Ocean {
   }
 
   init() {
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 20; i++) {
       let w = this._makeWave();
       this._node.tree.addActor(w, this._node);
     }
@@ -53,6 +53,7 @@ export default class Ocean {
     this._node.tree.addActor({
       draw: function(ctx) {
         ctx.strokeStyle = '#ddd';
+        ctx.lineWidth = 1;
         // draw a 10x10 grid 1px thin lines
         for (let x = 0; x <= 240; x += 24) {
           ctx.beginPath();
@@ -74,7 +75,7 @@ export default class Ocean {
   }
 
   draw(ctx) {
-    ctx.fillStyle = 'blue';
+    ctx.fillStyle = '#48f';
     ctx.fillRect(0, 0, 240, 240);
   }
 
@@ -93,11 +94,11 @@ export default class Ocean {
           [_randf(-10, 10), _randf(-5, 5)],
           [_randf(20, 40), _randf(-5, 5)],
         ];
-        this.r = [_randf(10, 20), _randf(10, 20), _randf(10, 20)];
+        this.r = [_randf(5, 10), _randf(10, 20), _randf(5, 10)];
         this.d = [
+          _randf(6, 8) * (_rand(2) ? 1 : -1),
           _randf(4, 8) * (_rand(2) ? 1 : -1),
-          _randf(4, 8) * (_rand(2) ? 1 : -1),
-          _randf(4, 8) * (_rand(2) ? 1 : -1),
+          _randf(6, 8) * (_rand(2) ? 1 : -1),
         ];
         this.pos = [];
       },
@@ -110,7 +111,7 @@ export default class Ocean {
         let a = Math.sin(Math.PI * this._node.t);
         _curve(
           ctx,
-          `rgba(0, 128, 255, ${a})`,
+          `rgba(128, 192, 255, ${a})`,
           this.pos
         );
       },
