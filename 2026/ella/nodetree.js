@@ -133,7 +133,7 @@ export default class NodeTree {
     // do work
     for (let node of this.flat) {
       node.age += dt;
-      if (node.actor && node.actor.work) {
+      if (node.actor) {
         if (node.ttl) {
           node.t = node.age / node.ttl;
           if (node.age > node.ttl) {
@@ -145,8 +145,9 @@ export default class NodeTree {
         } else {
           node.t = 0;
         }
-
-        node.actor.work(dt, time, this.frame);
+        if (node.actor && node.actor.work) {
+          node.actor.work(dt, time, this.frame);
+        }
       }
     }
   }

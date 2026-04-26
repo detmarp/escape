@@ -28,7 +28,7 @@ export default class Program {
     this.current = null;
     this.rafId = null;
     this.lastTime = 0;
-    this.startTime = 0;
+    this.elapsedTime = 0;
     this.frame = 0;
     document.title = 'Ella';
     this.persist = new Persist();
@@ -60,7 +60,6 @@ export default class Program {
     if (this.rafId) {
       cancelAnimationFrame(this.rafId);
       this.rafId = null;
-      this.startTime = 0;
     }
   }
 
@@ -118,22 +117,17 @@ export default class Program {
   }
 
   _tick() {
-    const currentTime = performance.now();
-
-    if (!this.startTime) {
-      this.startTime = currentTime;
+    const currentTime = performance.now() / 1000;
+    const maxDt = 0.1;
+    let dt = Math.min(currentTime - this.lastTime, maxDt);
+    if (dt > 0) {
+      this.lastTime = currentTime;
+      this.frame++;
+      this.elapsedTime += dt;
+      if (this.current && typeof this.current.work === 'function') {
+        this.current.work(dt, this.elapsedTime, this.frame);
+      }
     }
-
-    const dt = (this.lastTime ? currentTime - this.lastTime : 0) / 1000;
-    this.lastTime = currentTime;
-    this.frame++;
-
-    const elapsedSeconds = (currentTime - this.startTime) / 1000;
-
-    if (this.current && typeof this.current.work === 'function') {
-      this.current.work(dt, elapsedSeconds, this.frame);
-    }
-
     this.rafId = requestAnimationFrame(this._tick.bind(this));
   }
 

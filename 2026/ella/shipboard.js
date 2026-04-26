@@ -9,7 +9,14 @@ export default class ShipBoard {
     this.ships = [];
     this.shots = [];
 
+    this.cells = Array(10).fill().map((_, y) => Array(10).fill().map((_, x) => ({ position: [x, y] })));
     this._update();
+  }
+
+  markShip(ship) {
+  }
+
+  markShot(position, hit) {
   }
 
   _update() {
@@ -22,7 +29,7 @@ export default class ShipBoard {
     });
 
     // rebuild cells
-    this.cells = Array(10).fill().map((_, y) => Array(10).fill().map((_, x) => ({ x, y })));
+    this.cells = Array(10).fill().map((_, y) => Array(10).fill().map((_, x) => ({ position: [x, y] })));
 
     this.shipCellCount = 0;
     for (let ship of this.ships) {

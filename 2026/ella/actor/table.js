@@ -18,10 +18,6 @@ export default class Table {
 
     this.arenas.push(pos0._node.addActor(new Arena(board0)));
     this.arenas.push(pos1._node.addActor(new Arena(board1)));
-
-    let text = new Text(16, Text.MONO, '#fff');
-    text.text = `game ${this.game ? this.game.id : 'none'}`;
-    this._node.addActor(text);
   }
 
   init() {
@@ -31,10 +27,15 @@ export default class Table {
   }
 
   draw(ctx) {
-    ctx.fillStyle = '#655';
+    ctx.fillStyle = '#8ac';
     ctx.fillRect(0, 0, 360, 580);
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 1;
     ctx.strokeRect(0, 0, 360, 580);
+  }
+
+  setWinner(winner) {
+    this.arenas[0].setEndGame(winner == 0);
+    this.arenas[1].setEndGame(winner == 1);
   }
 }

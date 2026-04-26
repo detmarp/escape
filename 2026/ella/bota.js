@@ -36,6 +36,7 @@ export default class BotA {
        target = this._chooseTarget();
     }
     this.game.boards[this.other].cursor = target;
+    return target;
   }
 
   _chooseTarget() {

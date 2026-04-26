@@ -38,7 +38,29 @@ export default class Temp {
 
   draw(ctx) {
     if (this.ship) {
-      _dot(ctx, '#ff0', _toPosition(this.ship.position));
+      let start = this.ship.position.slice();
+      let end = start.slice();
+      end[this.ship.vertical ? 1 : 0] += this.ship.size - 1;
+
+      let r = 0.45
+      let tl = _toPosition([start[0] - r, start[1] - r]);
+      let br = _toPosition([end[0] + r, end[1] + r]);
+
+      // Fill with medium blue first
+      ctx.fillStyle = '#48fb';
+      ctx.fillRect(
+        tl[0], tl[1],
+        br[0] - tl[0],
+        br[1] - tl[1]
+      );
+
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(
+        tl[0], tl[1],
+        br[0] - tl[0],
+        br[1] - tl[1]
+      );
     }
   }
 }

@@ -18,8 +18,13 @@ function _randf(a, b) {
   return a + Math.random() * (b - a);
 }
 
+function _toPosition(cell) {
+  return [cell[0] * 24 + 12, cell[1] * 24 + 12];
+}
+
 export default class Air {
-  constructor() {
+  constructor(board) {
+    this.board = board;
   }
 
   added() {
@@ -32,6 +37,13 @@ export default class Air {
   }
 
   draw(ctx) {
-    _dot(ctx, 'red', [0, 0]);
+    if (this.board) {
+      if (this.board.cursor) {
+        _dot(ctx, 'red', _toPosition(this.board.cursor));
+      }
+    }
+  }
+
+  _cursor() {
   }
 }

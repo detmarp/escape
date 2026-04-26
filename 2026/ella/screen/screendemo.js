@@ -6,6 +6,9 @@ import ShipGame from '../shipgame.js';
 import BotA from '../bota.js';
 import NodeTree from '../nodetree.js';
 import Table from '../actor/table.js';
+import Timer from '../actor/timer.js';
+import DemoPlayer from '../actor/demoplayer.js';
+import DemoPlayerB from '../actor/demoplayerb.js';
 
 export default class ScreenDemo {
   static count = 0;
@@ -63,12 +66,26 @@ export default class ScreenDemo {
 
     if (this.game) {
       if (this.game.gameOver) {
-        this._setState('gameover');
+        if (!this.gameOver) {
+          this._setState('gameover');
+          this.gameOver = true;
+          this.table.setWinner(this.game.winner);
+        }
         return;
       }
 
       let player = this.game.turn;
       let other = 1 - player;
+
+      if (!this.player) {
+        this.player = this.nodeTree.addActor(
+          new DemoPlayerB(this.game, player, () => {
+            // on done
+            this.player = null;
+          })
+        );
+      }
+      /*
       let bot = new BotA(this.game, player);
 
       if (!this.game.boards[other].cursor) {
@@ -82,6 +99,7 @@ export default class ScreenDemo {
         this.game.shoot(other, position);
         this.game.boards[other]._update();
       }
+        */
     }
   }
 
@@ -187,14 +205,17 @@ export default class ScreenDemo {
   }
 
   _onRestart() {
+    this.player = null;
+    this.gameOver = false;
+
     this._newGame();
     this._refresh();
   }
 
   _refresh() {
     this.nodeTree.clear();
-    let table = new Table(this.game);
-    this.nodeTree.addActor(table);
+    this.table = new Table(this.game);
+    this.nodeTree.addActor(this.table);
 
     this._setState('start');
   }

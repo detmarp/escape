@@ -50,6 +50,7 @@ export default class ShipGame {
 
     if (hit && board.hitCount >= board.shipCellCount) {
       this.gameOver = true;
+      this.winner = 1 - target
     }
 
     if (!this.gameOver && (!hit || !this.rules.continueAfterHit)) {

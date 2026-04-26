@@ -47,12 +47,12 @@ export default class Ocean {
   init() {
     for (let i = 0; i < 20; i++) {
       let w = this._makeWave();
-      this._node.tree.addActor(w, this._node);
+      this._node.addActor(w);
     }
 
-    this._node.tree.addActor({
+    this._node.addActor({
       draw: function(ctx) {
-        ctx.strokeStyle = '#ddd';
+        ctx.strokeStyle = '#024';
         ctx.lineWidth = 1;
         // draw a 10x10 grid 1px thin lines
         for (let x = 0; x <= 240; x += 24) {
@@ -68,7 +68,7 @@ export default class Ocean {
           ctx.stroke();
         }
       },
-    }, this._node);
+    });
   }
 
   work(dt, time) {

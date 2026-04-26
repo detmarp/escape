@@ -2,6 +2,8 @@ import Ocean from "./ocean.js";
 import OneBoat from "./oneboat.js";
 import Temp from "./temp.js";
 import Surface from "./surface.js";
+import Air from "./air.js";
+import BigX from "./bigx.js";
 
 function _dot(ctx, color, position) {
   ctx.fillStyle = color;
@@ -39,7 +41,7 @@ export default class Arena {
     this._node.tree.addActor(ocean, this._node);
 
     this.below = this._node.addActor({});
-    this.surface = new Surface();
+    this.surface = new Surface(this.board);
     this.below._node.addActor(this.surface);
 
     if (this.board) {
@@ -49,6 +51,15 @@ export default class Arena {
     }
 
     this.above = this._node.addActor({});
+    this.above._node.addActor(new Air(this.board));
+  }
+
+  setEndGame(won) {
+    if (won) {
+    }
+    else {
+      this.above._node.addActor(new BigX());
+    }
   }
 
   _addShot(shot) {
@@ -56,7 +67,6 @@ export default class Arena {
   }
 
   init() {
-    this.ready = true;
   }
 
   work(dt, time) {
@@ -73,8 +83,10 @@ export default class Arena {
   }
 
   draw(ctx) {
-    if (this.ready) {
-      this._greenBorder(ctx);
+    if (this.board) {
+      if (this.board.ready) {
+        this._greenBorder(ctx);
+      }
     }
   }
 
