@@ -85,6 +85,22 @@ export default class ShipBoard {
         }
       }
     }
+
+    // Check for sunk ships
+    this.sunkCount = 0;
+    for (let ship of this.ships) {
+      ship.hitCount = 0;
+      for (let [x, y] of ship.cells) {
+        let cell = this.cells[y] && this.cells[y][x];
+        if (cell && cell.shot && cell.hit) {
+          ship.hitCount++;
+        }
+      }
+      ship.sunk = ship.hitCount === ship.size;
+      if (ship.sunk) {
+        this.sunkCount++;
+      }
+    }
   }
 
   _randomize() {

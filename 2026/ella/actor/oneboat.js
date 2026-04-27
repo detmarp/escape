@@ -54,7 +54,7 @@ export default class Temp {
         br[1] - tl[1]
       );
 
-      ctx.strokeStyle = '#000';
+      ctx.strokeStyle = this.ship.sunk ? '#f00' : '#000';
       ctx.lineWidth = 3;
       ctx.strokeRect(
         tl[0], tl[1],
