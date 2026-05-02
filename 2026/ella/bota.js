@@ -40,6 +40,9 @@ export default class BotA {
   }
 
   _chooseTarget() {
+    this._getTargetStatus();
+    console.log(`bbb ${JSON.stringify(this.targetStatus)}`);
+
     let empty = [];
     for (let y = 0; y < 10; y++) {
       for (let x = 0; x < 10; x++) {
@@ -48,6 +51,57 @@ export default class BotA {
       }
     }
     return empty.length ? empty[_rnd(empty.length)] : null;
+  }
+
+  _getTargetStatus() {
+    this.targetStatus = {};
+    let board = this.game.boards[this.other];
+
+    let missCount = 0;
+    let hitCount = 0;
+    let empty = [];
+    let damage = [];
+
+    for (let y = 0; y < 10; y++) {
+      for (let x = 0; x < 10; x++) {
+        let cell = board.cells[y][x];
+        if (!cell.shot) {
+          empty.push([x, y]);
+        } else {
+          if (cell.hit) {
+            hitCount++;
+            if (cell.ship && !cell.ship.sunk) {
+              damage.push([x, y]);
+            }
+          } else {
+            missCount++;
+          }
+        }
+      }
+    }
+
+    let shipCount = board.ships.length;
+    let sunkCount = board.sunkCount || 0;
+
+    let unsunkShips = board.ships.filter(ship => !ship.sunk);
+    let shipSizes = [Infinity, 0];
+    for (let ship of unsunkShips) {
+      shipSizes[0] = Math.min(shipSizes[0], ship.size);
+      shipSizes[1] = Math.max(shipSizes[1], ship.size);
+    }
+    if (unsunkShips.length === 0) {
+      shipSizes = [0, 0];
+    }
+
+    this.targetStatus = {
+      missCount,
+      hitCount,
+      empty,
+      shipCount,
+      sunkCount,
+      damage,
+      shipSizes,
+    };
   }
 
   _chooseShips() {

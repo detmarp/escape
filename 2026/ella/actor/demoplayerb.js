@@ -1,4 +1,4 @@
-import BotA from '../bota.js';
+import BotB from '../botb.js';
 import Timer from './timer.js';
 
 function _rand(n) {
@@ -24,8 +24,8 @@ export default class DemoPlayerB {
   }
 
   onShoot() {
-    let bot = new BotA(this.game, this.playerId);
-    this.target = bot._chooseTarget();
+    let bot = new BotB(this.game, this.playerId);
+    this.target = bot.chooseTarget();
     let shot = this.game.shoot(this.otherPlayerId, this.target);
     this.otherBoard.ready = false;
     if (this.doneCallback) {

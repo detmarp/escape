@@ -4,6 +4,27 @@ function _rnd(n) {
 
 export default class ShipBoard {
   constructor(game) {
+    // .cells is [10][10]
+    // a cell is
+    // {
+    //   position: [x, y],
+    //   ship: Ship | null,
+    //   shipIndex: number | null,
+    //   adjacent: boolean,
+    //   diagonal: boolean,
+    //   shot: boolean,
+    //   hit: boolean
+    // }
+    // ships[] has {
+    //   name: string,
+    //   size: number,
+    //   position: [x, y],
+    //   vertical: boolean,
+    //   cells: [x, y][],
+    //   hitCount: number,
+    //   sunk: boolean
+    // }
+    // shots[] has {position:[x,y], hit: boolean}
     this.game = game;
     this.size = [10, 10];
     this.ships = [];
