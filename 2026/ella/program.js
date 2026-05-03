@@ -80,6 +80,15 @@ export default class Program {
     this.persist.save();
   }
 
+  getRules() {
+    let rules = {
+      allowAdjacent: this.settings.allowAdjacent,
+      allowDiagonal: this.settings.allowDiagonal,
+      continueAfterHit: this.settings.continueAfterHit,
+    };
+    return rules;
+  }
+
   _normalize() {
     this.history = { ...this.history };
     this.settings = { ...this.settings };

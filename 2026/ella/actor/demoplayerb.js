@@ -48,7 +48,8 @@ export default class DemoPlayerB {
     this.step = 'shoot';
 
     if (!this.paused) {
-      this._node.addActor(new Timer(0.5, () => this.onShoot()));
+      //this._node.addActor(new Timer(0.05, () => this.onShoot()));
+      this.onShoot();
     }
   }
 

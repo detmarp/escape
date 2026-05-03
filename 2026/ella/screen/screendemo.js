@@ -18,7 +18,7 @@ export default class ScreenDemo {
     this.params = params;
     this.fastDemo = true;
     this.debug = true;
-    this.onePlayer = true;
+    this.onePlayer = params.program.settings.onePlayerDemo;
     this.startPaused = false;
     this.paused = false;
   }
@@ -249,7 +249,9 @@ export default class ScreenDemo {
   }
 
   _newGame() {
-    this.game = new ShipGame();
+    this.game = new ShipGame({
+      rules: this.params.program.getRules(),
+    });
 
     let bot0 = new BotA(this.game, 0);
     let bot1 = new BotA(this.game, 1);

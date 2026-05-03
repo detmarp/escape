@@ -3,7 +3,7 @@ import ShipBoard from './shipboard.js';
 export default class ShipGame {
   static _id = 0;
 
-  constructor() {
+  constructor(params = {}) {
     this.id = ShipGame._id++;
     this.boards = [
       new ShipBoard(this),
@@ -20,6 +20,7 @@ export default class ShipGame {
       allowDiagonal: false,
       allowAdjacent: false,
       continueAfterHit: true,
+      ...params.rules,
     };
 
     this.boards[0]._update();

@@ -149,4 +149,23 @@ export default class Ux2 extends Ux {
     return outer;
   }
 
+  toggle(params = {}) {
+    let button = this.div({
+      parent: params.parent,
+      type: 'button',
+    });
+
+    button.update = (value) => {
+      button.textContent = `${params.label}: ${value ? 'ON' : 'OFF'}`;
+    };
+
+    button.update(params.value);
+
+    if (params.onclick) {
+      button.onclick = params.onclick;
+    }
+
+    return button;
+  }
+
 }

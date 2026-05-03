@@ -28,59 +28,117 @@ export default class ScreenSettings {
       onclick: () => this.params.program.goto('main')
     });
 
-    this.ux.hr({
-      parent: buttonStack
-    });
+    this._makeRules(buttonStack);
+    this._makeSystem(buttonStack);
+    this._makeDebug(buttonStack);
 
+    this.info = this.ux.cornerInfo({
+      parent: this.parent,
+    });
+  }
+
+  term() {}
+
+  _makeRules(parent) {
     this.ux.hr({
-      parent: buttonStack
+      parent: parent
     });
 
     this.ux.div({
-      parent: buttonStack,
-      type: 'button',
-      text: 'add history',
-      onclick: () => this.addHistory()
+      parent: parent,
+      type: 'h2',
+      text: 'Rules',
     });
 
+    this._addToggle(parent, 'Allow Diagonal', 'allowDiagonal');
+    this._addToggle(parent, 'Allow Adjacent', 'allowAdjacent');
+    this._addToggle(parent, 'Go Again After Hit', 'continueAfterHit');
+  }
+
+  _makeSystem(parent) {
+    this.ux.hr({
+      parent: parent
+    });
     this.ux.div({
-      parent: buttonStack,
+      parent: parent,
+      type: 'h2',
+      text: 'System',
+    });
+    this._addToggle(parent, 'One-player demo', 'onePlayerDemo');
+    this.ux.div({
+      parent: parent,
       type: 'button',
       text: 'reset',
       onclick: () => this.reset()
     });
+  }
 
+  _makeDebug(parent) {
+    this.ux.hr({
+      parent: parent
+    });
     this.ux.div({
-      parent: buttonStack,
+      parent: parent,
+      type: 'h2',
+      text: 'Debug',
+    });
+    this.ux.div({
+      parent: parent,
+      type: 'button',
+      text: 'add history',
+      onclick: () => this.addHistory()
+    });
+    this.ux.div({
+      parent: parent,
       type: 'button',
       text: 'clear settings',
       onclick: () => this.clearSettings()
     });
 
     this.ux.div({
-      parent: buttonStack,
+      parent: parent,
       type: 'button',
       text: 'clear history',
       onclick: () => this.clearHistory()
     });
 
     this.settingsText = this.ux.div({
+      parent: parent,
       type: 'div',
       text: ''
     });
     this.settingsText.style.fontFamily = 'monospace';
+    this.settingsText.style.wordWrap = 'break-word';
+    this.settingsText.style.whiteSpace = 'pre-wrap';
+    this.settingsText.style.overflowWrap = 'break-word';
+    this.settingsText.style.wordBreak = 'break-word';
 
     this.historyContainer = this.ux.div({
       type: 'div'
     });
 
-    this.info = this.ux.cornerInfo({
-      parent: this.parent,
-    });
-
   }
 
-  term() {}
+  _addToggle(parent, label, settingKey) {
+    let current = !!this.params.program.settings[settingKey];
+
+    let toggle = this.ux.toggle({
+      parent: parent,
+      label: label,
+      value: current,
+      onclick: () => {
+        if (!this.params.program.settings) {
+          this.params.program.settings = {};
+        }
+        let currentValue = !!this.params.program.settings[settingKey];
+        this.params.program.settings[settingKey] = !currentValue;
+        this.params.program.save();
+        toggle.update(!currentValue);
+      }
+    });
+
+    return toggle;
+  }
 
   addHistory() {
     if (!this.params.program.history) {
