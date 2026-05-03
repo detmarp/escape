@@ -30,6 +30,7 @@ export default class ScreenSettings {
 
     this._makeRules(buttonStack);
     this._makeSystem(buttonStack);
+    this._makeDemo(buttonStack);
     this._makeDebug(buttonStack);
 
     this.info = this.ux.cornerInfo({
@@ -64,13 +65,25 @@ export default class ScreenSettings {
       type: 'h2',
       text: 'System',
     });
-    this._addToggle(parent, 'One-player demo', 'onePlayerDemo');
     this.ux.div({
       parent: parent,
       type: 'button',
       text: 'reset',
       onclick: () => this.reset()
     });
+  }
+
+  _makeDemo(parent) {
+    this.ux.hr({
+      parent: parent
+    });
+    this.ux.div({
+      parent: parent,
+      type: 'h2',
+      text: 'Demo',
+    });
+    this._addToggle(parent, 'One-player', 'onePlayerDemo');
+    this._addToggle(parent, 'Fast demo', 'fastDemo');
   }
 
   _makeDebug(parent) {

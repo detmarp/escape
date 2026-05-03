@@ -14,15 +14,14 @@ export default class DemoPlayerB {
     this.board = game.boards[playerId];
     this.otherBoard = game.boards[this.otherPlayerId];
     this.paused = false;
-    this.step = 'none'; // 'none', 'acquire', 'shoot'
+    this.stepping = false;
     this.target = null;
   }
 
   added() {
-    this.step = 'acquire';
-    if (!this.paused) {
-      this._node.addActor(new Timer(0.05, () => this.onAcquireTarget()));
-    }
+    this.step = 'start';
+    this.age = 0;
+    this.doStep();
   }
 
   init() {
@@ -30,43 +29,44 @@ export default class DemoPlayerB {
 
   setPaused(paused) {
     this.paused = paused;
-  }
-
-  doStep() {
-    if (this.step === 'acquire') {
-      this.onAcquireTarget();
-    } else if (this.step === 'shoot') {
-      this.onShoot();
+    if (!this.paused) {
+      this.doStep();
     }
   }
 
-  onAcquireTarget() {
+  doStep() {
+    switch (this.step) {
+      case 'start':
+        this._acquireTarget();
+        break;
+      case 'targeted':
+        this._shoot();
+        break;
+      case 'shot':
+        this._allDone();
+        break;
+      default:
+        break;
+    }
+  }
+
+  _acquireTarget() {
+    this.step = 'targeted';
     let bot = new BotB(this.game, this.playerId);
     this.target = bot.chooseTarget();
     this.otherBoard.cursor = this.target;
     this.otherBoard.ready = true;
-    this.step = 'shoot';
-
-    if (!this.paused) {
-      //this._node.addActor(new Timer(0.05, () => this.onShoot()));
-      this.onShoot();
-    }
   }
 
-  onShoot() {
+  _shoot() {
+    this.step = 'shot';
     let shot = this.game.shoot(this.otherPlayerId, this.target);
     this.otherBoard.ready = false;
     this.otherBoard.cursor = null;
-    this.step = 'none';
-    if (this.doneCallback) {
-      this.doneCallback();
-      this.doneCallback = null;
-    }
   }
 
-  onAllDone() {
-    this.board.ready = false;
-    this.board.cursor = null;
+  _allDone() {
+    this.step = 'done';
     this._node.tree.remove(this);
     if (this.doneCallback) {
       this.doneCallback();
@@ -78,6 +78,11 @@ export default class DemoPlayerB {
   }
 
   work(dt, time) {
+    this.age += dt;
+    if (this.age > 0.15 && !this.paused) {
+      this.age = 0;
+      this.doStep();
+    }
   }
 
   draw(ctx) {

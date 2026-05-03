@@ -16,10 +16,9 @@ export default class ScreenDemo {
   constructor(parent, params) {
     this.parent = parent;
     this.params = params;
-    this.fastDemo = true;
+    this.fastDemo = params.program.settings.fastDemo;
     this.debug = true;
     this.onePlayer = params.program.settings.onePlayerDemo;
-    this.startPaused = false;
     this.paused = false;
   }
 
@@ -88,26 +87,24 @@ export default class ScreenDemo {
         };
         this.player = this.fastDemo ?
           new DemoPlayerB(this.game, player, onDone) :
-          new DemoPlayerA(this.game, player, onDone);        if (this.startPaused) {
-          this.player.setPaused(true);
-        }        this.nodeTree.addActor(this.player);
-      }
-      /*
-      let bot = new BotA(this.game, player);
+          new DemoPlayerA(this.game, player, onDone);
 
-      if (!this.game.boards[other].cursor) {
-        bot.startTurn();
-        bot.setTarget();
-        this.game.boards[other]._update();
+        this.player.setPaused(this.paused);
+
+        this.nodeTree.addActor(this.player);
       }
-      else if (this.game.boards[other].cursor) {
-        let position = this.game.boards[other].cursor;
-        this.game.boards[other].cursor = null;
-        this.game.shoot(other, position);
-        this.game.boards[other]._update();
-      }
-        */
     }
+  }
+
+  setPaused(paused = null) {
+    if (paused === null) {
+      paused = !this.paused;
+    }
+    this.paused = paused;
+    if (this.player) {
+      this.player.setPaused(paused);
+    }
+    this._refreshFooter();
   }
 
   work(dt, time, frame) {
@@ -178,6 +175,13 @@ export default class ScreenDemo {
       text: 'Restart',
       onclick: () => this._onRestart(),
     });
+    if (this.paused) {
+      buttons.push({
+        text: 'Run',
+        onclick: () => this._onRun(),
+      });
+    }
+    // add buttons
     let size = [55, 26];
     let position = [2, 2];
     for (let b of buttons) {
@@ -189,12 +193,6 @@ export default class ScreenDemo {
         onclick: b.onclick,
       });
       position[0] += size[0] + 2;
-    }
-    if (this.paused || this.startPaused) {
-      buttons.push({
-        text: 'Run',
-        onclick: () => this._onRun(),
-      });
     }
   }
 
@@ -214,17 +212,11 @@ export default class ScreenDemo {
   }
 
   _onRun() {
-    this.startPaused = false;
-    this.paused = false;
-    if (this.player) {
-      this.player.setPaused(false);
-    }
-    this._refreshFooter();
+    this.setPaused(false);
   }
 
   _onStep() {
-    this.startPaused = true;
-    this.paused = true;
+    this.setPaused(true);
     if (this.player) {
       this.player.doStep();
     }

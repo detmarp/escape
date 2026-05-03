@@ -39,11 +39,32 @@ export default class Air {
   draw(ctx) {
     if (this.board) {
       if (this.board.cursor) {
-        _dot(ctx, 'red', _toPosition(this.board.cursor));
+        this._cursor(ctx);
       }
     }
   }
 
-  _cursor() {
+  _cursor(ctx) {
+    let pos = _toPosition(this.board.cursor);
+    let size = 14;
+    let color = '#00ff00';
+    let thickness = 3;
+    let length = 8;
+
+    // Top-left L
+    _rect(ctx, color, [pos[0] - size, pos[1] - size, length, thickness]);
+    _rect(ctx, color, [pos[0] - size, pos[1] - size, thickness, length]);
+
+    // Top-right L
+    _rect(ctx, color, [pos[0] + size - length, pos[1] - size, length, thickness]);
+    _rect(ctx, color, [pos[0] + size - thickness, pos[1] - size, thickness, length]);
+
+    // Bottom-left L
+    _rect(ctx, color, [pos[0] - size, pos[1] + size - thickness, length, thickness]);
+    _rect(ctx, color, [pos[0] - size, pos[1] + size - length, thickness, length]);
+
+    // Bottom-right L
+    _rect(ctx, color, [pos[0] + size - length, pos[1] + size - thickness, length, thickness]);
+    _rect(ctx, color, [pos[0] + size - thickness, pos[1] + size - length, thickness, length]);
   }
 }
