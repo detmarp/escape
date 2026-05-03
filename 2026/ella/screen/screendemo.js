@@ -7,7 +7,7 @@ import BotA from '../bota.js';
 import NodeTree from '../nodetree.js';
 import Table from '../actor/table.js';
 import Timer from '../actor/timer.js';
-import DemoPlayer from '../actor/demoplayer.js';
+import DemoPlayerA from '../actor/demoplayera.js';
 import DemoPlayerB from '../actor/demoplayerb.js';
 
 export default class ScreenDemo {
@@ -16,6 +16,11 @@ export default class ScreenDemo {
   constructor(parent, params) {
     this.parent = parent;
     this.params = params;
+    this.fastDemo = true;
+    this.debug = true;
+    this.onePlayer = true;
+    this.startPaused = false;
+    this.paused = false;
   }
 
   init() {
@@ -74,16 +79,18 @@ export default class ScreenDemo {
         return;
       }
 
-      let player = this.game.turn;
+      let player = this.onePlayer ? 1 : this.game.turn;
       let other = 1 - player;
 
       if (!this.player) {
-        this.player = this.nodeTree.addActor(
-          new DemoPlayerB(this.game, player, () => {
-            // on done
-            this.player = null;
-          })
-        );
+        let onDone = () => {
+          this.player = null;
+        };
+        this.player = this.fastDemo ?
+          new DemoPlayerB(this.game, player, onDone) :
+          new DemoPlayerA(this.game, player, onDone);        if (this.startPaused) {
+          this.player.setPaused(true);
+        }        this.nodeTree.addActor(this.player);
       }
       /*
       let bot = new BotA(this.game, player);
@@ -156,37 +163,39 @@ export default class ScreenDemo {
       position: [0, 30],
       border: `#222`,
     });
-    this.ux.button2({
-      size: [40,28],
-      position: [0, 1],
-      parent: this.footer,
-      text: 'Run',
-    });
-    this.ux.button2({
-      size: [40,28],
-      position: [40, 1],
-      parent: this.footer,
-      text: 'Pause',
-    });
-    this.ux.button2({
-      size: [40,28],
-      position: [80, 1],
-      parent: this.footer,
+    this._refreshFooter();
+  }
+
+  _refreshFooter() {
+    this.footer.innerHTML = '';
+
+    let buttons = [];
+    buttons.push({
       text: 'Step',
+      onclick: () => this._onStep(),
     });
-    this.ux.button2({
-      size: [40,28],
-      position: [120, 1],
-      parent: this.footer,
-      text: 'Undo',
-    });
-    this.ux.button2({
-      size: [40,28],
-      position: [160, 1],
-      parent: this.footer,
+    buttons.push({
       text: 'Restart',
       onclick: () => this._onRestart(),
     });
+    let size = [55, 26];
+    let position = [2, 2];
+    for (let b of buttons) {
+      this.ux.button2({
+        size,
+        position,
+        parent: this.footer,
+        text: b.text,
+        onclick: b.onclick,
+      });
+      position[0] += size[0] + 2;
+    }
+    if (this.paused || this.startPaused) {
+      buttons.push({
+        text: 'Run',
+        onclick: () => this._onRun(),
+      });
+    }
   }
 
   _setState(state) {
@@ -204,7 +213,26 @@ export default class ScreenDemo {
     return (Date.now() - this.stateTime) / 1000;
   }
 
+  _onRun() {
+    this.startPaused = false;
+    this.paused = false;
+    if (this.player) {
+      this.player.setPaused(false);
+    }
+    this._refreshFooter();
+  }
+
+  _onStep() {
+    this.startPaused = true;
+    this.paused = true;
+    if (this.player) {
+      this.player.doStep();
+    }
+    this._refreshFooter();
+  }
+
   _onRestart() {
+    console.log('sss2 restart');
     this.player = null;
     this.gameOver = false;
 

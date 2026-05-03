@@ -130,7 +130,7 @@ export default class Ux2 extends Ux {
       border: `calc(1 * var(--logic-h, 1px)) solid #000`,
       borderRadius: `calc(4 * var(--logic-h, 1px))`,
       backgroundColor: '#ccf',
-      color: '#FFFFFF',
+      color: '#0e222b',
       fontSize: `calc(12 * var(--logic-h, 1px))`,
       textAlign: 'center',
       display: 'flex',

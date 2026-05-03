@@ -22,7 +22,7 @@ sequence
 - if boat sunk, then placeholder for "you sank my battleship" message
 - if game over, then add the red X marker
 */
-export default class DemoPlayer {
+export default class DemoPlayerA {
   constructor(game, playerId, doneCallback) {
     this.game = game;
     this.playerId = playerId;

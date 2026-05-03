@@ -37,6 +37,7 @@ export default class BotB {
     this.id = id;
     this.other = 1 - id;
     this.otherBoard = game.boards[this.other];
+    this.debug = true;
   }
 
   chooseTarget() {
@@ -49,34 +50,69 @@ export default class BotB {
         x: cell.position[0],
         y: cell.position[1],
         shot: cell.shot,
+        oob: cell.shot,
         weight: 0,
       };
     }
 
+    // Find damaged but not sunk ships
     this.damage = [];
     for (let shot of this.otherBoard.shots) {
       if (shot.hit) {
         let cell = this.otherBoard.cells[shot.position[1]] && this.otherBoard.cells[shot.position[1]][shot.position[0]];
         if (cell) {
           let ship = cell.ship;
-          if (ship && !ship.sank) {
+          if (ship && !ship.sunk) {
             this.damage.push(shot.position);
           }
         }
       }
     }
 
+    // ship neighbors as oob
+    for (let ship of this.otherBoard.ships) {
+      for (let [x, y] of ship.cells) {
+        let shipSquare = this.squares[this._key(x, y)];
+        if (shipSquare) {
+          // Orthogonal neighbors - only if !allowAdjacent AND ship is sunk
+          if (!this.game.rules.allowAdjacent && ship.sunk) {
+            const orthogonal = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+            for (let [dx, dy] of orthogonal) {
+              let square = this.squares[this._key(x + dx, y + dy)];
+              if (square) {
+                square.oob = true;
+              }
+            }
+          }
+
+          // Diagonal neighbors - if !allowDiagonal (skip sunk test for diagonals)
+          if (!this.game.rules.allowDiagonal && shipSquare.shot) {
+            const diagonal = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
+            for (let [dx, dy] of diagonal) {
+              let square = this.squares[this._key(x + dx, y + dy)];
+              if (square) {
+                square.oob = true;
+              }
+            }
+          }
+        }
+      }
+    }
+
     // make a list of targets
-    this.targets = Object.values(this.squares).filter(s => !s.shot);
+    this.targets = Object.values(this.squares).filter(s => !s.oob);
 
     if (this.damage.length > 0) {
       this._findWeightsForDamage();
+      this.targets = this.targets.filter(s => s.weight > 0);
     }
     else {
       this._findWeightsForEmpty();
     }
 
-    this._debugPrintSquares();
+    if (this.debug && this.other == 0) {
+      this._debugPrintSquares();
+    }
 
     // choose from weights
     let target = _sample(this.targets, s => s.weight);
@@ -122,10 +158,12 @@ export default class BotB {
 
   _debugPrintSquares() {
     function code(square) {
+      let a = '  ';
       if (square && square.weight > 0) {
-        return Math.min(999, Math.floor(square.weight)).toString().padStart(3, ' ');
+        a = Math.min(99, Math.floor(square.weight)).toString().padStart(2, ' ');
       }
-      return '   ';
+      let b = square.oob ? 'x' : ' ';
+      return `${a}${b}`;
     }
 
     console.log(`${this.targets.length} targets:`);
