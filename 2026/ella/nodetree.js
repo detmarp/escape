@@ -14,6 +14,7 @@ export default class NodeTree {
     this.frame = 0;
     this.lastTime = performance.now();
     this.debug = true;
+    this.eventQueue = [];
     this.clear();
   }
 
@@ -70,6 +71,7 @@ export default class NodeTree {
     if (node.actor && node.actor.term) {
       node.actor.term();
     }
+    node.removed = true;
   }
 
   update() {
@@ -150,6 +152,27 @@ export default class NodeTree {
         }
       }
     }
+
+    this._dispatchEvents();
+  }
+
+  sendEvent(type, data = {}) {
+    this.eventQueue.push({ type, data });
+  }
+
+  _dispatchEvents() {
+    if (this.eventQueue.length === 0) return;
+
+    const events = this.eventQueue;
+    this.eventQueue = [];
+
+    for (const event of events) {
+      for (const node of this.flat) {
+        if (!node.kill && node.actor && node.actor.onEvent) {
+          node.actor.onEvent(event.type, event.data);
+        }
+      }
+    }
   }
 
   _draw() {
@@ -216,9 +239,16 @@ export default class NodeTree {
       children: [],
       age: 0,
       tree: this,
+      // helper funcs
       addActor(actor, params) {
-        // helper to add an actor to this node
         return this.tree.addActor(actor, this, params);
+      },
+      sendEvent(type, data) {
+        this.tree.sendEvent(type, {
+          sender: this.actor,
+          ...data,
+        }
+        );
       }
     };
   }

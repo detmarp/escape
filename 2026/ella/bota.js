@@ -33,13 +33,13 @@ export default class BotA {
   setTarget() {
     let target = null;
     if (this.id == this.game.turn) {
-       target = this._chooseTarget();
+       target = this.chooseTarget();
     }
     this.game.boards[this.other].cursor = target;
     return target;
   }
 
-  _chooseTarget() {
+  chooseTarget() {
     this._getTargetStatus();
     console.log(`bbb ${JSON.stringify(this.targetStatus)}`);
 

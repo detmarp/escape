@@ -41,6 +41,9 @@ export default class Air {
       if (this.board.cursor) {
         this._cursor(ctx);
       }
+      if (this.board.lock) {
+        this._lock(ctx);
+      }
     }
   }
 
@@ -67,4 +70,20 @@ export default class Air {
     _rect(ctx, color, [pos[0] + size - length, pos[1] + size - thickness, length, thickness]);
     _rect(ctx, color, [pos[0] + size - thickness, pos[1] + size - length, thickness, length]);
   }
+
+
+  _lock(ctx) {
+    let pos = _toPosition(this.board.lock);
+    let size = 12;
+    let color = '#ffff00';
+
+    // 2 Hz duty cycle: 0.5 second period, 60% on (0.3s on, 0.2s off)
+    let cycleTime = (this._node.age || 0) % 0.5;
+    let isOn = cycleTime < 0.3;
+    let thickness = isOn ? 3 : 1;
+
+    _rect(ctx, color, [pos[0] - size, pos[1] - thickness / 2, size * 2, thickness]);
+    _rect(ctx, color, [pos[0] - thickness / 2, pos[1] - size, thickness, size * 2]);
+  }
+
 }

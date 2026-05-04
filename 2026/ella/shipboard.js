@@ -40,6 +40,12 @@ export default class ShipBoard {
   markShot(position, hit) {
   }
 
+  hudOff() {
+    this.cursor = null;
+    this.ready = false;
+    this.lock = null;
+  }
+
   _update() {
     this.ships.forEach(ship => {
       ship.dx = ship.vertical ? 0 : 1;

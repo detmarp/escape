@@ -1,4 +1,4 @@
-import BotA from '../bota.js';
+import BotB from '../botb.js';
 
 function _rand(n) {
   return Math.floor(Math.random() * n);
@@ -44,9 +44,13 @@ export default class DemoPlayerA {
     this.gotoState('firstPause', 0.5, () => this.onFindTarget());
   }
 
+  setPaused() {
+  }
+
   onFindTarget() {
-    let bot = new BotA(this.game, this.playerId);
-    this.target = bot._chooseTarget();
+    let bot = new BotB(this.game, this.playerId);
+    this.target = bot.chooseTarget();
+    this.otherBoard.cursor = this.target;
     this.otherBoard.ready = true;
     if (!this.target) {
       this.onAllDone();
@@ -56,19 +60,24 @@ export default class DemoPlayerA {
   }
 
   onAnimCursor(t) {
+    this.otherBoard.cursor = [_rand(10), _rand(10)];
   }
 
   onLockCursor() {
+    this.otherBoard.hudOff();
+    this.otherBoard.lock = this.target;
     this.gotoState('lockingCursor', 0.5, () => {
-      this.gotoState('flyMissile', 1.5, () => this.onMissleLanded(), (t) => this.onFlyMissile(t));
+      this._node.sendEvent('missile', {
+        fromIndex: this.playerId,
+        toIndex: this.otherPlayerId,
+        target: this.target,
+      });
+      this.gotoState('flyMissile', 1.5, () => this.onMissleLanded());
     });
   }
 
-  onFlyMissile(t) {
-  }
-
   onMissleLanded() {
-    this.otherBoard.ready = false;
+    this.otherBoard.hudOff();
     let shot = this.game.shoot(this.otherPlayerId, this.target);
     this.gotoState('handleHit', 0.5, () => this.onEndTurn());
   }
@@ -78,8 +87,7 @@ export default class DemoPlayerA {
   }
 
   onAllDone() {
-    this.board.ready = false;
-    this.board.cursor = null;
+    this.otherBoard.hudOff();
     this._node.tree.remove(this);
     if (this.doneCallback) {
       this.doneCallback();
