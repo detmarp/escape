@@ -1,0 +1,186 @@
+{
+  "emitters": {
+    "missile_trail": {
+      "type": "continuous",
+      "particleType": "rect",
+      "rate": 8,
+      "velocity": {
+        "x": { "min": -0.5, "max": 0.5 },
+        "y": { "min": 0.2, "max": 1.0 }
+      },
+      "colors": ["#ff6600", "#ffaa00", "#666666"],
+      "size": { "min": 1, "max": 3 },
+      "lifetime": { "min": 15, "max": 30 },
+      "alpha": { "start": 0.8, "end": 0.0 }
+    },
+
+    "missile_smoke": {
+      "type": "continuous",
+      "particleType": "rect",
+      "rate": 3,
+      "velocity": {
+        "x": { "min": -0.3, "max": 0.3 },
+        "y": { "min": -0.1, "max": 0.5 }
+      },
+      "colors": ["#888888", "#aaaaaa", "#cccccc"],
+      "size": { "min": 2, "max": 5 },
+      "lifetime": { "min": 40, "max": 80 },
+      "alpha": { "start": 0.6, "end": 0.0 }
+    },
+
+    "fire_small": {
+      "type": "continuous",
+      "particleType": "sprite",
+      "spriteId": 0,
+      "rate": 12,
+      "frameSpeed": 0.3,
+      "velocity": {
+        "x": { "min": -0.2, "max": 0.2 },
+        "y": { "min": -1.0, "max": -0.3 }
+      },
+      "scale": { "start": 0.8, "end": 1.2 },
+      "lifetime": { "min": 20, "max": 35 }
+    },
+
+    "fire_medium": {
+      "type": "continuous",
+      "particleType": "sprite",
+      "spriteId": 0,
+      "rate": 18,
+      "frameSpeed": 0.25,
+      "velocity": {
+        "x": { "min": -0.4, "max": 0.4 },
+        "y": { "min": -1.5, "max": -0.5 }
+      },
+      "scale": { "start": 1.0, "end": 1.5 },
+      "lifetime": { "min": 25, "max": 45 }
+    },
+
+    "fire_large": {
+      "type": "continuous",
+      "particleType": "sprite",
+      "spriteId": 0,
+      "rate": 25,
+      "frameSpeed": 0.2,
+      "velocity": {
+        "x": { "min": -0.6, "max": 0.6 },
+        "y": { "min": -2.0, "max": -0.8 }
+      },
+      "scale": { "start": 1.2, "end": 2.0 },
+      "lifetime": { "min": 30, "max": 60 }
+    },
+
+    "fire_smoke": {
+      "type": "continuous",
+      "particleType": "rect",
+      "rate": 6,
+      "velocity": {
+        "x": { "min": -0.5, "max": 0.5 },
+        "y": { "min": -2.0, "max": -1.0 }
+      },
+      "colors": ["#444444", "#666666", "#888888"],
+      "size": { "min": 3, "max": 8 },
+      "lifetime": { "min": 60, "max": 120 },
+      "alpha": { "start": 0.4, "end": 0.0 }
+    },
+
+    "smoldering": {
+      "type": "continuous",
+      "particleType": "rect",
+      "rate": 2,
+      "velocity": {
+        "x": { "min": -0.1, "max": 0.1 },
+        "y": { "min": -0.5, "max": -0.2 }
+      },
+      "colors": ["#333333", "#555555", "#777777"],
+      "size": { "min": 2, "max": 4 },
+      "lifetime": { "min": 80, "max": 150 },
+      "alpha": { "start": 0.3, "end": 0.0 }
+    },
+
+    "water_splash": {
+      "type": "burst",
+      "particleType": "rect",
+      "count": { "min": 8, "max": 15 },
+      "velocity": {
+        "x": { "min": -2.0, "max": 2.0 },
+        "y": { "min": -3.0, "max": -0.5 }
+      },
+      "colors": ["#4488cc", "#66aadd", "#88ccff"],
+      "size": { "min": 1, "max": 4 },
+      "lifetime": { "min": 15, "max": 30 },
+      "gravity": 0.1
+    },
+
+    "explosion": {
+      "type": "burst",
+      "particleType": "rect",
+      "count": { "min": 25, "max": 40 },
+      "velocity": {
+        "x": { "min": -4.0, "max": 4.0 },
+        "y": { "min": -4.0, "max": 4.0 }
+      },
+      "colors": ["#ff3300", "#ff6600", "#ffaa00", "#ffff44"],
+      "size": { "min": 2, "max": 8 },
+      "lifetime": { "min": 20, "max": 50 },
+      "alpha": { "start": 1.0, "end": 0.0 }
+    },
+
+    "explosion_smoke": {
+      "type": "burst",
+      "particleType": "rect",
+      "count": { "min": 15, "max": 25 },
+      "velocity": {
+        "x": { "min": -2.0, "max": 2.0 },
+        "y": { "min": -2.0, "max": 1.0 }
+      },
+      "colors": ["#444444", "#666666"],
+      "size": { "min": 4, "max": 12 },
+      "lifetime": { "min": 60, "max": 120 },
+      "alpha": { "start": 0.7, "end": 0.0 }
+    },
+
+    "cannon_shoot": {
+      "type": "burst",
+      "particleType": "rect",
+      "count": { "min": 12, "max": 18 },
+      "velocity": {
+        "x": { "min": -1.5, "max": 1.5 },
+        "y": { "min": -2.0, "max": 0.5 }
+      },
+      "colors": ["#ffaa00", "#ffcc44", "#ffffff"],
+      "size": { "min": 3, "max": 6 },
+      "lifetime": { "min": 8, "max": 20 },
+      "alpha": { "start": 1.0, "end": 0.0 }
+    },
+
+    "starburst": {
+      "type": "burst",
+      "particleType": "rect",
+      "count": { "min": 30, "max": 50 },
+      "velocity": {
+        "radial": true,
+        "speed": { "min": 1.0, "max": 4.0 }
+      },
+      "colors": ["#ffff44", "#44ff44", "#ff4444", "#4444ff", "#ff44ff"],
+      "size": { "min": 2, "max": 5 },
+      "lifetime": { "min": 40, "max": 80 },
+      "alpha": { "start": 1.0, "end": 0.0 },
+      "gravity": 0.05
+    },
+
+    "starburst_trails": {
+      "type": "burst",
+      "particleType": "rect",
+      "count": { "min": 60, "max": 100 },
+      "velocity": {
+        "radial": true,
+        "speed": { "min": 0.5, "max": 2.5 }
+      },
+      "colors": ["#ffff88", "#88ff88", "#ff8888"],
+      "size": { "min": 1, "max": 3 },
+      "lifetime": { "min": 60, "max": 120 },
+      "alpha": { "start": 0.8, "end": 0.0 }
+    }
+  }
+}

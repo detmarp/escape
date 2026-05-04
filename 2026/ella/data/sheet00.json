@@ -1,0 +1,14 @@
+{
+  "sprites": [
+    {
+      "source": [64, 64, 32, 32],
+      "inset": [4, 4, 24, 24],
+      "origin": [16, 24],
+      "columns": 6,
+      "rows": 6,
+      "id": 0,
+      "label": "fire0",
+      "frame": 0
+    }
+  ]
+}

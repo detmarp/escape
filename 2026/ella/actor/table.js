@@ -3,6 +3,7 @@ import Ocean from "./ocean.js";
 import Offset from "./offset.js";
 import Text from "./text.js";
 import Missile from "./missile.js";
+import Fx from './fx.js';
 
 function _position(cell) {
   return [cell[0] * 24 + 12, cell[1] * 24 + 12];
@@ -20,6 +21,8 @@ export default class Table {
   }
 
   added() {
+    this.fx = this._node.addActor(new Fx());
+
     for (let i = 0; i < 2; i++) {
       let board = this.game ? this.game.boards[i] : null;
       let pos = this._node.addActor(new Offset(this.arenaPositions[i]));
