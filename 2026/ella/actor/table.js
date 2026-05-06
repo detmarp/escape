@@ -21,7 +21,8 @@ export default class Table {
   }
 
   added() {
-    this.fx = this._node.addActor(new Fx());
+    this.fxLayer = this._node.parent.addActor(this._makeFxLayer());
+    this.fx = this.fxLayer._node.addActor(new Fx());
 
     for (let i = 0; i < 2; i++) {
       let board = this.game ? this.game.boards[i] : null;
@@ -54,6 +55,11 @@ export default class Table {
       let from = _add(this.arenaPositions[data.fromIndex], _position([4.5, 4.5]));
       let to = _add(this.arenaPositions[data.toIndex], _position(data.target));
       this._node.addActor(new Missile(this, from, to));
+    }
+  }
+
+  _makeFxLayer() {
+    return {
     }
   }
 }

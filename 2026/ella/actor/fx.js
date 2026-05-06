@@ -35,13 +35,25 @@ export default class Fx {
   }
 
   added() {
+    let p = this.partA._tempAddStaticFrame('fire', 0);
+    p.ttl = null;
   }
 
   init() {
   }
 
-  work(dt, time) {
+  work(dt, time, frame) {
+    this.partA._tempAddSpark(180, 500);
     this.partA.work(dt);
+    let n = (frame / 5) % 100;
+    if (n % 1 < 0.1) {
+      let x = n % 10;
+      let y = Math.floor(n / 10);
+      let p = this.partA._tempAddStaticFrame('fire', 0);
+      p.x = x * 24 + 12 + 60;
+      p.y = y * 24 + 12 + 20;
+      p.ttl = 1;
+    }
   }
 
   draw(ctx) {

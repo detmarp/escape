@@ -6,6 +6,7 @@
       "origin": [16, 24],
       "columns": 6,
       "rows": 6,
+      "columnMajor": true,
       "id": 0,
       "label": "fire0",
       "frame": 0

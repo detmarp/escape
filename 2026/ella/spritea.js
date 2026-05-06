@@ -74,7 +74,8 @@ export default class SpriteA {
 
         this.flat.push({
           id: grid.id,
-          label: `${grid.label}_${frame}`,
+          label: `${grid.label}`,
+          flabel: `${grid.label}_${frame}`,
           sx: cellX + insetX,
           sy: cellY + insetY,
           sw: contentW,
@@ -101,6 +102,10 @@ export default class SpriteA {
           this.sprites[entry.label] = [];
         }
         this.sprites[entry.label][entry.frame] = entry;
+      }
+
+      if (entry.flabel) {
+        this.sprites[entry.flabel] = [entry];
       }
     }
   }

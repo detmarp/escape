@@ -29,3 +29,37 @@ this.ctx = this.canvas.getContext('2d');  // Set context
 this.canvas = document.createElement('canvas');
 this.ctx = this.canvas.getContext('2d');
 ```
+
+## Particle System Architecture
+
+### Core Components
+- **SpriteA**: Texture atlas system for sprite loading and rendering
+- **PartA**: Core particle engine for entity management and physics
+- **FX**: Effects templates and emitter definitions loaded from JSON
+
+### Design Decisions
+- **Unified entities**: Emitters and particles share same struct - particles can spawn other particles
+- **Two particle types**: Sprite particles (flipbook animations) + rect particles (colored squares)
+- **Template-driven**: JSON definitions for emitter behavior, runtime instances for performance
+- **Two emitter modes**: One-shot bursts (explosions) + persistent streams (fires, smoke)
+- **Flexible lifetime**: TTL particles (auto-expire) + forever particles (manual cleanup)
+- **Performance focused**: Object pooling, minimal string operations, efficient lookups
+
+### File Structure
+- `spritea.js`: Sprite sheet loading with grid-based JSON format
+- `parta.js`: Particle system engine (render + physics)
+- `actor/fx.js`: Effects data manager (loads particle.json templates)
+- `data/particle.json`: Emitter definitions for naval battle effects
+- `data/sheet00.json`: Sprite atlas metadata for animations
+
+### API Patterns
+```javascript
+// One-shot effects
+fx.emit("explosion", x, y)
+
+// Persistent effects
+fx.add("campfire", x, y)
+
+// Sprite rendering
+sprites.draw(ctx, spriteId, x, y, scale, frame)
+```
