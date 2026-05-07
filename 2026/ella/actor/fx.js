@@ -43,16 +43,24 @@ export default class Fx {
   }
 
   work(dt, time, frame) {
+    const names = ['smoke', 'splash', 'explosion', 'fire', 'shrapnel', 'sparks', 'smoke2'];
     this.partA._tempAddSpark(180, 500);
     this.partA.work(dt);
-    let n = (frame / 5) % 100;
-    if (n % 1 < 0.1) {
+    this.thing = this.thing || {
+      i: 0,
+      tick: 0,
+    };
+    this.thing.tick += dt;
+    if (this.thing.tick > 0.1) {
+      this.thing.tick = 0;
+      let n = this.thing.i % 100;
+      let name = names[this.thing.i % names.length];
+      this.thing.i++;
       let x = n % 10;
       let y = Math.floor(n / 10);
-      let p = this.partA._tempAddStaticFrame('fire', 0);
-      p.x = x * 24 + 12 + 60;
-      p.y = y * 24 + 12 + 20;
-      p.ttl = 1;
+      let px = x * 24 + 12 + 60;
+      let py = y * 24 + 12 + 20;
+      let p = this.partA._tempMakeFlipOnce(name, 12, px, py);
     }
   }
 

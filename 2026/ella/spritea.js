@@ -7,6 +7,7 @@ export default class SpriteA {
     this.error = null;
     this.flat = [];
     this.sprites = {};
+    this.strips = {};
 
     this._loadAssets();
   }
@@ -90,45 +91,87 @@ export default class SpriteA {
 
   _buildLookups() {
     this.sprites = {};
+    this.strips = {};
 
     for (const entry of this.flat) {
-      if (!this.sprites[entry.id]) {
-        this.sprites[entry.id] = [];
+      if (!this.strips[entry.id]) {
+        this.strips[entry.id] = [];
       }
-      this.sprites[entry.id][entry.frame] = entry;
+      this.strips[entry.id][entry.frame] = entry;
+
+      if (!this.sprites[entry.id] || entry.frame === 0) {
+        this.sprites[entry.id] = entry;
+      }
 
       if (entry.label) {
-        if (!this.sprites[entry.label]) {
-          this.sprites[entry.label] = [];
+        if (!this.strips[entry.label]) {
+          this.strips[entry.label] = [];
         }
-        this.sprites[entry.label][entry.frame] = entry;
+        this.strips[entry.label][entry.frame] = entry;
+
+        if (!this.sprites[entry.label] || entry.frame === 0) {
+          this.sprites[entry.label] = entry;
+        }
       }
 
       if (entry.flabel) {
-        this.sprites[entry.flabel] = [entry];
+        this.sprites[entry.flabel] = entry;
       }
     }
   }
 
-  draw(ctx, id, x, y, scale = 1, frame = 0) {
+  getFrame(id, frame = 0) {
+    const strip = this.strips[id];
+    if (strip && strip.length > 0) {
+      if (strip[frame]) {
+        return strip[frame];
+      }
+
+      const dense = strip.filter(Boolean);
+      if (dense.length > 0) {
+        let wrapped = frame % dense.length;
+        if (wrapped < 0) {
+          wrapped += dense.length;
+        }
+        return dense[wrapped];
+      }
+    }
+
+    if (frame === 0 && this.sprites[id]) {
+      return this.sprites[id];
+    }
+
+    return null;
+  }
+
+  getStrip(id) {
+    const strip = this.strips[id];
+    if (!strip) {
+      return null;
+    }
+    return strip.filter(Boolean);
+  }
+
+  getSprite(id) {
+    return this.sprites[id] || null;
+  }
+
+
+  drawFrame(ctx, id, frame = 0, x, y, scale = 1) {
+    //console.log(`Drawing frame: id=${id}, frame=${frame}, x=${x}, y=${y}, scale=${scale}`);
     if (!this.loaded) return;
 
-    const frames = this.sprites[id];
-    if (frames && frames.length > 0) {
-      const wrappedFrame = frame % frames.length;
-      const entry = frames[wrappedFrame];
-      if (entry) {
-        this._drawEntry(ctx, entry, x, y, scale);
-      }
+    const sprite = this.getFrame(id, frame);
+    if (sprite) {
+      this.drawSprite(ctx, sprite, x, y, scale);
     }
   }
 
-  _drawEntry(ctx, entry, x, y, scale = 1) {
-    const dw = entry.sw * scale;
-    const dh = entry.sh * scale;
-    const dx = x - entry.cx * scale;
-    const dy = y - entry.cy * scale;
-
-    ctx.drawImage(this.sheet, entry.sx, entry.sy, entry.sw, entry.sh, dx, dy, dw, dh);
+  drawSprite(ctx, sprite, x, y, scale = 1) {
+    const dw = sprite.sw * scale;
+    const dh = sprite.sh * scale;
+    const dx = x - sprite.cx * scale;
+    const dy = y - sprite.cy * scale;
+    ctx.drawImage(this.sheet, sprite.sx, sprite.sy, sprite.sw, sprite.sh, dx, dy, dw, dh);
   }
 }

@@ -24,10 +24,13 @@ export default class PartA {
   }
 
   draw(ctx) {
-    this._tempDrawFire(ctx);
     this._tempDrawSparks(ctx);
 
     for (const p of this.particles) {
+      if (p.flip) {
+        let f = p.f || 0;
+        this.sprites.drawFrame(ctx, p.id, f, p.x, p.y, 1);
+      }
       if (p.sprite) {
         // just draw magenta 8x8 rect centered here
         ctx.fillStyle = '#ff00ff';
@@ -47,10 +50,10 @@ export default class PartA {
   }
 
   _tempDrawFrames(ctx, id, x, y) {
-    let s = this.sprites.sprites[id];
+    let s = this.sprites.strips[id];
     if (!s) return;
     let f = Math.floor(this.frame / 6) % s.length;
-    this.sprites.draw(ctx, id, x, y, 1, f);
+    this.sprites.drawFrame(ctx, id, f, x, y, 1);
   }
 
   _tempAddStaticFrame(id, frame) {
@@ -58,14 +61,6 @@ export default class PartA {
     p.sprite = id;
     p.frame = frame;
     return p;
-  }
-
-  _tempDrawFire(ctx) {
-    if (!this.sprites.loaded || this.sprites.flat.length === 0) {
-      return;
-    }
-    let i = Math.floor(this.frame / 10) % this.sprites.flat.length;
-    this.sprites._drawEntry(ctx, this.sprites.flat[i], 48, 48, 1);
   }
 
   _tempDrawSparks(ctx) {
@@ -97,6 +92,22 @@ export default class PartA {
     p.color = this._randomSaturatedColor();
   }
 
+  _tempMakeFlipOnce(id, fps, x, y) {
+    let p = this._makePip(this.particles);
+    const strip = this.sprites.strips[id];
+    if (!strip) {
+      return;
+    }
+    const frameCount = strip ? strip.length : 0;
+    p.id = id;
+    p.x = x;
+    p.y = y;
+    p.ttl = (fps > 0 && frameCount > 0) ? (frameCount / fps) : null;
+    p.fps = fps;
+    p.f = 0;
+    p.flip = true;
+  }
+
   _randomSaturatedColor() {
     const hue = Math.floor(Math.random() * 360);
     return `hsl(${hue}, 100%, 80%)`;
@@ -106,7 +117,20 @@ export default class PartA {
     for (let i = list.length - 1; i >= 0; i--) {
       const p = list[i];
       p.age += dt;
-      if (p.kill || (p.ttl !== null && p.age > p.ttl)) {
+      if (p.flip && p.fps != null) {
+        const strip = this.sprites.strips[p.id];
+        if (strip && strip.length > 0) {
+          p.f = Math.floor(p.age * p.fps);
+        }
+      }
+      if (p.ttl !== null) {
+        p.t = p.age / p.ttl;
+        if (p.t > 1) {
+          p.t = 1;
+          p.kill = true;
+        }
+      }
+      if (p.kill) {
         list.splice(i, 1);
         continue;
       }

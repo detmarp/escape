@@ -4,6 +4,7 @@
       "id": 0,
       "label": "smoke",
       "source": [32, 0, 32, 32],
+      "origin": [16, 28],
       "columns": 15,
       "rows": 1
     },
@@ -11,6 +12,7 @@
       "id": 1,
       "label": "splash",
       "source": [0, 64, 32, 32],
+      "origin": [16, 28],
       "columns": 16,
       "rows": 2
     },
@@ -19,6 +21,7 @@
       "label": "splash",
       "frame": 32,
       "source": [0, 128, 32, 32],
+      "origin": [16, 28],
       "columns": 16,
       "rows": 1
     },
@@ -33,6 +36,7 @@
       "id": 3,
       "label": "fire",
       "source": [288, 288, 32, 32],
+      "origin": [16, 28],
       "columns": 7,
       "rows": 1
     },
@@ -41,6 +45,7 @@
       "label": "fire",
       "frame": 7,
       "source": [256, 320, 32, 32],
+      "origin": [16, 28],
       "columns": 2,
       "rows": 1
     },
@@ -62,6 +67,7 @@
       "id": 6,
       "label": "smoke2",
       "source": [288, 448, 32, 32],
+      "origin": [16, 22],
       "columns": 4,
       "rows": 1
     }
