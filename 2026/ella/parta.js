@@ -27,18 +27,67 @@ export default class PartA {
     }
 
     for (const p of this.particles) {
-      if (p.flip) {
-        let f = p.f || 0;
-        let s = p.strip[f];
-        this.sprites.drawSprite(ctx, s, p.x, p.y, 1);
-        continue;
-      }
+      this._drawPip(ctx, p);
+    }
+  }
 
-      if (true) {
-        ctx.fillStyle = p.color || '#f80';
-        ctx.fillRect(p.x - 6, p.y - 6, 12, 12);
-        continue
+  _calcAlpha(p) {
+    let alpha = 1.0;
+    if (p.alpha != null) {
+      alpha *= p.alpha;
+    }
+
+    if (p.fadef != null) {
+      let t = p.t;
+      if (t == null && p.ttl != null) {
+        t = p.age / p.ttl;
       }
+      if (t != null) {
+        const threshold = Math.max(0, Math.min(1, p.fadef));
+        if (t >= threshold) {
+          alpha *= (1 - t) / (1 - threshold);
+        }
+      }
+    }
+    else if (p.fade != null && p.ttl != null) {
+      const fadeStart = Math.max(0, p.fade);
+      if (p.age >= fadeStart) {
+        const remain = p.ttl - p.age;
+        const fadeDuration = p.ttl - fadeStart;
+        if (fadeDuration > 0) {
+          alpha *= remain / fadeDuration;
+        }
+      }
+    }
+
+    alpha = Math.max(0, Math.min(1, alpha));
+    return alpha;
+  }
+
+  _drawPip(ctx, p) {
+    let alpha = this._calcAlpha(p);
+    let useAlpha = alpha < 1;
+
+    if (useAlpha) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+    }
+
+    if (p.flip) {
+      let f = p.f || 0;
+      let s = p.strip[f];
+      this.sprites.drawSprite(ctx, s, p.x, p.y, 1);
+    }
+    else if (p.still) {
+      let s = p.strip[p.frame];
+      this.sprites.drawSprite(ctx, s, p.x, p.y, 1);
+    }
+    else if (true) {
+      ctx.fillStyle = p.color || '#f80';
+      let hs = (p.size || 2) / 2;
+      ctx.fillRect(p.x - hs, p.y - hs, hs * 2, hs * 2);
+    }
+    else {
 
       if (p.spark === 'yes') {
         let alpha = 1.0;
@@ -66,6 +115,10 @@ export default class PartA {
         ctx.fillRect(p.x - 4, p.y - 4, 8, 8);
       }
     }
+
+    if (useAlpha) {
+      ctx.restore();
+    }
   }
 
   async loadData(dataPath) {
@@ -79,10 +132,24 @@ export default class PartA {
 
   spawnPrefab(name, params = {}) {
     const prefab = this.prefabs[name];
-    return this._spawnPrefab(prefab, params);
+    let p = this._instantiatePrefab(prefab, params);
+
+    // if p.immediate then update it and don't add
+    if (p) {
+      let doAdd = true;
+      if (p.oneShot) {
+        this._updatePip(p, 0);
+        doAdd = false;
+      }
+      if (doAdd) {
+        this.particles.push(p);
+      }
+    }
+
+    return p;
   }
 
-  _spawnPrefab(prefab, params) {
+  _instantiatePrefab(prefab, params) {
     if (!prefab) {
       return;
     }
@@ -96,13 +163,26 @@ export default class PartA {
       age: 0,
     };
     let p = { ...defaults, ...prefab, ...params, ...inits };
-    this.particles.push(p);
 
     if (p.strip) {
       p.strip = this.sprites.strips[p.strip];
     }
 
-    this._sampler(p, ['dx', 'dy', 'ttl']);
+    let children = p.children;
+    if (children) {
+      delete p.children;
+      for (const child of children) {
+        this._subSpawn(child, p);
+      }
+    }
+
+    this._sampler(p);
+
+    if (p.strip && p.frame === 'pick') {
+      p.frame = Math.floor(Math.random() * p.strip.length);
+      p.still = true;
+      return p;
+    }
 
     let flipOnce = p.strip && (p.ttl || p.fps);
     if (flipOnce) {
@@ -116,26 +196,6 @@ export default class PartA {
       }
       return p;
     }
-
-    if (prefab.details == '1confetti') {
-      // HERE ---------------------------
-      p.spark = 'yes';
-      p.x = params.x || 0;
-      p.y = params.y || 0;
-      p.dx = [-20, 20];
-      p.dy = [-420, -380];
-      p.ay = 200;
-      p.ttl = [2.8, 3.2];
-      p.color = this._randomSaturatedColor();
-      return p;
-    }
-    if (prefab.type == 'emitter') {
-      p.details = prefab.details;
-      p.x = params.x || 0;
-      p.y = params.y || 0;
-      return p;
-    }
-
     const strip = this.sprites.strips[prefab.sprite];
     if (!strip) {
       return p;
@@ -151,20 +211,24 @@ export default class PartA {
     p.ttl = (fps > 0 && frameCount > 0) ? (frameCount / fps) : null;
     p.fps = fps;
     p.f = 0;
-    //p.flip = true;
     return p;
   }
 
-  _sampler(obj, keys) {
+  _sampler(obj) {
     // interpret value ranges on obj
-    for (const key of keys) {
+    let rangeKeys = ['dx', 'dy', 'ttl']
+    for (const key of rangeKeys) {
       const val = obj[key];
-      if (typeof val === 'number') {
-        continue;
-      }
       if (Array.isArray(val)) {
         let [a, b] = val;
         obj[key] = Math.random() * (b - a) + a;
+      }
+    }
+    let pickKeys = ['color']
+    for (const key of pickKeys) {
+      const val = obj[key];
+      if (Array.isArray(val)) {
+        obj[key] = val[Math.floor(Math.random() * val.length)];
       }
     }
   }
@@ -180,82 +244,67 @@ export default class PartA {
     }
   }
 
-  _tempAddStaticFrame(id, frame) {
-    let p = this._makePip(this.particles);
-    p.sprite = id;
-    p.frame = frame;
-    return p;
-  }
-
-  _tempAddSpark(x, y) {
-    const p = this._makePip(this.particles);
-    p.spark = 'yes';
-    p.x = x;
-    p.y = y;
-    p.dx = (Math.random() - 0.5) * 40;
-    p.dy = -400 + (Math.random() - 0.5) * 80;
-    p.ay = 200;
-    p.ttl = 2.8 + Math.random() * 0.4;
-    p.color = this._randomSaturatedColor();
-  }
-
   _randomSaturatedColor() {
     const hue = Math.floor(Math.random() * 360);
     return `hsl(${hue}, 100%, 80%)`;
   }
 
-  _updatePips(list, dt, func) {
+  _updatePips(list, dt) {
     for (let i = list.length - 1; i >= 0; i--) {
       const p = list[i];
-      p.age += dt;
-      if (p.details == 'sparks') {
-        // emitter emits something
-        this.spawnPrefab('confetti', { x: 180, y: 500 });
-      }
-
-      if (p.flip && p.fps != null) {
-        const strip = p.strip;
-        if (strip && strip.length > 0) {
-          p.f = Math.min(Math.floor(p.age * p.fps), strip.length - 1);
-        }
-      }
-      if (p.ttl !== null) {
-        p.t = p.age / p.ttl;
-        if (p.t >= 1) {
-          p.t = 1;
-          p.kill = true;
-        }
-      }
+      this._updatePip(p, dt);
       if (p.kill) {
         list.splice(i, 1);
-        continue;
-      }
-      p.x += p.dx * dt;
-      p.y += p.dy * dt;
-      p.dx += p.ax * dt;
-      p.dy += p.ay * dt;
-
-      if (p.pulse) {
-        if (p.pulse.func === "spawn") {
-          this.spawnPrefab(p.pulse.params.prefab, { x: p.x, y: p.y });
-        }
       }
     }
   }
 
-  _makePip(list) {
-    let s = {
-      x:0, y:0,
-      dx: 0, dy: 0,
-      ax: 0, ay:0,
-      color: '#fff',
-      alpha: 1,
-      //ttl: 1,
-      age:0,
-    };
-    if (list) {
-      list.push(s);
+  _updatePip(p, dt) {
+    p.age += dt;
+    if (p.flip && p.fps != null) {
+      const strip = p.strip;
+      if (strip && strip.length > 0) {
+        p.f = Math.min(Math.floor(p.age * p.fps), strip.length - 1);
+      }
     }
-    return s;
+    if (p.ttl !== null) {
+      p.t = p.age / p.ttl;
+      if (p.t >= 1) {
+        p.t = 1;
+        p.kill = true;
+      }
+    }
+    if (p.kill) {
+      return;
+    }
+    p.x += p.dx * dt;
+    p.y += p.dy * dt;
+    p.dx += p.ax * dt;
+    p.dy += p.ay * dt;
+    this._subSpawn(p.spawn, p);
+    if (p.onPulse) {
+      this._subSpawn(p.onPulse.spawn, p);
+    }
+  }
+
+  _subSpawn(spawn, emitter) {
+    if (spawn) {
+      let count = spawn.count || 1;
+      for (let i = 0; i < count; i++) {
+        let params = {
+          x: emitter.x,
+          y: emitter.y,
+        };
+
+        let optionals = ['dx', 'dy', 'ay'];
+        for (const key of optionals) {
+          if (spawn[key] !== undefined) {
+            params[key] = spawn[key];
+          }
+        }
+
+        this.spawnPrefab(spawn.prefab, params);
+      }
+    }
   }
 }

@@ -36,15 +36,19 @@ export default class Fx {
   }
 
   added() {
-    let p = this.partA._tempAddStaticFrame('fire', 0);
-    p.ttl = null;
   }
 
   init() {
   }
 
   work(dt, time, frame) {
-    const names = ['smoke', 'splash', 'explosion', 'fire', 'shrapnel', 'sparks', 'smoke2'];
+    const names = [
+      'explosion',
+      //"shrapnel",
+      //'smoke', 'splash', 'fire',
+      //'sparks', 'smoke2',
+      //'spray2once',
+    ];
     this.partA.work(dt);
     this.thing = this.thing || {
       i: 0,
@@ -64,7 +68,8 @@ export default class Fx {
     }
 
     if (!this.sprayer) {
-      //this.sprayer = this.partA.spawnPrefab('sprayer', { x: 180, y: 500 });
+      //this.sprayer = this.partA.spawnPrefab('sprayer', { x: 40, y: 500 });
+      //this.partA.spawnPrefab('spray2', { x: 320, y: 500 });
     }
   }
 

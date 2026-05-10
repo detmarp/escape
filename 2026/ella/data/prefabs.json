@@ -2,16 +2,34 @@
   "prefabs": [
     {
       "name": "explosion",
+      "oneShot": true,
+      "children" : [
+        { "prefab": "shrapnel" },
+        { "prefab": "explosion-strip" }
+      ]
+    },
+    {
+      "name": "explosion-strip",
       "strip": "explosion",
-      "fps": 12
+      "fps": 12,
+      "fadef": 0.8
     },
     {
       "name": "smoke",
       "strip": "smoke",
-      "fps": 12
+      "fps": 12,
+      "fadef": 0.9
     },
     {
       "name": "splash",
+      "oneShot": true,
+      "children": [
+        { "prefab": "blackdot", "count": 100 },
+        { "prefab": "splash-strip" }
+      ]
+    },
+    {
+      "name": "splash-strip",
       "strip": "splash",
       "fps": 12
     },
@@ -22,8 +40,23 @@
     },
     {
       "name": "shrapnel",
+      "oneShot": true,
+      "onPulse": {
+        "spawn": {
+          "prefab": "shrapnel-strip",
+          "dx": [-50, 50],
+          "dy": [-20, -60],
+          "ay": 50,
+          "count": 10
+        }
+      }
+    },
+    {
+      "name": "shrapnel-strip",
       "strip": "shrapnel",
-      "fps": 12
+      "frame": "pick",
+      "ttl": [0.5, 1.5],
+      "fadef": 0.8
     },
     {
       "name": "sparks",
@@ -37,15 +70,46 @@
     },
     {
       "name": "sprayer",
-      "pulse": { "func": "spawn", "params": { "prefab": "confetti" } },
-      "forward": ["x", "y"]
+      "onPulse": { "spawn": { "prefab": "confetti" } }
     },
     {
       "name": "confetti",
-      "dx": [-200, 200],
-      "dy": [-200, -400],
-      "color": "#0ff",
-      "ttl": 1
+      "dx": [-20, 20],
+      "dy": [-300, -400],
+      "ay": 200,
+      "color": "#fffa",
+      "size": 2,
+      "ttl": [2, 4]
+    },
+    {
+      "name": "spray2",
+      "onPulse": {
+        "spawn": {
+          "prefab": "blackdot",
+          "count": 10
+        }
+      }
+    },
+    {
+      "name": "spray2once",
+      "oneShot": true,
+      "onPulse": {
+        "spawn": {
+          "prefab": "blackdot",
+          "count": 100
+        }
+      }
+    },
+    {
+      "name": "blackdot",
+      "dx": [-30, 30],
+      "dy": [-20, -60],
+      "ay": 50,
+      "color": ["#0df", "#88f", "#dde"],
+      "size": 3,
+      "ttl": [0.3, 1.5],
+      "fadef": 0.5
     }
+
   ]
 }
