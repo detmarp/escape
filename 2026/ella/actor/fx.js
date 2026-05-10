@@ -1,4 +1,4 @@
-import PartA from '../parta.js';
+import PartA from "../parta.js";
 
 function _rand(n) {
   return Math.floor(Math.random() * n);
@@ -14,6 +14,7 @@ export default class Fx {
     this.loaded = false;
     this._loadData();
     this.partA = new PartA();
+    this.partA.loadData('data/prefabs.json');
   }
 
   async _loadData() {
@@ -44,7 +45,6 @@ export default class Fx {
 
   work(dt, time, frame) {
     const names = ['smoke', 'splash', 'explosion', 'fire', 'shrapnel', 'sparks', 'smoke2'];
-    this.partA._tempAddSpark(180, 500);
     this.partA.work(dt);
     this.thing = this.thing || {
       i: 0,
@@ -60,7 +60,11 @@ export default class Fx {
       let y = Math.floor(n / 10);
       let px = x * 24 + 12 + 60;
       let py = y * 24 + 12 + 20;
-      let p = this.partA._tempMakeFlipOnce(name, 12, px, py);
+      //let p = this.partA.spawnPrefab(name, { x: px, y: py });
+    }
+
+    if (!this.sprayer) {
+      //this.sprayer = this.partA.spawnPrefab('sprayer', { x: 180, y: 500 });
     }
   }
 

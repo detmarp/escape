@@ -19,8 +19,7 @@ function _randf(a, b) {
 }
 
 export default class Missile {
-  constructor(xxx, from, to) {
-    this.game = xxx;
+  constructor(from, to) {
     this.from = from;
     this.to = to;
   }

@@ -1,0 +1,51 @@
+{
+  "prefabs": [
+    {
+      "name": "explosion",
+      "strip": "explosion",
+      "fps": 12
+    },
+    {
+      "name": "smoke",
+      "strip": "smoke",
+      "fps": 12
+    },
+    {
+      "name": "splash",
+      "strip": "splash",
+      "fps": 12
+    },
+    {
+      "name": "fire",
+      "strip": "fire",
+      "fps": 12
+    },
+    {
+      "name": "shrapnel",
+      "strip": "shrapnel",
+      "fps": 12
+    },
+    {
+      "name": "sparks",
+      "strip": "sparks",
+      "fps": 12
+    },
+    {
+      "name": "smoke2",
+      "strip": "smoke2",
+      "ttl": 5
+    },
+    {
+      "name": "sprayer",
+      "pulse": { "func": "spawn", "params": { "prefab": "confetti" } },
+      "forward": ["x", "y"]
+    },
+    {
+      "name": "confetti",
+      "dx": [-200, 200],
+      "dy": [-200, -400],
+      "color": "#0ff",
+      "ttl": 1
+    }
+  ]
+}

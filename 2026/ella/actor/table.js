@@ -4,6 +4,7 @@ import Offset from "./offset.js";
 import Text from "./text.js";
 import Missile from "./missile.js";
 import Fx from './fx.js';
+import Timer from './timer.js';
 
 function _position(cell) {
   return [cell[0] * 24 + 12, cell[1] * 24 + 12];
@@ -54,7 +55,13 @@ export default class Table {
     if (type === 'missile') {
       let from = _add(this.arenaPositions[data.fromIndex], _position([4.5, 4.5]));
       let to = _add(this.arenaPositions[data.toIndex], _position(data.target));
-      this._node.addActor(new Missile(this, from, to));
+      this._node.addActor(new Missile(from, to));
+    }
+    if (type === 'landed') {
+      let from = _add(this.arenaPositions[data.fromIndex], _position([4.5, 4.5]));
+      let to = _add(this.arenaPositions[data.toIndex], _position(data.target));
+      let anim = data.hit ? 'explosion' : 'splash';
+      this.fx.partA.spawnPrefab(anim, { x: to[0], y: to[1] });
     }
   }
 

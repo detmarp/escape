@@ -1,0 +1,169 @@
+
+little dot
+pick color from list?
+size
+
+flipbook
+simple
+strip name and fps
+or strip name and ttl
+try both
+{
+  "name": "explosion",
+  "strip": "explosion",
+  "fps": 12
+},
+
+{
+  "name": "explosion",
+  "strip": "explosion",
+  "fps": 12
+},
+
+sprite strip but pick one singel frame
+like for shrapnel
+
+use a fade time
+like ttl 4
+fade 3.5
+
+---
+then what for emitters?
+
+====================
+scratch v2
+====================
+
+goals
+- allow plain numbers for simple cases
+- allow ranges for variation
+- keep spawn-time resolve only
+
+----------------------------------------
+option A: compact arrays for ranges
+----------------------------------------
+
+particle:
+{
+	"name": "confetti",
+	"kind": "rect",
+	"ttl": [2.8, 3.2],
+	"dx": [-20, 20],
+	"dy": [-420, -380],
+	"ay": 200,
+	"size": [2, 4],
+	"color": { "pick": ["#ff6b6b", "#ffd93d", "#6bcBef"] }
+}
+
+flip example:
+{
+	"name": "explosion_flip",
+	"kind": "flip",
+	"strip": "explosion0",
+	"fps": [10, 16],
+	"ttlMode": "autoFromStrip"
+}
+
+----------------------------------------
+option B: explicit objects for ranges
+----------------------------------------
+
+particle:
+{
+	"name": "confetti",
+	"kind": "rect",
+	"ttl": { "min": 2.8, "max": 3.2 },
+	"velocity": {
+		"x": { "min": -20, "max": 20 },
+		"y": { "min": -420, "max": -380 }
+	},
+	"accel": { "x": 0, "y": 200 },
+	"size": { "min": 2, "max": 4 },
+	"color": {
+		"h": { "min": 0, "max": 360 },
+		"s": 1,
+		"v": 1
+	}
+}
+
+----------------------------------------
+option C: polar launch (good for bursts)
+----------------------------------------
+
+particle:
+{
+	"name": "spark",
+	"kind": "rect",
+	"ttl": [0.4, 0.9],
+	"speed": [160, 420],
+	"angleDeg": [-35, 35],
+	"gravity": 700,
+	"size": [1, 2],
+	"color": { "h": [20, 50], "s": [0.8, 1], "v": [0.8, 1] }
+}
+
+----------------------------------------
+emitter syntax ideas
+----------------------------------------
+
+persistent emitter:
+{
+	"name": "fire_small",
+	"type": "emitter",
+	"spawn": "smoke_puff",
+	"rate": 18,
+	"offset": { "x": [-3, 3], "y": [-2, 2] },
+	"lifetime": null
+}
+
+one-shot burst emitter:
+{
+	"name": "explosion",
+	"type": "emitter",
+	"spawn": "spark",
+	"count": [18, 28],
+	"mode": "burst",
+	"self": "discard"
+}
+
+stream emitter with child list:
+{
+	"name": "cannon_muzzle",
+	"type": "emitter",
+	"children": [
+		{ "spawn": "flash", "count": 1 },
+		{ "spawn": "smoke_puff", "count": [4, 7] },
+		{ "spawn": "spark", "count": [6, 12] }
+	],
+	"mode": "burst",
+	"self": "discard"
+}
+
+----------------------------------------
+rect color strategies
+----------------------------------------
+
+palette pick:
+"color": { "pick": ["#f8f8f8", "#ffcc66", "#ff8844"] }
+
+hsv range:
+"color": { "h": [10, 40], "s": [0.8, 1], "v": [0.7, 1] }
+
+fade by lifetime:
+"alpha": { "start": 1, "end": 0 }
+
+----------------------------------------
+name ideas
+----------------------------------------
+
+resolver funcs:
+- resolveValue
+- sampleRange
+- pickWeighted
+- resolveColor
+- resolveVelocity
+
+spawning funcs:
+- spawnPrefab(name, params)
+- emit(name, x, y)
+- add(name, x, y)

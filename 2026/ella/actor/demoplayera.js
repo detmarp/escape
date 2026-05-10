@@ -79,6 +79,12 @@ export default class DemoPlayerA {
   onMissleLanded() {
     this.otherBoard.hudOff();
     let shot = this.game.shoot(this.otherPlayerId, this.target);
+    this._node.sendEvent('landed', {
+      fromIndex: this.playerId,
+      toIndex: this.otherPlayerId,
+      target: this.target,
+      hit: shot.hit,
+    });
     this.gotoState('handleHit', 0.5, () => this.onEndTurn());
   }
 
