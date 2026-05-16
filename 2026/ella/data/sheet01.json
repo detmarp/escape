@@ -1,7 +1,6 @@
 {
   "sprites": [
     {
-      "id": 0,
       "label": "smoke",
       "source": [32, 0, 32, 32],
       "origin": [16, 28],
@@ -9,17 +8,24 @@
       "rows": 1
     },
     {
-      "id": 1,
+      "comment": "last 3 frames from row 2; then whole row 3; then 6 from row 4",
       "label": "splash",
-      "source": [0, 64, 32, 32],
+      "source": [416, 64, 32, 32],
       "origin": [16, 28],
-      "columns": 16,
-      "rows": 2
+      "columns": 3,
+      "rows": 1
     },
     {
-      "id": 1,
       "label": "splash",
-      "frame": 32,
+      "source": [0, 96, 32, 32],
+      "frame": 3,
+      "origin": [16, 28],
+      "columns": 16,
+      "rows": 1
+    },
+    {
+      "label": "splash",
+      "frame": 19,
       "source": [0, 128, 32, 32],
       "origin": [16, 28],
       "columns": 16,

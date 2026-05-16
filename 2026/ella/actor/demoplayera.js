@@ -35,11 +35,11 @@ export default class DemoPlayerA {
   }
 
   added() {
-    console.log('ppp added');
+    //console.log('ppp added');
   }
 
   init() {
-    console.log('ppp init');
+    //console.log('ppp init');
     let b = this.game.boards[this.playerId];
     this.gotoState('firstPause', 0.5, () => this.onFindTarget());
   }
@@ -175,7 +175,7 @@ export default class DemoPlayerA {
   }
 
   term() {
-    console.log('ppp term');
+    //console.log('ppp term');
   }
 
   work(dt, time) {
@@ -206,7 +206,7 @@ export default class DemoPlayerA {
   }
 
   gotoState(label = 'none', duration = 0, onDone = null, onTick = null) {
-    console.log(`ppp ${this.time.toFixed(2)} - gotoState was ${this.state.label} going to ${label} for ${duration}`);
+    //console.log(`ppp ${this.time.toFixed(2)} - gotoState was ${this.state.label} going to ${label} for ${duration}`);
     this.state = {label, duration, onDone, onTick, age: 0, t:0};
   }
 }

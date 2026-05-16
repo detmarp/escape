@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>tests</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+
+    #log {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 8px;
+      height: 100vh;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <pre id="log"></pre>
+
+  <script src="test-runner.js"></script>
+  <script>
+    const logNode = document.getElementById('log');
+    window.runner.setSink((line) => {
+      line = line.trimEnd();
+      logNode.textContent += `${line}\n`;
+      logNode.scrollTop = logNode.scrollHeight;
+      window.scrollTo(0, document.body.scrollHeight);
+      console.log(line);
+    });
+  </script>
+  <script type="module" src="testdummy.js"></script>
+  <script type="module" src="testrules.js"></script>
+  <script type="module" src="testserializegame.js"></script>
+  <script type="module">
+    window.runner.results();
+  </script>
+</body>
+</html>

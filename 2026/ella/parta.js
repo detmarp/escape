@@ -87,34 +87,6 @@ export default class PartA {
       let hs = (p.size || 2) / 2;
       ctx.fillRect(p.x - hs, p.y - hs, hs * 2, hs * 2);
     }
-    else {
-
-      if (p.spark === 'yes') {
-        let alpha = 1.0;
-        if (p.ttl !== null) {
-          const lifeRatio = p.age / p.ttl;
-          if (lifeRatio > 0.8) {
-            alpha = 1.0 - (lifeRatio - 0.8) / 0.2;
-          }
-        }
-
-        ctx.save();
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = p.color;
-        ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
-        ctx.restore();
-      }
-
-      if (p.flip) {
-        let f = p.f || 0;
-        this.sprites.drawFrame(ctx, p.id, f, p.x, p.y, 1);
-      }
-      if (p.sprite) {
-        // just draw magenta 8x8 rect centered here
-        ctx.fillStyle = '#ff00ff';
-        ctx.fillRect(p.x - 4, p.y - 4, 8, 8);
-      }
-    }
 
     if (useAlpha) {
       ctx.restore();
@@ -197,20 +169,30 @@ export default class PartA {
       return p;
     }
     const strip = this.sprites.strips[prefab.sprite];
-    if (!strip) {
+    if (strip && strip.length > 0) {
+      const frameCount = strip.length;
+      let x = params.x || 0;
+      let y = params.y || 0;
+      p.id = prefab.sprite;
+      p.x = x;
+      p.y = y;
+      // Only set ttl if not already set
+      if (p.ttl == null) {
+        let fps = params.fps || 12;
+        p.fps = fps;
+        p.ttl = (fps > 0) ? (frameCount / fps) : null;
+      }
+      // Only set fps if not already set and ttl is present
+      if (p.fps == null && p.ttl != null) {
+        p.fps = frameCount / p.ttl;
+      }
+      p.f = 0;
       return p;
     }
-    const frameCount = strip ? strip.length : 0;
-    let x = params.x || 0;
-    let y = params.y || 0;
-    let fps = params.fps || 12;
-
+    // No valid strip: don't set fps/ttl, just assign id/x/y
     p.id = prefab.sprite;
-    p.x = x;
-    p.y = y;
-    p.ttl = (fps > 0 && frameCount > 0) ? (frameCount / fps) : null;
-    p.fps = fps;
-    p.f = 0;
+    p.x = params.x || 0;
+    p.y = params.y || 0;
     return p;
   }
 

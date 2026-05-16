@@ -2,6 +2,7 @@ import Astra from '../astra/astra.js';
 import ScreenMain from './screen/screenmain.js';
 import ScreenSettings from './screen/screensettings.js';
 import ScreenDemo from './screen/screendemo.js';
+import ScreenGame from './screen/screengame.js';
 import ScreenTest from './screen/screentest.js';
 import ScreenSetup from './screen/screensetup.js';
 import ScreenHome from './screen/screenhome.js';
@@ -15,9 +16,10 @@ export default class Program {
     'main': { class: ScreenMain, params: { hello: 'there', astra: false, } },
     'settings': { class: ScreenSettings, params: { astra: false } },
     'demo': { class: ScreenDemo, params: { astra: true } },
+    'game': { class: ScreenGame, params: { astra: true } },
     'test': { class: ScreenTest, params: { astra: false } },
     'setup': { class: ScreenSetup, params: { astra: false } },
-    'home': { class: ScreenHome, params: { astra: false } },
+    'home': { class: ScreenHome, params: { astra: true } },
     'dom': { class: ScreenDom, params: { astra: true } },
     'canvas1': { class: ScreenCanvas1, params: { astra: true } },
     'canvas2': { class: ScreenCanvas2, params: { astra: true } },

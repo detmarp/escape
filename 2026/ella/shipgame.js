@@ -60,4 +60,21 @@ export default class ShipGame {
 
     return shot;
   }
+
+  static fromObject(obj) {
+    let game = new ShipGame({
+      rules: obj.rules,
+    });
+    return game;
+  }
+
+  toObject() {
+    return {
+      rules: this.rules,
+      boards: this.boards.map(board => board.toObject()),
+      turn: this.turn,
+      gameOver: this.gameOver,
+      winner: this.winner,
+    };
+  }
 }

@@ -53,7 +53,8 @@ export default class Table {
 
   onEvent(type, data) {
     if (type === 'missile') {
-      let from = _add(this.arenaPositions[data.fromIndex], _position([4.5, 4.5]));
+      let yf = data.fromIndex ? 9 : 1;
+      let from = _add(this.arenaPositions[data.fromIndex], _position([4.5, yf]));
       let to = _add(this.arenaPositions[data.toIndex], _position(data.target));
       this._node.addActor(new Missile(from, to));
     }

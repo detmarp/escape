@@ -44,10 +44,12 @@ export default class Fx {
   work(dt, time, frame) {
     const names = [
       'explosion',
-      //"shrapnel",
-      //'smoke', 'splash', 'fire',
-      //'sparks', 'smoke2',
-      //'spray2once',
+      "shrapnel",
+      'smoke', 'splash', 'fire',
+      'sparks', 'smoke2',
+      'spray2once',
+      'spray2once',
+      'spray2once',
     ];
     this.partA.work(dt);
     this.thing = this.thing || {

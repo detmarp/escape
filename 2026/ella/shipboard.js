@@ -130,31 +130,18 @@ export default class ShipBoard {
     }
   }
 
-  _randomize() {
-    this.ships = [];
+  static fromObject(obj) {
+    let board = new ShipBoard();
+    board.ships = obj.ships;
+    board.shots = obj.shots;
+    board._update();
+    return board;
+  }
 
-    for (let item of this.game.fleet) {
-      let vertical = _rnd(2) === 0;
-      this.ships.push(
-        {
-          name: item.name,
-          size: item.size,
-          position: [_rnd(this.size[0]), _rnd(this.size[1])],
-          vertical: vertical,
-        }
-      );
-    }
-
-    this.shots = [];
-    for (let i = 0; i < 20; i++) {
-      this.shots.push({
-        position: [_rnd(this.size[0]), _rnd(this.size[1])],
-        hit: _rnd(2) === 0,
-      });
-    }
-
-    this.cursor = [_rnd(this.size[0]), _rnd(this.size[1])];
-
-    this._update();
+  toObject() {
+    return {
+      ships: this.ships,
+      shots: this.shots,
+    };
   }
 }

@@ -5,9 +5,21 @@
       "oneShot": true,
       "children" : [
         { "prefab": "shrapnel" },
-        { "prefab": "explosion-strip" }
+        { "prefab": "explosion-strip" },
+        { "prefab": "smoke2", "dx": [1, 6], "dy": [-5, -15], "count": 6 },
+        { "prefab": "sparklets", "count": 30 }
       ]
     },
+        {
+          "name": "sparklets",
+          "dx": [-60, 60],
+          "dy": [-10, -200],
+          "ay": 120,
+          "color": ["#ff0", "#fa0", "#f40", "#fff", "#fd0"],
+          "size": 2,
+          "ttl": [0.3, 0.7],
+          "fadef": 0.5
+        },
     {
       "name": "explosion-strip",
       "strip": "explosion",
@@ -24,14 +36,16 @@
       "name": "splash",
       "oneShot": true,
       "children": [
-        { "prefab": "blackdot", "count": 100 },
+        { "prefab": "smoke2", "dx": [1, 6], "dy": [-5, -15], "count": 2 },
+        { "prefab": "droplets", "count": 100 },
         { "prefab": "splash-strip" }
       ]
     },
     {
       "name": "splash-strip",
       "strip": "splash",
-      "fps": 12
+      "fps": 12,
+      "fadef": 0.7
     },
     {
       "name": "fire",
@@ -66,7 +80,10 @@
     {
       "name": "smoke2",
       "strip": "smoke2",
-      "ttl": 5
+      "frame": "pick",
+      "alpha": 0.5,
+      "ttl": 5,
+      "fade": 1
     },
     {
       "name": "sprayer",
@@ -85,8 +102,8 @@
       "name": "spray2",
       "onPulse": {
         "spawn": {
-          "prefab": "blackdot",
-          "count": 10
+          "prefab": "droplets",
+          "count": 50
         }
       }
     },
@@ -95,20 +112,21 @@
       "oneShot": true,
       "onPulse": {
         "spawn": {
-          "prefab": "blackdot",
+          "prefab": "droplets",
           "count": 100
         }
       }
     },
     {
-      "name": "blackdot",
+      "name": "droplets",
       "dx": [-30, 30],
       "dy": [-20, -60],
       "ay": 50,
       "color": ["#0df", "#88f", "#dde"],
       "size": 3,
-      "ttl": [0.3, 1.5],
-      "fadef": 0.5
+      "ttl": [0.5, 1.2],
+      "alpha": 0.7,
+      "fadef": 0.8
     }
 
   ]

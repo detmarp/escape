@@ -37,7 +37,7 @@ export default class BotB {
     this.id = id;
     this.other = 1 - id;
     this.otherBoard = game.boards[this.other];
-    this.debug = true;
+    //this.debug = true;
   }
 
   chooseTarget() {

@@ -25,7 +25,11 @@ export default class ScreenMain {
 
     let menu = this.ux.stack({gap: 4});
 
-    const menuItems = ['home', 'settings', 'demo', 'test', 'setup', 'dom', 'canvas1', 'canvas2'];
+    const menuItems = [
+      'home', 'settings', 'demo', 'game',
+      'test', 'setup', 'dom',
+      'canvas1', 'canvas2',
+    ];
     for (const name of menuItems) {
       this.ux.div({
         parent: menu,
