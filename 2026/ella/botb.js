@@ -1,3 +1,5 @@
+// Bots are just a messy work in progress
+// BotB is mostly deprecated
 import ShipBoard from "./shipboard.js";
 
 function _rnd(n) {
@@ -44,11 +46,12 @@ export default class BotB {
     // make a map of cells, called squares{}
     this.squares = {};
     for (let cell of this._otherEachCell()) {
-      this.squares[this._key(cell.position[0], cell.position[1])] = {
+      this.squares[cell.index] = {
         cell,
-        position: cell.position,
-        x: cell.position[0],
-        y: cell.position[1],
+        offset: cell.index,
+        position: [cell.x, cell.y],
+        x: cell.x,
+        y: cell.y,
         shot: cell.shot,
         oob: cell.shot,
         weight: 0,
@@ -58,27 +61,28 @@ export default class BotB {
     // Find damaged but not sunk ships
     this.damage = [];
     for (let shot of this.otherBoard.shots) {
-      if (shot.hit) {
-        let cell = this.otherBoard.cells[shot.position[1]] && this.otherBoard.cells[shot.position[1]][shot.position[0]];
-        if (cell) {
-          let ship = cell.ship;
-          if (ship && !ship.sunk) {
-            this.damage.push(shot.position);
-          }
+      let cell = this.otherBoard.extra.cells[shot];
+      if (cell && cell.hit) {
+        let ship = cell.shipExtra;
+        if (ship && !ship.sunk) {
+          this.damage.push(shot);
         }
       }
     }
 
     // ship neighbors as oob
     for (let ship of this.otherBoard.ships) {
-      for (let [x, y] of ship.cells) {
-        let shipSquare = this.squares[this._key(x, y)];
+      for (let idx of ship.OLD_cells) {
+        let shipSquare = this.squares[idx];
         if (shipSquare) {
           // Orthogonal neighbors - only if !allowAdjacent AND ship is sunk
           if (!this.game.rules.allowAdjacent && ship.sunk) {
             const orthogonal = [[-1, 0], [1, 0], [0, -1], [0, 1]];
             for (let [dx, dy] of orthogonal) {
-              let square = this.squares[this._key(x + dx, y + dy)];
+              let nx = shipSquare.x + dx;
+              let ny = shipSquare.y + dy;
+              let nidx = ny * 10 + nx;
+              let square = this.squares[nidx];
               if (square) {
                 square.oob = true;
               }
@@ -89,7 +93,10 @@ export default class BotB {
           if (!this.game.rules.allowDiagonal && shipSquare.shot) {
             const diagonal = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
             for (let [dx, dy] of diagonal) {
-              let square = this.squares[this._key(x + dx, y + dy)];
+              let nx = shipSquare.x + dx;
+              let ny = shipSquare.y + dy;
+              let nidx = ny * 10 + nx;
+              let square = this.squares[nidx];
               if (square) {
                 square.oob = true;
               }
@@ -101,7 +108,6 @@ export default class BotB {
 
     // make a list of targets
     this.targets = Object.values(this.squares).filter(s => !s.oob);
-
     if (this.damage.length > 0) {
       this._findWeightsForDamage();
       this.targets = this.targets.filter(s => s.weight > 0);
@@ -109,7 +115,6 @@ export default class BotB {
     else {
       this._findWeightsForEmpty();
     }
-
     if (this.debug && this.other == 0) {
       this._debugPrintSquares();
     }
@@ -123,11 +128,15 @@ export default class BotB {
   }
 
   _findWeightsForDamage() {
-    for (let pos of this.damage) {
-      let [x, y] = pos;
+    for (let offset of this.damage) {
+      let cell = this.otherBoard.extra.cells[offset];
+      let x = cell.x, y = cell.y;
       let adjacent = [ [-1, 0], [1, 0], [0, -1], [0, 1] ];
       for (let [dx, dy] of adjacent) {
-        let square = this.squares[this._key(x + dx, y + dy)];
+        let nx = x + dx;
+        let ny = y + dy;
+        let nidx = ny * 10 + nx;
+        let square = this.squares[nidx];
         if (square && !square.shot) {
           square.weight += 10;
         }
@@ -144,15 +153,13 @@ export default class BotB {
   }
 
   _key(x, y) {
-    return `${x},${y}`;
+    return y * 10 + x;
   }
 
   * _otherEachCell() {
     let b = this.otherBoard;
-    for (let row of b.cells) {
-      for (let cell of row) {
-        yield cell;
-      }
+    for (let cell of b.extra.cells) {
+      yield cell;
     }
   }
 
@@ -165,13 +172,12 @@ export default class BotB {
       let b = square.oob ? 'x' : ' ';
       return `${a}${b}`;
     }
-
     console.log(`${this.targets.length} targets:`);
     let lines = [];
     for (let row = 0; row < 10; row++) {
       let r = [];
       for (let col = 0; col < 10; col++) {
-        let square = this.squares[this._key(col, row)];
+        let square = this.squares[row * 10 + col];
         r.push(code(square));
       }
       lines.push(r.join('|'));

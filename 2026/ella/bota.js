@@ -1,3 +1,5 @@
+// Bots are just a messy work in progress
+// BotA is motsly used for ship placement
 import ShipBoard from "./shipboard.js";
 
 function _rnd(n) {
@@ -43,10 +45,12 @@ export default class BotA {
     this._getTargetStatus();
     console.log(`bbb ${JSON.stringify(this.targetStatus)}`);
 
+    const board = this.game.boards[this.other];
+    const [w, h] = board.size;
     let empty = [];
-    for (let y = 0; y < 10; y++) {
-      for (let x = 0; x < 10; x++) {
-        let cell = this.game.boards[this.other].cells[y][x];
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        let cell = board.cell(x, y);
         if (!cell.shot) empty.push([x, y]);
       }
     }
@@ -61,10 +65,11 @@ export default class BotA {
     let hitCount = 0;
     let empty = [];
     let damage = [];
+    const [w, h] = board.size;
 
-    for (let y = 0; y < 10; y++) {
-      for (let x = 0; x < 10; x++) {
-        let cell = board.cells[y][x];
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        let cell = board.cell(x, y);
         if (!cell.shot) {
           empty.push([x, y]);
         } else {
@@ -115,8 +120,9 @@ export default class BotA {
   }
 
   _tryAddShip(board, ship) {
-    let rows = [...Array(10).keys()];
-    let cols = [...Array(10).keys()];
+    const [w, h] = board.size;
+    let rows = [...Array(h).keys()];
+    let cols = [...Array(w).keys()];
     let vertical = [false, true];
     _shuffle(rows);
     _shuffle(cols);
@@ -124,7 +130,7 @@ export default class BotA {
     for (let v of vertical) {
       for (let y of rows) {
         for (let x of cols) {
-          if (this._fits(board.cells, x, y, ship.size, v)) {
+          if (this._fits(board, x, y, ship.size, v)) {
             board.ships.push({
               name: ship.name,
               size: ship.size,
@@ -139,12 +145,12 @@ export default class BotA {
     }
   }
 
-  _fits(cells, x, y, len, vertical) {
+  _fits(board, x, y, len, vertical) {
     let [dx, dy] = vertical ? [0, 1] : [1, 0];
     for (let i = 0; i < len; i++) {
       let nx = x + dx * i;
       let ny = y + dy * i;
-      let cell = cells[ny] && cells[ny][nx];
+      let cell = board.cell(nx, ny);
       if (!cell || cell.ship || cell.adjacent || cell.diagonal) return false;
     }
     return true;

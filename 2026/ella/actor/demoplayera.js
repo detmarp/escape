@@ -1,4 +1,4 @@
-import BotB from '../botb.js';
+import BotC from '../botc.js';
 
 function _rand(n) {
   return Math.floor(Math.random() * n);
@@ -48,7 +48,7 @@ export default class DemoPlayerA {
   }
 
   onFindTarget() {
-    let bot = new BotB(this.game, this.playerId);
+    let bot = new BotC(this.game, this.playerId);
     this.target = bot.chooseTarget();
     this.otherBoard.cursor = this.target;
     this.otherBoard.ready = true;
@@ -151,7 +151,9 @@ export default class DemoPlayerA {
 
   onMissleLanded() {
     this.otherBoard.hudOff();
+    console.log(`mmm0 onMissleLanded target ${JSON.stringify(this.target)}`);
     let shot = this.game.shoot(this.otherPlayerId, this.target);
+    console.log(`mmm1 ${JSON.stringify(shot)}`);
     this._node.sendEvent('landed', {
       fromIndex: this.playerId,
       toIndex: this.otherPlayerId,
@@ -208,5 +210,6 @@ export default class DemoPlayerA {
   gotoState(label = 'none', duration = 0, onDone = null, onTick = null) {
     //console.log(`ppp ${this.time.toFixed(2)} - gotoState was ${this.state.label} going to ${label} for ${duration}`);
     this.state = {label, duration, onDone, onTick, age: 0, t:0};
+    //console.log(`aaa ${JSON.stringify(this.game.toObject())}`);
   }
 }

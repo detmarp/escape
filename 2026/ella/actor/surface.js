@@ -52,30 +52,28 @@ export default class Surface {
   }
 
   _debugDrawNeighbors(ctx) {
-    for (let row of this.board.cells) {
-      for (let cell of row) {
-        let pos = _toPosition(cell.position);
-        let r = 10
-        if (cell.adjacent) {
-          ctx.strokeStyle = '#f00';
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(pos[0] - r, pos[1]);
-          ctx.lineTo(pos[0] + r, pos[1]);
-          ctx.moveTo(pos[0], pos[1] - r);
-          ctx.lineTo(pos[0], pos[1] + r);
-          ctx.stroke();
-        }
-        if (cell.diagonal) {
-          ctx.strokeStyle = '#f00';
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(pos[0] - r, pos[1] - r);
-          ctx.lineTo(pos[0] + r, pos[1] + r);
-          ctx.moveTo(pos[0] - r, pos[1] + r);
-          ctx.lineTo(pos[0] + r, pos[1] - r);
-          ctx.stroke();
-        }
+    for (let cell of this.board.cells) {
+      let pos = _toPosition(cell.position);
+      let r = 10
+      if (cell.adjacent) {
+        ctx.strokeStyle = '#f00';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(pos[0] - r, pos[1]);
+        ctx.lineTo(pos[0] + r, pos[1]);
+        ctx.moveTo(pos[0], pos[1] - r);
+        ctx.lineTo(pos[0], pos[1] + r);
+        ctx.stroke();
+      }
+      if (cell.diagonal) {
+        ctx.strokeStyle = '#f00';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(pos[0] - r, pos[1] - r);
+        ctx.lineTo(pos[0] + r, pos[1] + r);
+        ctx.moveTo(pos[0] - r, pos[1] + r);
+        ctx.lineTo(pos[0] + r, pos[1] - r);
+        ctx.stroke();
       }
     }
   }

@@ -32,10 +32,11 @@ export default class ShipGame {
 
   shoot(target, position) {
     let board = this.boards[target];
-    let cell = board.cells[position[1]] && board.cells[position[1]][position[0]];
+    let cell = board.cell(position[0], position[1]);
     let hit = false;
 
     if (!cell || cell.shot) {
+      console.log(`ggg ${JSON.stringify(cell)} ${JSON.stringify(position)}`);
       return;
     }
 
@@ -65,6 +66,15 @@ export default class ShipGame {
     let game = new ShipGame({
       rules: obj.rules,
     });
+
+    let b0 = obj.boards ? obj.boards[0] : {};
+    let b1 = obj.boards ? obj.boards[1] : {};
+    game.boards[0] = ShipBoard.fromObject({ ...b0 });
+    game.boards[1] = ShipBoard.fromObject({ ...b1 });
+
+    game.boards[0].rebuildExtra();
+    game.boards[1].rebuildExtra();
+
     return game;
   }
 

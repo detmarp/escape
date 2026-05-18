@@ -94,7 +94,8 @@ export default class NodeTree {
 
   _work() {
     const now = performance.now();
-    const dt = (now - this.lastTime) / 1000;
+    let dt = (now - this.lastTime) / 1000;
+    dt = dt * 10;
     this.lastTime = now;
     this.frame++;
     let time = this.lastTime / 1000;
