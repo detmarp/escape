@@ -9,6 +9,9 @@ import Table from '../actor/table.js';
 import Timer from '../actor/timer.js';
 import DemoPlayerA from '../actor/demoplayera.js';
 import DemoPlayerB from '../actor/demoplayerb.js';
+import FingerPoll from '../fingerpoll.js';
+import Mytouch from '../mytouch.js';
+
 
 export default class ScreenGame {
   static count = 0;
@@ -20,6 +23,10 @@ export default class ScreenGame {
     this.debug = true;
     this.onePlayer = params.program.settings.onePlayerDemo;
     this.paused = false;
+    this.fingerPoll = new FingerPoll();
+    this.mytouch = null;
+    // this.dragCircle removed
+    this.dragEmitter = null;
   }
 
   init() {
@@ -34,12 +41,12 @@ export default class ScreenGame {
     this.ux = new Ux2(this.celest.inner);
 
     this._makeHeader();
-    this._makeFooter();
+    //this._makeFooter();
 
     this.bottom = this.ux.div({
       parent: this.celest.inner,
-      size: [360, 580],
-      position: [0, 60],
+      size: [360, 610],
+      position: [0, 30],
     });
 
     this.board = new EllaBoard(this.bottom, {
@@ -47,6 +54,11 @@ export default class ScreenGame {
     });
 
     this.board.init();
+
+    // Pair Mytouch with FingerPoll
+    this.mytouch = new Mytouch(this.board.canvas, (touches, type) => {
+      this.fingerPoll.onMyTouchEvent(touches, type);
+    });
 
     this.nodeTree = new NodeTree({
       canvas: this.board.canvas,
@@ -117,8 +129,36 @@ export default class ScreenGame {
       this._doTouch(touch);
     }
 
+    // Poll fingerPoll for events, update dragEmitter actor, and log
+    let event;
+    while ((event = this.fingerPoll.getNext()) !== null) {
+      console.log('FingerPoll event:', event);
+      const arenaPos = this.table && this.table.arenaPositions ? this.table.arenaPositions[0] : [0, 0];
+      const scale = this.board && this.board.scale ? this.board.scale : 1;
+      const fx = this.table && this.table.fx ? this.table.fx : null;
+      if (event.action === 'down') {
+        if (!this.dragEmitter && fx && fx.partA) {
+          this.dragEmitter = fx.partA.spawnPrefab('dragbase', {
+            x: event.position[0] / scale,
+            y: event.position[1] / scale
+          });
+        }
+      } else if (event.action === 'drag') {
+        if (this.dragEmitter) {
+          this.dragEmitter.x = event.position[0] / scale;
+          this.dragEmitter.y = event.position[1] / scale;
+        }
+      } else if (event.action === 'end') {
+        if (this.dragEmitter) {
+          this.dragEmitter.kill = true;
+          this.dragEmitter = null;
+        }
+      }
+    }
+
     this.nodeTree.update();
   }
+  // draw(ctx) no longer needed; DragCircle actor handles its own drawing
 
   _doTouch(touch) {
     let t = { ...touch };

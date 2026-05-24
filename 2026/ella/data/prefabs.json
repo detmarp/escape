@@ -129,5 +129,19 @@
       "fadef": 0.8
     }
 
+    ,
+    {
+      "name": "dragbase",
+      "onPulse": { "spawn": { "prefab": "dragsparkle" } }
+    },
+    {
+      "name": "dragsparkle",
+      "dx": [-200, 200],
+      "dy": [-200, 200],
+      "ttl": [0.52, 0.62],
+      "size": 2,
+      "color": ["#f00", "#0f0", "#00f", "#ff0", "#0ff", "#f0f", "#fff"],
+      "alpha": 1
+    }
   ]
 }

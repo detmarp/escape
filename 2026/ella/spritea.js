@@ -67,6 +67,9 @@ export default class SpriteA {
     const columns = grid.columns || 1;
     const rows = grid.rows || 1;
 
+    // Skip if grid.id or grid.label is undefined/null/empty
+    if (grid.id == null && !grid.label) return;
+
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < columns; col++) {
         const frame = grid.columnMajor ? (col * rows + row) : (row * columns + col);
@@ -75,8 +78,8 @@ export default class SpriteA {
 
         this.flat.push({
           id: grid.id,
-          label: `${grid.label}`,
-          flabel: `${grid.label}_${frame}`,
+          label: grid.label ? `${grid.label}` : undefined,
+          flabel: grid.label ? `${grid.label}_${frame}` : undefined,
           sx: cellX + insetX,
           sy: cellY + insetY,
           sw: contentW,
@@ -94,13 +97,15 @@ export default class SpriteA {
     this.strips = {};
 
     for (const entry of this.flat) {
-      if (!this.strips[entry.id]) {
-        this.strips[entry.id] = [];
-      }
-      this.strips[entry.id][entry.frame] = entry;
+      if (entry.id != null) {
+        if (!this.strips[entry.id]) {
+          this.strips[entry.id] = [];
+        }
+        this.strips[entry.id][entry.frame] = entry;
 
-      if (!this.sprites[entry.id] || entry.frame === 0) {
-        this.sprites[entry.id] = entry;
+        if (!this.sprites[entry.id] || entry.frame === 0) {
+          this.sprites[entry.id] = entry;
+        }
       }
 
       if (entry.label) {

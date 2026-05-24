@@ -189,10 +189,11 @@ export default class PartA {
       p.f = 0;
       return p;
     }
-    // No valid strip: don't set fps/ttl, just assign id/x/y
+    // No valid strip: don't set fps/ttl, just assign id/x/y, and leave ttl as null unless explicitly set
     p.id = prefab.sprite;
     p.x = params.x || 0;
     p.y = params.y || 0;
+    // Do not set ttl here; only use what was in prefab or params
     return p;
   }
 
