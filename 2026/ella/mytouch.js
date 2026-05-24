@@ -39,13 +39,15 @@ export default class Mytouch {
     event.preventDefault();
 
     let touches = [];
+    const rect = this.canvas.getBoundingClientRect();
 
     for (let i = 0; i < event.touches.length; i++) {
       const touch = event.touches[i];
+      // Always store positions relative to canvas
+      let p = [touch.clientX - rect.left, touch.clientY - rect.top];
       if (!this.fingerStarts.has(touch.identifier)) {
-        this.fingerStarts.set(touch.identifier, [touch.clientX, touch.clientY]);
+        this.fingerStarts.set(touch.identifier, p);
       }
-      let p = [touch.clientX, touch.clientY];
       let start = this.fingerStarts.get(touch.identifier);
       touches.push({
         start: start ? start : p,
