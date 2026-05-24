@@ -51,6 +51,9 @@ export default class ScreenDemo {
     this.nodeTree = new NodeTree({
       canvas: this.board.canvas,
     });
+    if (this.params.program.settings.fastClock) {
+      this.nodeTree.debugSpeed = 40;
+    }
 
     this._newGame();
     this._refresh();

@@ -1,7 +1,6 @@
 import Arena from "./arena.js";
 import Ocean from "./ocean.js";
 import Offset from "./offset.js";
-import Text from "./text.js";
 import GameText from "./gametext.js";
 import Missile from "./missile.js";
 import Fx from './fx.js';
@@ -16,8 +15,9 @@ function _add(from, to) {
 }
 
 export default class Table {
-  constructor(game) {
+  constructor(game, params = {}) {
     this.game = game;
+    this.params = params;
     this.arenas = [];
     this.arenaPositions = [[60, 40], [60, 330]];
   }
@@ -31,7 +31,9 @@ export default class Table {
       let pos = this._node.addActor(new Offset(this.arenaPositions[i]));
       this.arenas.push(pos._node.addActor(new Arena(board)));
     }
-    this.text = this.fxLayer._node.addActor(new GameText());
+    let labelA = this.params.playerA;
+    let labelB = this.params.playerB;
+    this.text = this.fxLayer._node.addActor(new GameText(labelA, labelB));
   }
 
   init() {
@@ -51,6 +53,7 @@ export default class Table {
   setWinner(winner) {
     this.arenas[0].setEndGame(winner == 0);
     this.arenas[1].setEndGame(winner == 1);
+    this.text.setMessage('GAME OVER');
   }
 
   onEvent(type, data) {

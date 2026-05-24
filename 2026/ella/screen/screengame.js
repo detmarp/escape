@@ -13,7 +13,6 @@ import FingerPoll from '../fingerpoll.js';
 import Mytouch from '../mytouch.js';
 import HumanPlayer from '../actor/humanplayer.js';
 
-
 export default class ScreenGame {
   static count = 0;
 
@@ -64,6 +63,9 @@ export default class ScreenGame {
     this.nodeTree = new NodeTree({
       canvas: this.board.canvas,
     });
+    if (this.params.program.settings.fastClock) {
+      this.nodeTree.debugSpeed = 40;
+    }
 
     this._newGame();
     this._refresh();
@@ -95,10 +97,11 @@ export default class ScreenGame {
       this.otherPlayer = 1 - player;
 
       if (!this.player) {
+        let asHuman = this.params.program.settings.twoHumans || (player === 1);
         let onDone = () => {
           this.player = null;
         };
-        if (player === 0) {
+        if (asHuman) {
           this.player = new HumanPlayer(this.game, player, onDone);
         }
         else {
@@ -307,7 +310,10 @@ export default class ScreenGame {
 
   _refresh() {
     this.nodeTree.clear();
-    this.table = new Table(this.game);
+    this.table = new Table(this.game, {
+      playerA: "Computer's fleet",
+      playerB: "Your fleet"
+    });
     this.nodeTree.addActor(this.table);
 
     this._setState('start');

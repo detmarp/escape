@@ -115,6 +115,9 @@ export default class ScreenSettings {
       onclick: () => this.clearHistory()
     });
 
+    this._addToggle(parent, 'Two Humans', 'twoHumans');
+    this._addToggle(parent, 'Fast Clock', 'fastClock');
+
     this.settingsText = this.ux.div({
       parent: parent,
       type: 'div',

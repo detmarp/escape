@@ -2,10 +2,11 @@ import Text from "./text.js";
 
 export default class GameText {
 
-  constructor() {
+  constructor(labelA, labelB) {
     // Placeholder text values
-    this.labela = "Player A's fleet";
-    this.labelb = "Player B's fleet";
+    this.labela = labelA || "Player 1";
+    this.labelb = labelB || "Player 2";
+    this.message = "";
     this.textActors = [];
   }
 
