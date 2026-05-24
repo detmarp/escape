@@ -241,7 +241,10 @@ export default class ScreenDemo {
 
   _refresh() {
     this.nodeTree.clear();
-    this.table = new Table(this.game);
+    this.table = new Table(this.game, {
+      playerA: "Player 1's fleet",
+      playerB: "Player 2's fleet",
+    });
     this.nodeTree.addActor(this.table);
 
     this._setState('start');

@@ -78,11 +78,6 @@ export default class ScreenGame {
   }
 
   _nextTurn() {
-    if (this._stateAge('gameover') > 2) {
-      this._onRestart();
-      return;
-    }
-
     if (this.game) {
       if (this.game.gameOver) {
         if (!this.gameOver) {
@@ -312,7 +307,8 @@ export default class ScreenGame {
     this.nodeTree.clear();
     this.table = new Table(this.game, {
       playerA: "Computer's fleet",
-      playerB: "Your fleet"
+      playerB: "Your fleet",
+      hidden: [0],
     });
     this.nodeTree.addActor(this.table);
 

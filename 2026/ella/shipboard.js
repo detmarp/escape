@@ -40,6 +40,7 @@ export default class ShipBoard {
       let s = {
         ...ship,
         hits: 0,
+        sunk: false,
       };
       const [dx, dy] = ship.vertical ? [0, 1] : [1, 0];
       for (let j = 0; j < ship.size; j++) {
@@ -57,6 +58,21 @@ export default class ShipBoard {
       }
       shipExtra.push(s);
     });
+
+    // Count hits per ship and set sunk flag
+    for (let offset of shots) {
+      const x = offset % w;
+      const y = Math.floor(offset / w);
+      const idx = y * w + x;
+      if (cells[idx] && cells[idx].shipExtra) {
+        cells[idx].shipExtra.hits++;
+      }
+    }
+    for (let s of shipExtra) {
+      if (s.hits >= s.size) {
+        s.sunk = true;
+      }
+    }
 
     // Mark shots, hits, misses
     const hits = [];

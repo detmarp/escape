@@ -24,7 +24,7 @@ export default class BotC {
       cell = this.otherBoard.cell(x, y);
       if (cell && !cell.shot) break;
     }
-    console.log(`ccc ${JSON.stringify(cell)}`);
+    //console.log(`ccc ${JSON.stringify(cell)}`);
     return [x, y];
   }
 }

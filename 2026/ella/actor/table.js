@@ -29,7 +29,8 @@ export default class Table {
     for (let i = 0; i < 2; i++) {
       let board = this.game ? this.game.boards[i] : null;
       let pos = this._node.addActor(new Offset(this.arenaPositions[i]));
-      this.arenas.push(pos._node.addActor(new Arena(board)));
+      let hidden = this.params.hidden && (this.params.hidden.indexOf(i) >= 0);
+      this.arenas.push(pos._node.addActor(new Arena(board, { hidden })));
     }
     let labelA = this.params.playerA;
     let labelB = this.params.playerB;

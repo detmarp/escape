@@ -30,13 +30,15 @@ function _toPosition(cell) {
 }
 
 export default class Arena {
-  constructor(board) {
+  constructor(board, params = {}) {
     this.board = board;
+    this.params = params;
+    this.hidden = params.hidden;
     this.seenShots = new Set();
   }
 
   added() {
-    // make a ocean and ad as child
+    // make a ocean and add as child
     let ocean = new Ocean();
     this._node.tree.addActor(ocean, this._node);
 
@@ -45,8 +47,10 @@ export default class Arena {
     this.below._node.addActor(this.surface);
 
     if (this.board) {
-      for (let b of this.board.data.ships) {
-        this._node.addActor(new OneBoat(b));
+      for (let i = 0; i < this.board.data.ships.length; ++i) {
+        this._node.addActor(new OneBoat(this.board, i, {
+          hidden: this.hidden,
+        }));
       }
     }
 
