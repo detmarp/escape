@@ -11,6 +11,7 @@ import DemoPlayerA from '../actor/demoplayera.js';
 import DemoPlayerB from '../actor/demoplayerb.js';
 import FingerPoll from '../fingerpoll.js';
 import Mytouch from '../mytouch.js';
+import HumanPlayer from '../actor/humanplayer.js';
 
 
 export default class ScreenGame {
@@ -91,17 +92,24 @@ export default class ScreenGame {
       }
 
       let player = this.onePlayer ? 1 : this.game.turn;
-      let other = 1 - player;
+      this.otherPlayer = 1 - player;
 
       if (!this.player) {
         let onDone = () => {
           this.player = null;
         };
-        this.player = this.fastDemo ?
-          new DemoPlayerB(this.game, player, onDone) :
-          new DemoPlayerA(this.game, player, onDone);
-
-        this.player.setPaused(this.paused);
+        if (player === 0) {
+          this.player = new HumanPlayer(this.game, player, onDone);
+        }
+        else {
+          if (this.fastDemo) {
+            this.player = new DemoPlayerB(this.game, player, onDone);
+          }
+          else {
+            this.player = new DemoPlayerA(this.game, player, onDone);
+          }
+          this.player.setPaused(this.paused);
+        }
 
         this.nodeTree.addActor(this.player);
       }
@@ -133,26 +141,51 @@ export default class ScreenGame {
     let event;
     while ((event = this.fingerPoll.getNext()) !== null) {
       console.log('FingerPoll event:', event);
-      const arenaPos = this.table && this.table.arenaPositions ? this.table.arenaPositions[0] : [0, 0];
+      const arenaPos = this.table.arenaPositions[this.otherPlayer];
       const scale = this.board && this.board.scale ? this.board.scale : 1;
       const fx = this.table && this.table.fx ? this.table.fx : null;
+      let canvasPosition = [0, 0];
+      let arenaPosition = [0, 0];
+      let boardPosition = [0,0];
+      if (event.position) {
+        canvasPosition = [
+          event.position[0] / scale,
+          event.position[1] / scale
+        ];
+        arenaPosition = [
+          canvasPosition[0] - arenaPos[0],
+          canvasPosition[1] - arenaPos[1],
+        ];
+        boardPosition = [
+          Math.floor(arenaPosition[0] / 24),
+          Math.floor(arenaPosition[1] / 24),
+        ];
+      }
       if (event.action === 'down') {
         if (!this.dragEmitter && fx && fx.partA) {
           this.dragEmitter = fx.partA.spawnPrefab('dragbase', {
-            x: event.position[0] / scale,
-            y: event.position[1] / scale
+            x: canvasPosition[0],
+            y: canvasPosition[1],
           });
         }
       } else if (event.action === 'drag') {
         if (this.dragEmitter) {
-          this.dragEmitter.x = event.position[0] / scale;
-          this.dragEmitter.y = event.position[1] / scale;
+          this.dragEmitter.x = canvasPosition[0];
+          this.dragEmitter.y = canvasPosition[1];
         }
       } else if (event.action === 'end') {
         if (this.dragEmitter) {
           this.dragEmitter.kill = true;
           this.dragEmitter = null;
         }
+      }
+
+      if (this.player && this.player.onTouch) {
+        this.player.onTouch({
+          x: boardPosition[0],
+          y: boardPosition[1],
+          action: event.action,
+        });
       }
     }
 
