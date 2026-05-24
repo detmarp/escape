@@ -45,7 +45,7 @@ export default class Arena {
     this.below._node.addActor(this.surface);
 
     if (this.board) {
-      for (let b of this.board.ships) {
+      for (let b of this.board.data.ships) {
         this._node.addActor(new OneBoat(b));
       }
     }
@@ -62,8 +62,19 @@ export default class Arena {
     }
   }
 
-  _addShot(shot) {
-    this.surface.addShot(shot);
+  _addShot(shotOffset) {
+    // Look up the shot info from the board's data
+    const shot = this.board.data.shots.find(s => s.offset === shotOffset);
+    if (!shot) return;
+    // Pass a struct with position and hit info to surface
+    const w = this.board.data.size[0];
+    const x = shot.offset % w;
+    const y = Math.floor(shot.offset / w);
+    this.surface.addShot({
+      position: [x, y],
+      hit: !!shot.hit,
+      offset: shot.offset,
+    });
   }
 
   init() {
@@ -71,11 +82,11 @@ export default class Arena {
 
   work(dt, time) {
     if (this.board) {
-      if (this.board.shots.length > this.seenShots.size) {
-        for (let s of this.board.shots) {
-          if (!this.seenShots.has(s)) {
-            this.seenShots.add(s);
-            this._addShot(s);
+      if (this.board.data.shots.length > this.seenShots.size) {
+        for (let s of this.board.data.shots) {
+          if (!this.seenShots.has(s.offset)) {
+            this.seenShots.add(s.offset);
+            this._addShot(s.offset);
           }
         }
       }

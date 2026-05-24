@@ -152,13 +152,16 @@ export default class DemoPlayerA {
   onMissleLanded() {
     this.otherBoard.hudOff();
     console.log(`mmm0 onMissleLanded target ${JSON.stringify(this.target)}`);
-    let shot = this.game.shoot(this.otherPlayerId, this.target);
-    console.log(`mmm1 ${JSON.stringify(shot)}`);
+    this.game.shoot(this.otherPlayerId, this.target);
+    // Find the shot result from the board's data
+    let shot = this.otherBoard.data.shots[this.otherBoard.data.shots.length - 1];
+    let cell = (shot != null) && this.otherBoard.extra.cells[shot];
+    let hit = cell && cell.hit;
     this._node.sendEvent('landed', {
       fromIndex: this.playerId,
       toIndex: this.otherPlayerId,
       target: this.target,
-      hit: shot.hit,
+      hit,
     });
     this.gotoState('handleHit', 0.5, () => this.onEndTurn());
   }

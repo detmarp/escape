@@ -34,12 +34,12 @@ export default class ScreenDemo {
     this.ux = new Ux2(this.celest.inner);
 
     this._makeHeader();
-    this._makeFooter();
+    //this._makeFooter();
 
     this.bottom = this.ux.div({
       parent: this.celest.inner,
-      size: [360, 580],
-      position: [0, 60],
+      size: [360, 610],
+      position: [0, 30],
     });
 
     this.board = new EllaBoard(this.bottom, {
@@ -200,6 +200,10 @@ export default class ScreenDemo {
     if (this.state !== state) {
       this.state = state;
       this.stateTime = Date.now();
+      this.params.program.history = {
+        current: this.game.toObject(),
+      };
+      this.params.program.save();
     }
   }
 

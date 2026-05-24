@@ -23,90 +23,9 @@ export default class BotA {
   placeShips() {
     let ships = this._chooseShips();
     for (let ship of ships) {
-      this.game.boards[this.id].ships.push(ship);
+      this.game.boards[this.id].data.ships.push(ship);
     }
-    this.game.boards[this.id]._update();
-  }
-
-  startTurn() {
-    this.game.boards[this.other].cursor = null;
-  }
-
-  setTarget() {
-    let target = null;
-    if (this.id == this.game.turn) {
-       target = this.chooseTarget();
-    }
-    this.game.boards[this.other].cursor = target;
-    return target;
-  }
-
-  chooseTarget() {
-    this._getTargetStatus();
-    console.log(`bbb ${JSON.stringify(this.targetStatus)}`);
-
-    const board = this.game.boards[this.other];
-    const [w, h] = board.size;
-    let empty = [];
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        let cell = board.cell(x, y);
-        if (!cell.shot) empty.push([x, y]);
-      }
-    }
-    return empty.length ? empty[_rnd(empty.length)] : null;
-  }
-
-  _getTargetStatus() {
-    this.targetStatus = {};
-    let board = this.game.boards[this.other];
-
-    let missCount = 0;
-    let hitCount = 0;
-    let empty = [];
-    let damage = [];
-    const [w, h] = board.size;
-
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        let cell = board.cell(x, y);
-        if (!cell.shot) {
-          empty.push([x, y]);
-        } else {
-          if (cell.hit) {
-            hitCount++;
-            if (cell.ship && !cell.ship.sunk) {
-              damage.push([x, y]);
-            }
-          } else {
-            missCount++;
-          }
-        }
-      }
-    }
-
-    let shipCount = board.ships.length;
-    let sunkCount = board.sunkCount || 0;
-
-    let unsunkShips = board.ships.filter(ship => !ship.sunk);
-    let shipSizes = [Infinity, 0];
-    for (let ship of unsunkShips) {
-      shipSizes[0] = Math.min(shipSizes[0], ship.size);
-      shipSizes[1] = Math.max(shipSizes[1], ship.size);
-    }
-    if (unsunkShips.length === 0) {
-      shipSizes = [0, 0];
-    }
-
-    this.targetStatus = {
-      missCount,
-      hitCount,
-      empty,
-      shipCount,
-      sunkCount,
-      damage,
-      shipSizes,
-    };
+    this.game.boards[this.id].rebuildExtra();
   }
 
   _chooseShips() {
@@ -116,11 +35,11 @@ export default class BotA {
       this._tryAddShip(board, item);
     }
 
-    return board.ships;
+    return board.data.ships;
   }
 
   _tryAddShip(board, ship) {
-    const [w, h] = board.size;
+    const [w, h] = board.data.size;
     let rows = [...Array(h).keys()];
     let cols = [...Array(w).keys()];
     let vertical = [false, true];
@@ -131,13 +50,13 @@ export default class BotA {
       for (let y of rows) {
         for (let x of cols) {
           if (this._fits(board, x, y, ship.size, v)) {
-            board.ships.push({
+            board.data.ships.push({
               name: ship.name,
               size: ship.size,
-              position: [x, y],
+              offset: y * w + x,
               vertical: v,
             });
-            board._update();
+            board.rebuildExtra();
             return;
           }
         }
@@ -151,7 +70,7 @@ export default class BotA {
       let nx = x + dx * i;
       let ny = y + dy * i;
       let cell = board.cell(nx, ny);
-      if (!cell || cell.ship || cell.adjacent || cell.diagonal) return false;
+      if (!cell || cell.shipExtra || cell.adjacent || cell.diagonal) return false;
     }
     return true;
   }

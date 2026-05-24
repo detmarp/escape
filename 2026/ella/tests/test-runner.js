@@ -52,6 +52,18 @@ class TestRunner {
     throw new Error(`equals: unsupported type or value mismatch\n${got}\n${want}`);
   }
 
+  isTrue(value) {
+    if (value !== true) {
+      throw new Error(`isTrue: expected true, got ${JSON.stringify(value)}`);
+    }
+  }
+
+  isFalse(value) {
+    if (value !== false) {
+      throw new Error(`isFalse: expected false, got ${JSON.stringify(value)}`);
+    }
+  }
+
   results() {
     const summary = `Files: ${this.files}, Passed: ${this.functionsPassed}, Failed: ${this.functionsFailed}`;
     this.log(summary);

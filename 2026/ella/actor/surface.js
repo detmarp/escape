@@ -1,7 +1,7 @@
-function _dot(ctx, color, position) {
+function _dot(ctx, color, x, y) {
   ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.arc(position[0], position[1], 6, 0, 2 * Math.PI);
+  ctx.arc(x, y, 6, 0, 2 * Math.PI);
   ctx.fill();
 }
 
@@ -18,14 +18,15 @@ function _randf(a, b) {
   return a + Math.random() * (b - a);
 }
 
-function _toPosition(cell) {
-  return [cell[0] * 24 + 12, cell[1] * 24 + 12];
+function _toPosition(x, y) {
+  return [x * 24 + 12, y * 24 + 12];
 }
 
 export default class Surface {
   constructor(board) {
     this.board = board;
     this.shots = [];
+    this.debug = false;
   }
 
   added() {
@@ -38,22 +39,28 @@ export default class Surface {
   }
 
   draw(ctx) {
-    for (let s of this.shots) {
-      let p = _toPosition(s.position);
-      //p[0] += _randf(-2, 2);
-      //p[1] += _randf(-2, 2);
-      let color = s.hit ? 'red' : 'white';
-      _dot(ctx, color, p);
+    for (let cell of this.board.extra.cells) {
+      if (cell.shot) {
+        let hit = cell.hit;
+        let color = hit ? 'red' : 'white';
+        let x = cell.x;
+        let y = cell.y;
+        let pos = _toPosition(x, y);
+        _dot(ctx, color, pos[0], pos[1]);
+      }
     }
 
-    if (this.board && false) {
+    if (this.debug) {
       this._debugDrawNeighbors(ctx);
     }
   }
 
   _debugDrawNeighbors(ctx) {
-    for (let cell of this.board.cells) {
-      let pos = _toPosition(cell.position);
+    if (!this.board || !this.board.extra) {
+      return;
+    }
+    for (let cell of this.board.extra.cells) {
+      let pos = _toPosition(cell.x, cell.y);
       let r = 10
       if (cell.adjacent) {
         ctx.strokeStyle = '#f00';
@@ -79,6 +86,7 @@ export default class Surface {
   }
 
   addShot(shot) {
+    // Accepts a struct with {position, hit, offset}
     this.shots.push(shot);
   }
 }

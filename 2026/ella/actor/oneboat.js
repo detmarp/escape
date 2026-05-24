@@ -22,7 +22,7 @@ function _toPosition(cell) {
   return [cell[0] * 24 + 12, cell[1] * 24 + 12];
 }
 
-export default class Temp {
+export default class OneBoat {
   constructor(ship) {
     this.ship = ship;
   }
@@ -38,13 +38,16 @@ export default class Temp {
 
   draw(ctx) {
     if (this.ship) {
-      let start = this.ship.position.slice();
-      let end = start.slice();
-      end[this.ship.vertical ? 1 : 0] += this.ship.size - 1;
+      // Convert 1D offset to 2D start position
+      const w = 10;
+      let startX = this.ship.offset % w;
+      let startY = Math.floor(this.ship.offset / w);
+      let endX = startX + (this.ship.vertical ? 0 : this.ship.size - 1);
+      let endY = startY + (this.ship.vertical ? this.ship.size - 1 : 0);
 
-      let r = 0.45
-      let tl = _toPosition([start[0] - r, start[1] - r]);
-      let br = _toPosition([end[0] + r, end[1] + r]);
+      let r = 0.45;
+      let tl = _toPosition([startX - r, startY - r]);
+      let br = _toPosition([endX + r, endY + r]);
 
       // Fill with medium blue first
       ctx.fillStyle = '#48fb';

@@ -2,6 +2,7 @@ import Arena from "./arena.js";
 import Ocean from "./ocean.js";
 import Offset from "./offset.js";
 import Text from "./text.js";
+import GameText from "./gametext.js";
 import Missile from "./missile.js";
 import Fx from './fx.js';
 import Timer from './timer.js';
@@ -18,7 +19,7 @@ export default class Table {
   constructor(game) {
     this.game = game;
     this.arenas = [];
-    this.arenaPositions = [[60, 20], [60, 320]];
+    this.arenaPositions = [[60, 40], [60, 330]];
   }
 
   added() {
@@ -30,6 +31,7 @@ export default class Table {
       let pos = this._node.addActor(new Offset(this.arenaPositions[i]));
       this.arenas.push(pos._node.addActor(new Arena(board)));
     }
+    this.text = this.fxLayer._node.addActor(new GameText());
   }
 
   init() {
@@ -40,10 +42,10 @@ export default class Table {
 
   draw(ctx) {
     ctx.fillStyle = '#8ac';
-    ctx.fillRect(0, 0, 360, 580);
+    ctx.fillRect(0, 0, 360, 610);
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 1;
-    ctx.strokeRect(0, 0, 360, 580);
+    ctx.strokeRect(0, 0, 360, 610);
   }
 
   setWinner(winner) {

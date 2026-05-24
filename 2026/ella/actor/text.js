@@ -1,4 +1,3 @@
-
 // Font loading and management
 class FontLoader {
   static loaded = false;
@@ -54,12 +53,12 @@ export default class Text {
     this.type = type;
     this.color = color;
     this.text = text;
-
+    this.centered = false;
     FontLoader.load();
   }
 
   draw(ctx) {
-    Text.drawText(ctx, this.text, 0, this.size, this.type, this.size, this.color);
+    Text.drawText(ctx, this.text, 0, this.size, this.type, this.size, this.color, this.centered);
   }
 
   static setFont(ctx, type, size = 16) {
@@ -67,9 +66,14 @@ export default class Text {
     return ctx;
   }
 
-  static drawText(ctx, text, x, y, type = Text.COPY, size = 16, color = '#fff') {
+  static drawText(ctx, text, x, y, type = Text.COPY, size = 16, color = '#fff', centered = false) {
     ctx.fillStyle = color;
     ctx.font = FontLoader.get(type, size);
-    ctx.fillText(text, x, y);
+    let drawX = x;
+    if (centered) {
+      const metrics = ctx.measureText(text);
+      drawX = x - metrics.width / 2;
+    }
+    ctx.fillText(text, drawX, y);
   }
 }

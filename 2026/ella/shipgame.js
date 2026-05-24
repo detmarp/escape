@@ -23,9 +23,6 @@ export default class ShipGame {
       ...params.rules,
     };
 
-    this.boards[0]._update();
-    this.boards[1]._update();
-
     this.turn = 0;
     this.gameOver = false;
   }
@@ -40,17 +37,14 @@ export default class ShipGame {
       return;
     }
 
-    if (cell && cell.ship) {
+    if (cell && cell.shipExtra) {
       hit = true;
     }
-    let shot = {
-      position,
-      hit: hit,
-    };
-    board.shots.push(shot);
-    board._update();
+    let offset = position[1] * board.data.size[0] + position[0];
+    board.data.shots.push(offset);
+    board.rebuildExtra();
 
-    if (hit && board.hitCount >= board.shipCellCount) {
+    if (hit && board.extra.hits.length >= board.extra.shipCellCount) {
       this.gameOver = true;
       this.winner = 1 - target
     }
@@ -58,8 +52,6 @@ export default class ShipGame {
     if (!this.gameOver && (!hit || !this.rules.continueAfterHit)) {
       this.turn = 1 - this.turn;
     }
-
-    return shot;
   }
 
   static fromObject(obj) {
