@@ -58,17 +58,31 @@ export default class Ux2 extends Ux {
     };
     let div = this.div(p);
 
-    let homeBButton = this.button2({
-      parent: div,
-      size: [40, 28],
-      position: [1, 1],
-      text: '🏠',
-      onclick: () => {
-        if (params.onhome) {
-          params.onhome();
+    // if we pass in a button[] then override with that; more than one if nneded. array of {} with text: onCLick
+    if (params.buttons) {
+      params.buttons.forEach((btnParams, index) => {
+        this.button2({
+          parent: div,
+          size: [40, 28],
+          position: [1 + index * 41, 1],
+          text: btnParams.text,
+          onclick: btnParams.onClick,
+        });
+      });
+    }
+    else {
+      let homeButton = this.button2({
+        parent: div,
+        size: [40, 28],
+        position: [1, 1],
+        text: '🏠',
+        onclick: () => {
+          if (params.onhome) {
+            params.onhome();
+          }
         }
-      }
-    });
+      });
+    }
 
     return div;
   }

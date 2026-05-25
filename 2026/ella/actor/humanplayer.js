@@ -95,9 +95,21 @@ export default class HumanPlayer {
       this.fingerDown = false;
       if (this._dragActive && this.cursor && this._inRange(this.cursor)) {
         this.target = this.cursor;
-        this.gotoState('shootAnim', 1.5, () => this._onShotDone());
-        this.otherBoard.lock = this.target;
         this.otherBoard.cursor = null;
+        this.otherBoard.ready = false;
+        // Start crosshairs and missile flight instantly
+        if (this._node && this._node.sendEvent) {
+          this._node.sendEvent('missile', {
+            fromIndex: this.playerId,
+            toIndex: this.otherPlayerId,
+            target: this.target,
+          });
+        }
+        this.otherBoard.lock = this.target;
+        this.gotoState('flyMissile', 1.5, () => {
+          this.otherBoard.lock = null;
+          this._onMissileLanded();
+        });
       } else {
         // Stay in waitForTarget mode, clear cursor and drag state
         this.cursor = null;
@@ -125,8 +137,12 @@ export default class HumanPlayer {
         target: this.target,
       });
     }
-    // Wait for missile flight, then land
-    this.gotoState('flyMissile', 1.5, () => this._onMissileLanded());
+    // Show crosshairs and missile flight in parallel
+    this.otherBoard.lock = this.target;
+    this.gotoState('flyMissile', 1.5, () => {
+      this.otherBoard.lock = null;
+      this._onMissileLanded();
+    });
   }
 
   _onMissileLanded() {

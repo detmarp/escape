@@ -21,8 +21,8 @@ export default class ScreenSetup {
 
     this.ux.div({
       type: 'button',
-      text: 'main',
-      onclick: () => this.params.program.goto('main')
+      text: 'Home',
+      onclick: () => this.params.program.goto('home')
     });
 
     this.info = this.ux.cornerInfo({

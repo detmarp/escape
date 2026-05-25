@@ -10,13 +10,15 @@ export default class ScreenHome {
   }
 
   init() {
-    ScreenHome.count++;
+  ScreenHome.count++;
+
+  this._setFullBleedBackground();
 
     this.celest = new Celest(this.parent, 360, 640);
     this.celest.init();
 
-    this.celest.outer.style.backgroundColor = '#456';
-    this.celest.inner.style.backgroundColor = '#fdb';
+    //this.celest.outer.style.backgroundColor = '#4568';
+    this.celest.inner.style.backgroundColor = '#fdb4';
 
     this.ux = new Ux2(this.celest.inner);
 
@@ -35,8 +37,31 @@ export default class ScreenHome {
   _makeHeader() {
     this.header = this.ux.header({
       parent: this.celest.inner,
-      onhome: () => this.params.program.goto('main')
+      buttons: [ {
+          text: '≡',
+          onClick: () => this.params.program.goto('main'),
+        },
+      ],
     });
+  }
+
+  _setFullBleedBackground() {
+    if (!this._bgImg) {
+      this._bgImg = document.createElement('img');
+      this._bgImg.src = './data/bg00.png';
+      Object.assign(this._bgImg.style, {
+        position: 'fixed',
+        left: 0,
+        top: 0,
+        width: '100vw',
+        height: '100vh',
+        objectFit: 'cover',
+        objectPosition: 'center',
+        zIndex: '-1',
+        pointerEvents: 'none',
+      });
+      document.body.appendChild(this._bgImg);
+    }
   }
 
   _makeBody() {
@@ -79,21 +104,9 @@ export default class ScreenHome {
       playY = afterArt + Math.max(0, (spaceBelow - playRectH) / 2);
     }
 
-    this.titleRect = this.ux.div({
-      parent: this.body,
-      size: [innerW, titleH],
-      position: [pad, top],
-      border: '#3a2000',
-      text: 'title',
-    });
+    this.titleRect = this._makeTitle(pad, top, innerW, titleH);
 
-    this.artRect = this.ux.div({
-      parent: this.body,
-      size: [innerW, artH],
-      position: [pad, top + titleH + gap],
-      border: '#3a2000',
-      text: 'game art',
-    });
+    this.artRect = this._makeArt(pad, top + titleH + gap, innerW, artH);
 
     if (this.canContinue) {
       this.continueRect = this.ux.div({
@@ -118,5 +131,58 @@ export default class ScreenHome {
       onclick: () => this.params.program.goto('setup'),
       cursor: 'pointer',
     });
+  }
+
+  _makeTitle(pad, top, innerW, titleH) {
+    let titleRect = this.ux.div({
+      parent: this.body,
+      size: [innerW, titleH],
+      position: [pad, top],
+      text: 'BOAT GAME',
+    });
+
+    Object.assign(titleRect.style, {
+      display: 'flex',
+      alignItems: 'flex-start',
+      justifyContent: 'center',
+      fontSize: 'calc(44 * var(--logic-h, 1px))',
+      fontWeight: 400,
+      color: '#fff',
+      letterSpacing: '0.13em',
+      textShadow: '0 6px 32px #000b, 0 2px 0 #1a1a1a, 0 0px 1px #fff8',
+      fontFamily: '"Nunito", "Quicksand", "Fredoka", "Baloo 2", "Arial Rounded MT Bold", "Arial", sans-serif',
+      background: 'none',
+      textAlign: 'center',
+      lineHeight: 1.05,
+      textTransform: 'uppercase',
+      filter: 'drop-shadow(0 2px 0 #0af8) drop-shadow(0 0 8px #00f6)',
+      userSelect: 'none',
+      width: '100%',
+      height: '100%',
+      paddingTop: 'calc(2 * var(--logic-h, 1px))',
+    });
+    return titleRect;
+  }
+
+  _makeArt(pad, y, innerW, artH) {
+    let artRect = this.ux.div({
+      parent: this.body,
+      size: [innerW, artH],
+      position: [pad, y],
+    });
+    const img = document.createElement('img');
+    img.src = './data/title02.png';
+    Object.assign(img.style, {
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover',
+      objectPosition: 'center',
+      display: 'block',
+      borderRadius: 'calc(8 * var(--logic-h, 1px))',
+      boxShadow: '0 4px 24px #0006',
+      background: 'rgba(0,0,0,0.08)',
+    });
+    artRect.appendChild(img);
+    return artRect;
   }
 }

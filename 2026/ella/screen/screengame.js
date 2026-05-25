@@ -50,7 +50,7 @@ export default class ScreenGame {
     });
 
     this.board = new EllaBoard(this.bottom, {
-      onclick: () => this.params.program.goto('main')
+      onclick: () => this.params.program.goto('home')
     });
 
     this.board.init();
@@ -221,7 +221,7 @@ export default class ScreenGame {
   _makeHeader() {
     this.header = this.ux.header({
       parent: this.celest.inner,
-      onhome: () => this.params.program.goto('main')
+      onhome: () => this.params.program.goto('home'),
     });
   }
 

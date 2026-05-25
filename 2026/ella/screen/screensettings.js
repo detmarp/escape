@@ -24,8 +24,8 @@ export default class ScreenSettings {
     this.ux.div({
       parent: buttonStack,
       type: 'button',
-      text: 'main',
-      onclick: () => this.params.program.goto('main')
+      text: 'Home',
+      onclick: () => this.params.program.goto('home')
     });
 
     this._makeRules(buttonStack);

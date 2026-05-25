@@ -153,7 +153,7 @@ export default class ScreenDemo {
   _makeHeader() {
     this.header = this.ux.header({
       parent: this.celest.inner,
-      onhome: () => this.params.program.goto('main')
+      onhome: () => this.params.program.goto('home')
     });
   }
 

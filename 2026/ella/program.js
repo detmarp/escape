@@ -48,7 +48,7 @@ export default class Program {
     }
 
     const mode = urlParams.get('mode');
-    const targetScreen = mode || 'main';
+    const targetScreen = mode || 'home';
 
     this.settings.count = (this.settings.count ?? 0) + 1;
     this.settings.lastRun = Date.now();
@@ -106,8 +106,8 @@ export default class Program {
       program: this,
     };
 
-    const screen = this.screens[name] || this.screens['main'];
-    const actualName = this.screens[name] ? name : 'main';
+    const screen = this.screens[name] || this.screens['home'];
+    const actualName = this.screens[name] ? name : 'home';
 
     if (screen) {
       const params = { ...baseParams, ...(screen.params || {}) };
@@ -119,7 +119,7 @@ export default class Program {
   _updateUrl(screenName) {
     const url = new URL(window.location);
 
-    if (screenName === 'main') {
+    if (screenName === 'home') {
       url.searchParams.delete('mode');
     } else {
       url.searchParams.set('mode', screenName);
