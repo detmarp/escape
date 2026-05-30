@@ -18,7 +18,7 @@ export default class Program {
     'demo': { class: ScreenDemo, params: { astra: true } },
     'game': { class: ScreenGame, params: { astra: true } },
     'test': { class: ScreenTest, params: { astra: false } },
-    'setup': { class: ScreenSetup, params: { astra: false } },
+    'setup': { class: ScreenSetup, params: { astra: true } },
     'home': { class: ScreenHome, params: { astra: true } },
     'dom': { class: ScreenDom, params: { astra: true } },
     'canvas1': { class: ScreenCanvas1, params: { astra: true } },

@@ -27,6 +27,7 @@ export default class ScreenGame {
     this.mytouch = null;
     // this.dragCircle removed
     this.dragEmitter = null;
+    this.debugButtons = true;
   }
 
   init() {
@@ -225,7 +226,21 @@ export default class ScreenGame {
   _makeHeader() {
     this.header = this.ux.header({
       parent: this.celest.inner,
-      onhome: () => this.params.program.goto('home'),
+      buttons: [ {
+          text: '🏠',
+          onClick: () => this.params.program.goto('home'),
+        },
+/*
+        {
+          text: this.paused ? 'Run' : 'Pause',
+          onClick: () => {},
+        },
+        {
+          text: 'Restart',
+          onClick: () => {},
+        },
+*/
+      ],
     });
   }
 

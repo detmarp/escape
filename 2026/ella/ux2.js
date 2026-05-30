@@ -58,7 +58,7 @@ export default class Ux2 extends Ux {
     };
     let div = this.div(p);
 
-    // if we pass in a button[] then override with that; more than one if nneded. array of {} with text: onCLick
+    // if we pass in a button[] then override with that; more than one if needed. array of {} with text: onCLick
     if (params.buttons) {
       params.buttons.forEach((btnParams, index) => {
         this.button2({

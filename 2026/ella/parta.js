@@ -7,7 +7,7 @@ export default class PartA {
     this.particles = [];
     this.prefabs = {};
     this._id = 0;
-    this.debug = true;
+    this.debug = false;
   }
 
   work(dt) {
