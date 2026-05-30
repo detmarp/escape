@@ -6,7 +6,7 @@ export default class ShipGame {
   constructor(params = {}) {
     this.id = ShipGame._id++;
     this.boards = [
-      new ShipBoard(this),
+      new ShipBoard(this.rules),
       new ShipBoard(this),
     ];
     this.fleet = [

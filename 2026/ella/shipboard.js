@@ -3,10 +3,10 @@ function _rnd(n) {
 }
 
 export default class ShipBoard {
-  constructor(game) {
+  constructor(rules) {
     // this.data is the minimal, serializable source of truth
     // this.extra is derived from .data and more convenient
-    this.game = game;
+    this.rules = rules;
     this.data = {
       size: [10, 10],
       ships: [],
@@ -123,7 +123,7 @@ export default class ShipBoard {
       for (let j = 0; j < ship.size; j++) {
         const x = x0 + dx * j;
         const y = y0 + dy * j;
-        if (!this.game?.rules?.allowAdjacent) {
+        if (!this.rules?.allowAdjacent) {
           // Adjacent (orthogonal)
           const adjacent = [ [-1, 0], [1, 0], [0, -1], [0, 1] ];
           for (const [ax, ay] of adjacent) {
@@ -138,7 +138,7 @@ export default class ShipBoard {
             }
           }
         }
-        if (!this.game?.rules?.allowDiagonal) {
+        if (!this.rules?.allowDiagonal) {
           // Diagonal
           const diagonal = [ [-1, -1], [1, -1], [-1, 1], [1, 1] ];
           for (const [dx2, dy2] of diagonal) {

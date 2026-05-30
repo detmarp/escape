@@ -46,16 +46,29 @@ export default class Arena {
     this.surface = new Surface(this.board);
     this.below._node.addActor(this.surface);
 
-    if (this.board) {
-      for (let i = 0; i < this.board.data.ships.length; ++i) {
-        this._node.addActor(new OneBoat(this.board, i, {
-          hidden: this.hidden,
-        }));
-      }
-    }
+    this._refreshShips(this.board.data.ships);
 
     this.above = this._node.addActor({});
     this.above._node.addActor(new Air(this.board));
+  }
+
+  _refreshShips(ships) {
+    if (this.boatActors && this.boatActors.length) {
+      for (let b of this.boatActors) {
+        this._node.tree.remove(b);
+      }
+    }
+    this.boatActors = [];
+
+    if (this.board) {
+      for (let i = 0; i < ships.length; ++i) {
+        let boat = new OneBoat(this.board, i, {
+          hidden: this.hidden,
+        });
+        this._node.addActor(boat);
+        this.boatActors.push(boat);
+      }
+    }
   }
 
   setEndGame(won) {

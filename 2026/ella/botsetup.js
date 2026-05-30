@@ -1,37 +1,27 @@
-// Bots are just a messy work in progress
-// BotA is motsly used for ship placement
+/* a random ship placement bot
+*/
+
+import Random from "./myrandom.js";
+import ShipRules from "./shiprules.js";
 import ShipBoard from "./shipboard.js";
 
-function _rnd(n) {
-  return Math.floor(Math.random() * n);
-}
-
-function _shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = _rnd(i + 1);
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-}
-
-export default class BotA {
-  constructor(game, id) {
-    this.game = game;
-    this.id = id;
-    this.other = 1 - id;
+export default class BotSetup {
+  constructor(rules, seed) {
+    let r = new ShipRules(rules);
+    this.rules = r.data;
+    this.seed = seed;
+    this.random = new Random(seed);
   }
 
-  placeShips() {
-    let ships = this._chooseShips();
-    for (let ship of ships) {
-      this.game.boards[this.id].data.ships.push(ship);
-    }
-    this.game.boards[this.id].rebuildExtra();
+  // Returns an array of placed ships
+  makeShips() {
+    return this._chooseShips();
   }
 
   _chooseShips() {
-    let board = new ShipBoard(this.game.rules);
+    let board = new ShipBoard(this.rules);
 
-    for (let item of this.game.fleet) {
+    for (let item of this.rules.fleet) {
       this._tryAddShip(board, item);
     }
 
@@ -40,12 +30,9 @@ export default class BotA {
 
   _tryAddShip(board, ship) {
     const [w, h] = board.data.size;
-    let rows = [...Array(h).keys()];
-    let cols = [...Array(w).keys()];
-    let vertical = [false, true];
-    _shuffle(rows);
-    _shuffle(cols);
-    _shuffle(vertical);
+    let rows = this.random.shuffle([...Array(h).keys()]);
+    let cols = this.random.shuffle([...Array(w).keys()]);
+    let vertical = this.random.shuffle([false, true]);
     for (let v of vertical) {
       for (let y of rows) {
         for (let x of cols) {
@@ -74,5 +61,4 @@ export default class BotA {
     }
     return true;
   }
-
 }

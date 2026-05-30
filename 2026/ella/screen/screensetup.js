@@ -9,6 +9,7 @@ import Setup from '../actor/setup.js';
 import Timer from '../actor/timer.js';
 import DemoPlayerA from '../actor/demoplayera.js';
 import DemoPlayerB from '../actor/demoplayerb.js';
+import BotSetup from '../botsetup.js';
 
 export default class ScreenSetup {
   static count = 0;
@@ -20,6 +21,9 @@ export default class ScreenSetup {
     this.debug = true;
     this.onePlayer = params.program.settings.onePlayerDemo;
     this.paused = false;
+    this.seedBase = Math.floor(Date.now() % 1000000);
+    this.seedIndex = 0;
+    this.seed = this.seedBase + this.seedIndex;
   }
 
   init() {
@@ -58,29 +62,12 @@ export default class ScreenSetup {
 
     this._newGame();
     this._refresh();
-  }
 
-  term() {
-  }
-
-  _nextTurn() {
-  }
-
-  setPaused(paused = null) {
-    if (paused === null) {
-      paused = !this.paused;
-    }
-    this.paused = paused;
-    if (this.player) {
-      this.player.setPaused(paused);
-    }
-    this._refreshFooter();
+    this._select(0);
   }
 
   work(dt, time, frame) {
     this.surface.update(dt, time, frame);
-
-    this._nextTurn();
 
     this.nodeTree.update();
   }
@@ -102,16 +89,13 @@ export default class ScreenSetup {
       type: 'button',
       parent: this.footer,
       text: 'Previous',
-    });
-    let label = this.ux.div({
-      type: 'button',
-      parent: this.footer,
-      text: '[number]',
+      onclick: () => this._select(-1),
     });
     let next = this.ux.div({
       type: 'button',
       parent: this.footer,
       text: 'Next',
+      onclick: () => this._select(1),
     });
     let play = this.ux.div({
       type: 'button',
@@ -119,9 +103,33 @@ export default class ScreenSetup {
       text: 'Play',
       onclick: () => this.params.program.goto('game'),
     });
+    this.label = this.ux.div({
+      type: 'button',
+      parent: this.footer,
+      text: '',
+    });
+  }
+
+  _select(delta) {
+    this.seedIndex = Math.max(0, this.seedIndex + delta);
+    this.seed = this.seedBase + this.seedIndex;
+
+    let bot = new BotSetup({}, this.seed);
+    this.ships = bot.makeShips();
+    console.log(`sss seed ${this.seed} ships: ${JSON.stringify(this.ships)}`);
+
+    // can we insert the ships into the this.surface table or whatever so they draw?
+    this.table.board.data.ships = this.ships;
+    this.table.arenas[0]._refreshShips(this.ships);
+
+    this._refreshFooter();
   }
 
   _start() {
+  }
+
+  _refreshFooter() {
+    this.label.textContent = `${this.seedIndex}`;
   }
 
   _refresh() {
@@ -129,6 +137,7 @@ export default class ScreenSetup {
     this.table = new Setup(this.game, {
     });
     this.nodeTree.addActor(this.table);
+    this._refreshFooter();
   }
 
   _newGame() {
