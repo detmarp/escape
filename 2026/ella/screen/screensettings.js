@@ -24,8 +24,8 @@ export default class ScreenSettings {
     this.ux.div({
       parent: buttonStack,
       type: 'button',
-      text: 'Home',
-      onclick: () => this.params.program.goto('home')
+      text: 'Main',
+      onclick: () => this.params.program.goto('main')
     });
 
     this._makeRules(buttonStack);
@@ -118,19 +118,17 @@ export default class ScreenSettings {
     this._addToggle(parent, 'Two Humans', 'twoHumans');
     this._addToggle(parent, 'Fast Clock', 'fastClock');
 
-    this.settingsText = this.ux.div({
+    this.settingsText = this.ux.monoWrap({
       parent: parent,
-      type: 'div',
-      text: ''
     });
-    this.settingsText.style.fontFamily = 'monospace';
-    this.settingsText.style.wordWrap = 'break-word';
-    this.settingsText.style.whiteSpace = 'pre-wrap';
-    this.settingsText.style.overflowWrap = 'break-word';
-    this.settingsText.style.wordBreak = 'break-word';
 
-    this.historyContainer = this.ux.div({
-      type: 'div'
+    this.ux.monoWrap({
+      parent: parent,
+      test: `\n`,
+    });
+
+    this.historyContainer = this.ux.monoWrap({
+      parent: parent,
     });
 
   }
@@ -187,7 +185,7 @@ export default class ScreenSettings {
   updateDisplay() {
     // Update settings display
     const settingsJson = JSON.stringify(this.params.program.settings || {});
-    this.settingsText.textContent = `Settings: ${settingsJson}`;
+    this.settingsText.textContent = `Settings\n${settingsJson}`;
 
     // Clear and update history display
     this.historyContainer.innerHTML = '';

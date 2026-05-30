@@ -1,10 +1,11 @@
 // HumanPlayer: handles all human input, state, and animation for a turn
 export default class HumanPlayer {
-  constructor(game, playerId, doneCallback) {
+  constructor(game, playerId, doneCallback, changeCallback) {
       this._dragActive = false;
     this.game = game;
     this.playerId = playerId;
     this.doneCallback = doneCallback;
+    this.changeCallback = changeCallback;
     this.otherPlayerId = 1 - playerId;
     this.board = game.boards[playerId];
     this.otherBoard = game.boards[this.otherPlayerId];
@@ -148,6 +149,9 @@ export default class HumanPlayer {
   _onMissileLanded() {
     this.otherBoard.hudOff && this.otherBoard.hudOff();
     this.game.shoot(this.otherPlayerId, this.target);
+    if (this.changeCallback) {
+      this.changeCallback();
+    }
     // Find the shot result from the board's data
     let shot = this.otherBoard.data.shots[this.otherBoard.data.shots.length - 1];
     let cell = (shot != null) && this.otherBoard.extra.cells[shot];

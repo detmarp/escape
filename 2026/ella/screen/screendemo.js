@@ -25,10 +25,11 @@ export default class ScreenDemo {
   init() {
     ScreenDemo.count++;
 
+    this.params.program.setFullBleedBackground();
+
     this.celest = new Celest(this.parent, 360, 640);
     this.celest.init();
 
-    this.celest.outer.style.backgroundColor = '#456';
     this.celest.inner.style.backgroundColor = '#fdb';
 
     this.ux = new Ux2(this.celest.inner);
@@ -204,7 +205,7 @@ export default class ScreenDemo {
       this.state = state;
       this.stateTime = Date.now();
       this.params.program.history = {
-        current: this.game.toObject(),
+        demo: this.game.toObject(),
       };
       this.params.program.save();
     }

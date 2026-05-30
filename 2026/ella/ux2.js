@@ -182,4 +182,52 @@ export default class Ux2 extends Ux {
     return button;
   }
 
+  homeText(params = {}) {
+    let p = {
+      type: 'div',
+      size: [360, 30],
+      position: [0, 0],
+      text: 'homeText',
+      fontSize: 24,
+      ...params,
+    };
+
+    let div = this.div(p);
+
+    Object.assign(div.style, {
+      background: 'none',
+      color: '#ffffff',
+      fontWeight: 700,
+      fontSize: `calc(${p.fontSize} * var(--logic-h, 1px))`,
+      border: 'none',
+      textAlign: 'center',
+      letterSpacing: '0.13em',
+      userSelect: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      textShadow: '0 2px 8px #000a',
+      fontFamily: '"Nunito", "Quicksand", "Fredoka", "Baloo 2", "Arial Rounded MT Bold", "Arial", sans-serif',
+      textTransform: 'uppercase',
+      lineHeight: 1.1,
+      padding: 0,
+    });
+
+
+    return div;
+  }
+
+  monoWrap(params = {}) {
+    let div = this.div({
+      ...params,
+    });
+    div.style.fontFamily = 'monospace';
+    div.style.wordWrap = 'break-word';
+    div.style.whiteSpace = 'pre-wrap';
+    div.style.overflowWrap = 'break-word';
+    div.style.wordBreak = 'break-word';
+
+    return div;
+  }
+
 }

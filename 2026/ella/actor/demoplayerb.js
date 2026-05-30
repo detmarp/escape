@@ -6,10 +6,11 @@ function _rand(n) {
 }
 
 export default class DemoPlayerB {
-  constructor(game, playerId, doneCallback) {
+  constructor(game, playerId, doneCallback, changeCallback) {
     this.game = game;
     this.playerId = playerId;
     this.doneCallback = doneCallback;
+    this.changeCallback = changeCallback;
     this.otherPlayerId = 1 - playerId;
     this.board = game.boards[playerId];
     this.otherBoard = game.boards[this.otherPlayerId];
@@ -63,6 +64,9 @@ export default class DemoPlayerB {
     let shot = this.game.shoot(this.otherPlayerId, this.target);
     this.otherBoard.ready = false;
     this.otherBoard.cursor = null;
+    if (this.changeCallback) {
+      this.changeCallback();
+    }
   }
 
   _allDone() {

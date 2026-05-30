@@ -174,4 +174,23 @@ export default class Program {
       this.current.init();
     }
   }
+
+  setFullBleedBackground() {
+    if (!this._bgImg) {
+      this._bgImg = document.createElement('img');
+      this._bgImg.src = './data/bg00.png';
+    }
+    Object.assign(this._bgImg.style, {
+      position: 'fixed',
+      left: 0,
+      top: 0,
+      width: '100vw',
+      height: '100vh',
+      objectFit: 'cover',
+      objectPosition: 'center',
+      zIndex: '-1',
+      pointerEvents: 'none',
+    });
+    document.body.appendChild(this._bgImg);
+  }
 }

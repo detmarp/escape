@@ -32,10 +32,11 @@ export default class ScreenGame {
   init() {
     ScreenGame.count++;
 
+    this.params.program.setFullBleedBackground();
+
     this.celest = new Celest(this.parent, 360, 640);
     this.celest.init();
 
-    this.celest.outer.style.backgroundColor = 'rgb(78, 13, 121)';
     this.celest.inner.style.backgroundColor = '#fdb';
 
     this.ux = new Ux2(this.celest.inner);
@@ -96,15 +97,18 @@ export default class ScreenGame {
         let onDone = () => {
           this.player = null;
         };
+        let onChange = () => {
+          this._save();
+        }
         if (asHuman) {
-          this.player = new HumanPlayer(this.game, player, onDone);
+          this.player = new HumanPlayer(this.game, player, onDone, onChange);
         }
         else {
           if (this.fastDemo) {
-            this.player = new DemoPlayerB(this.game, player, onDone);
+            this.player = new DemoPlayerB(this.game, player, onDone, onChange);
           }
           else {
-            this.player = new DemoPlayerA(this.game, player, onDone);
+            this.player = new DemoPlayerA(this.game, player, onDone, onChange);
           }
           this.player.setPaused(this.paused);
         }
@@ -271,6 +275,7 @@ export default class ScreenGame {
     if (this.state !== state) {
       this.state = state;
       this.stateTime = Date.now();
+      this._save();
     }
   }
 
@@ -324,5 +329,12 @@ export default class ScreenGame {
     let bot1 = new BotA(this.game, 1);
     bot0.placeShips();
     bot1.placeShips();
+  }
+
+  _save() {
+      this.params.program.history = {
+        current: this.game.toObject(),
+      };
+      this.params.program.save();
   }
 }
