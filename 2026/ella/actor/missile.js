@@ -18,7 +18,7 @@ export default class Missile {
   }
 
   added() {
-    this._node.ttl = 1.5;
+    this._node.ttl = 0.75;
 
   }
 

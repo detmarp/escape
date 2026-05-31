@@ -146,7 +146,7 @@ export default class DemoPlayerA {
         toIndex: this.otherPlayerId,
         target: this.target,
       });
-      this.gotoState('flyMissile', 1.5, () => this.onMissleLanded());
+      this.gotoState('flyMissile', 0.75, () => this.onMissleLanded());
     });
   }
 

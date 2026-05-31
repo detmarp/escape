@@ -41,6 +41,9 @@ export default class Air {
       if (this.board.cursor) {
         this._cursor(ctx);
       }
+      if (this.board.cursorLines) {
+        this._cursorLines(ctx);
+      }
       if (this.board.lock) {
         this._lock(ctx);
       }
@@ -69,6 +72,27 @@ export default class Air {
     // Bottom-right L
     _rect(ctx, color, [pos[0] + size - length, pos[1] + size - thickness, length, thickness]);
     _rect(ctx, color, [pos[0] + size - thickness, pos[1] + size - length, thickness, length]);
+  }
+
+  _cursorLines(ctx) {
+    let pos = this.board.cursorLines;
+    let color = '#00ff00';
+    let thickness = 1;
+    let start = -40;
+    let length = 320;
+    _rect(ctx, color, [
+      start,
+      pos[1] - thickness / 2,
+      length,
+      thickness
+    ]);
+    _rect(ctx, color, [
+      pos[0] - thickness / 2,
+      start,
+      thickness,
+      length
+    ]);
+
   }
 
 

@@ -62,8 +62,10 @@ export default class HumanPlayer {
       // Show cursor if finger is down and in range
       if (this.fingerDown && this.cursor && this._inRange(this.cursor)) {
         this.otherBoard.cursor = this.cursor;
+        this.otherBoard.cursorLines = this.canvasPosition;
       } else {
         this.otherBoard.cursor = null;
+        this.otherBoard.cursorLines = null;
       }
     }
     // Mode 2: Shoot animation
@@ -82,6 +84,7 @@ export default class HumanPlayer {
         this._dragActive = true;
         this.cursor = [event.x, event.y];
         this.lastTouch = [event.x, event.y];
+        if (event.cx != null) { this.canvasPosition = [event.cx, event.cy]; }
       } else {
         this._dragActive = false;
         this.cursor = null;
@@ -91,12 +94,14 @@ export default class HumanPlayer {
       if (this._dragActive && event.x != null && event.y != null) {
         this.cursor = [event.x, event.y];
         this.lastTouch = [event.x, event.y];
+        if (event.cx != null) { this.canvasPosition = [event.cx, event.cy]; }
       }
     } else if (event.action === 'end' || event.action === 'up' || event.action === 'cancel') {
       this.fingerDown = false;
       if (this._dragActive && this.cursor && this._inRange(this.cursor)) {
         this.target = this.cursor;
         this.otherBoard.cursor = null;
+        this.otherBoard.cursorLines = null;
         this.otherBoard.ready = false;
         // Start crosshairs and missile flight instantly
         if (this._node && this._node.sendEvent) {
@@ -107,7 +112,7 @@ export default class HumanPlayer {
           });
         }
         this.otherBoard.lock = this.target;
-        this.gotoState('flyMissile', 1.5, () => {
+        this.gotoState('flyMissile', 0.75, () => {
           this.otherBoard.lock = null;
           this._onMissileLanded();
         });
@@ -116,6 +121,7 @@ export default class HumanPlayer {
         this.cursor = null;
         this._dragActive = false;
         this.otherBoard.cursor = null;
+        this.otherBoard.cursorLines = null;
       }
     }
   }
@@ -140,7 +146,7 @@ export default class HumanPlayer {
     }
     // Show crosshairs and missile flight in parallel
     this.otherBoard.lock = this.target;
-    this.gotoState('flyMissile', 1.5, () => {
+    this.gotoState('flyMissile', 0.75, () => {
       this.otherBoard.lock = null;
       this._onMissileLanded();
     });

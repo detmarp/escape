@@ -187,6 +187,8 @@ export default class ScreenGame {
         this.player.onTouch({
           x: boardPosition[0],
           y: boardPosition[1],
+          cx: arenaPosition[0],
+          cy: arenaPosition[1],
           action: event.action,
         });
       }
