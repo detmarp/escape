@@ -10,6 +10,7 @@ import Timer from '../actor/timer.js';
 import DemoPlayerA from '../actor/demoplayera.js';
 import DemoPlayerB from '../actor/demoplayerb.js';
 import BotSetup from '../botsetup.js';
+import ShipBoard from '../shipboard.js';
 
 export default class ScreenSetup {
   static count = 0;
@@ -117,6 +118,13 @@ export default class ScreenSetup {
     let bot = new BotSetup({}, this.seed);
     this.ships = bot.makeShips();
     console.log(`sss seed ${this.seed} ships: ${JSON.stringify(this.ships)}`);
+    let board = new ShipBoard();
+    board.data.ships = this.ships;
+    board.rebuildExtra();
+    this.params.program.makeGameFromBoard(
+      this.params.program.getRules(),
+      board
+    );
 
     // can we insert the ships into the this.surface table or whatever so they draw?
     this.table.board.data.ships = this.ships;

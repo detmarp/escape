@@ -336,14 +336,8 @@ export default class ScreenGame {
   }
 
   _newGame() {
-    this.game = new ShipGame({
-      rules: this.params.program.getRules(),
-    });
-
-    let bot0 = new BotA(this.game, 0);
-    let bot1 = new BotA(this.game, 1);
-    bot0.placeShips();
-    bot1.placeShips();
+    this.params.program.restoreOrNewGame();
+    this.game = this.params.program.game;
   }
 
   _save() {

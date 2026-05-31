@@ -190,8 +190,8 @@ export default class ShipBoard {
 
   toObject() {
     return {
-      ships: this.ships,
-      shots: this.shots,
+      ships: this.data.ships,
+      shots: this.data.shots,
       code: this._boardCode(),
     };
   }

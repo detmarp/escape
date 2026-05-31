@@ -5,10 +5,6 @@ export default class ShipGame {
 
   constructor(params = {}) {
     this.id = ShipGame._id++;
-    this.boards = [
-      new ShipBoard(this.rules),
-      new ShipBoard(this),
-    ];
     this.fleet = [
       { name: 'Carrier', size: 5 },
       { name: 'Battleship', size: 4 },
@@ -22,6 +18,10 @@ export default class ShipGame {
       continueAfterHit: true,
       ...params.rules,
     };
+    this.boards = [
+      new ShipBoard(this.rules),
+      new ShipBoard(this),
+    ];
 
     this.turn = 0;
     this.gameOver = false;
@@ -66,6 +66,10 @@ export default class ShipGame {
 
     game.boards[0].rebuildExtra();
     game.boards[1].rebuildExtra();
+
+    game.turn = obj.turn || 0;
+    game.gameOver = obj.gameOver || false;
+    game.winner = obj.winner || null;
 
     return game;
   }

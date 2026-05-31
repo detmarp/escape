@@ -10,6 +10,9 @@ import ScreenDom from './screen/screendom.js';
 import ScreenCanvas1 from './screen/screencanvas1.js';
 import ScreenCanvas2 from './screen/screencanvas2.js';
 import Persist from './persist.js';
+import ShipGame from './shipgame.js';
+import ShipRules from './shiprules.js';
+import BotA from './bota.js';
 
 export default class Program {
   screens = {
@@ -87,6 +90,7 @@ export default class Program {
       allowAdjacent: this.settings.allowAdjacent,
       allowDiagonal: this.settings.allowDiagonal,
       continueAfterHit: this.settings.continueAfterHit,
+      fleet: this.settings.fleet,
     };
     return rules;
   }
@@ -192,5 +196,47 @@ export default class Program {
       pointerEvents: 'none',
     });
     document.body.appendChild(this._bgImg);
+  }
+
+  makeGameFromSave(save) {
+    this.game = null;
+    try {
+      this.game = ShipGame.fromObject(save);
+    } catch (e) {
+    }
+  }
+
+  makeGameFromBoard(rules, board) {
+    this.game = null;
+    try {
+      this.game = new ShipGame({
+        rules,
+      });
+      let bot0 = new BotA(this.game, 0);
+      bot0.placeShips();
+      this.game.boards[1] = board;
+    } catch (e) {
+    }
+  }
+
+  restoreOrNewGame() {
+    if (this.game && !this.game.gameOver) {
+      return;
+    }
+    this.makeGameFromSave(this.history && this.history.current);
+    if (!this.game) {
+      this.makeRandomGame(this.getRules());
+    }
+  }
+
+  makeRandomGame(rules) {
+    this.game = new ShipGame({
+      rules: this.getRules(),
+    });
+
+    let bot0 = new BotA(this.game, 0);
+    let bot1 = new BotA(this.game, 1);
+    bot0.placeShips();
+    bot1.placeShips();
   }
 }

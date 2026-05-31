@@ -22,7 +22,11 @@ export default class ScreenHome {
 
     this.ux = new Ux2(this.celest.inner);
 
-    this.canContinue = true;
+    let program = this.params.program;
+    let save = program.history && program.history.current;
+    program.makeGameFromSave(save);
+
+    this.canContinue = program.game && !program.game.gameOver;
 
     this._makeHeader();
     this._makeBody();
