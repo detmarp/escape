@@ -17,7 +17,7 @@ export default class ShipBoard {
     this.rebuildExtra();
   }
 
-  rebuildExtra() {
+  rebuildExtra(sunkOnly = false) {
     const { size, ships, shots } = this.data;
     let shipExtra = [];
     const [w, h] = size;
@@ -101,10 +101,10 @@ export default class ShipBoard {
       shipCellCount,
     };
 
-    this._setNeighbors();
+    this._setNeighbors(sunkOnly);
   }
 
-  _setNeighbors() {
+  _setNeighbors(sunkOnly) {
     // Set the .extra.cells flags for ship cell neighbors
     const { cells } = this.extra;
     const { size, ships } = this.data;
@@ -117,38 +117,44 @@ export default class ShipBoard {
 
     // Mark adjacent and diagonal neighbors for each ship
     for (const ship of ships) {
+      let testAdjacent = (!this.rules?.allowAdjacent) && (!sunkOnly || ship.sunk);
+      let testDiagonal = (!this.rules?.allowDiagonal);
+
       const [dx, dy] = ship.vertical ? [0, 1] : [1, 0];
       const x0 = ship.offset % w;
       const y0 = Math.floor(ship.offset / w);
       for (let j = 0; j < ship.size; j++) {
         const x = x0 + dx * j;
         const y = y0 + dy * j;
-        if (!this.rules?.allowAdjacent) {
-          // Adjacent (orthogonal)
+        let cell = (x >= 0 && x < w) && cells[y * w + x];
+        if (testAdjacent) {
           const adjacent = [ [-1, 0], [1, 0], [0, -1], [0, 1] ];
           for (const [ax, ay] of adjacent) {
             const nx = x + ax;
             const ny = y + ay;
             if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
               const nidx = ny * w + nx;
-              const ncell = cells[nidx];
-              if (ncell) {
-                ncell.adjacent = true;
+              const acell = cells[nidx];
+              if (acell) {
+                acell.adjacent = true;
               }
             }
           }
         }
-        if (!this.rules?.allowDiagonal) {
-          // Diagonal
+        if (testDiagonal) {
+          if (sunkOnly && (!cell || !cell.hit)) {
+            // if we're only testing sunk ships, look only at hits
+            continue;
+          }
           const diagonal = [ [-1, -1], [1, -1], [-1, 1], [1, 1] ];
           for (const [dx2, dy2] of diagonal) {
             const nx = x + dx2;
             const ny = y + dy2;
             if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
               const nidx = ny * w + nx;
-              const ncell = cells[nidx];
-              if (ncell) {
-                ncell.diagonal = true;
+              const dcell = cells[nidx];
+              if (dcell) {
+                dcell.diagonal = true;
               }
             }
           }

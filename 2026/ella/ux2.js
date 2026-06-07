@@ -58,19 +58,18 @@ export default class Ux2 extends Ux {
     };
     let div = this.div(p);
 
-    // if we pass in a button[] then override with that; more than one if needed. array of {} with text: onCLick
+    let buttons = [];
     if (params.buttons) {
       params.buttons.forEach((btnParams, index) => {
-        this.button2({
+        buttons.push(this.button2({
           parent: div,
           size: [40, 28],
           position: [1 + index * 41, 1],
           text: btnParams.text,
           onclick: btnParams.onClick,
-        });
+        }));
       });
-    }
-    else {
+    } else {
       let homeButton = this.button2({
         parent: div,
         size: [40, 28],
@@ -82,8 +81,17 @@ export default class Ux2 extends Ux {
           }
         }
       });
+      buttons.push(homeButton);
     }
-
+    let fontSize = 20;
+    // Set font size on the actual button element inside button2
+    for (let b of buttons) {
+      // b is the outer div, find the button child
+      let btn = b.querySelector('button');
+      if (btn) {
+        btn.style.fontSize = `calc(${fontSize} * var(--logic-h, 1px))`;
+      }
+    }
     return div;
   }
 

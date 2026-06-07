@@ -26,7 +26,7 @@ export default class Surface {
   constructor(board) {
     this.board = board;
     this.shots = [];
-    this.debug = false;
+    //this.debug = true;
   }
 
   added() {
@@ -63,7 +63,7 @@ export default class Surface {
       let pos = _toPosition(cell.x, cell.y);
       let r = 10
       if (cell.adjacent) {
-        ctx.strokeStyle = '#f00';
+        ctx.strokeStyle = '#ff8';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(pos[0] - r, pos[1]);
@@ -73,7 +73,7 @@ export default class Surface {
         ctx.stroke();
       }
       if (cell.diagonal) {
-        ctx.strokeStyle = '#f00';
+        ctx.strokeStyle = '#fc8';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(pos[0] - r, pos[1] - r);

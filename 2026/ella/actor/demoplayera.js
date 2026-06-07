@@ -152,7 +152,6 @@ export default class DemoPlayerA {
 
   onMissleLanded() {
     this.otherBoard.hudOff();
-    console.log(`mmm0 onMissleLanded target ${JSON.stringify(this.target)}`);
     this.game.shoot(this.otherPlayerId, this.target);
     if (this.changeCallback) {
       this.changeCallback();

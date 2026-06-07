@@ -36,4 +36,20 @@ export default class MyRandom {
     }
     return arr;
   }
+
+  pick(weights) {
+    let total = 0;
+    for (let w of weights) {
+      if (w > 0) total += w;
+    }
+    if (total <= 0) return 0;
+    let r = this.float() * total;
+    for (let i = 0; i < weights.length; i++) {
+      if (weights[i] > 0) {
+        r -= weights[i];
+        if (r < 0) return i;
+      }
+    }
+    return weights.length - 1;
+  }
 }

@@ -3,7 +3,6 @@ import Boreal from '../../boreal/boreal.js';
 import Ux2 from '../ux2.js';
 import Celest from '../../celest/celest.js';
 import ShipGame from '../shipgame.js';
-import BotA from '../bota.js';
 import NodeTree from '../nodetree.js';
 import Table from '../actor/table.js';
 import Timer from '../actor/timer.js';

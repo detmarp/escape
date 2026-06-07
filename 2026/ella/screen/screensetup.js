@@ -117,7 +117,6 @@ export default class ScreenSetup {
 
     let bot = new BotSetup({}, this.seed);
     this.ships = bot.makeShips();
-    console.log(`sss seed ${this.seed} ships: ${JSON.stringify(this.ships)}`);
     let board = new ShipBoard();
     board.data.ships = this.ships;
     board.rebuildExtra();
