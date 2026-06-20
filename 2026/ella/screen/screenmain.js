@@ -16,11 +16,7 @@ export default class ScreenMain {
 
     this.ux.div({
       type: 'h1',
-      text: 'Main'
-    });
-
-    this.ux.div({
-      text: 'Game framework with screen routing, responsive design, and canvas support. Built with custom JavaScript helpers for rapid web game prototyping.'
+      text: 'Menu'
     });
 
     let menu = this.ux.stack({gap: 4});
@@ -38,22 +34,10 @@ export default class ScreenMain {
         onclick: () => this.params.program.goto(name)
       });
     }
-
-    this.info = this.ux.cornerInfo({
-      parent: this.parent,
-    });
   }
 
   term() {}
 
   work(dt, time, frame) {
-    this.info.update({
-      text: [
-        `count: ${ScreenMain.count}`,
-        `frame: ${frame}`,
-        `time: ${time.toFixed(3)}`,
-        `dt: ${dt.toFixed(3)}`
-      ].join('\n')
-    });
   }
 }

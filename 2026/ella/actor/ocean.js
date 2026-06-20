@@ -51,6 +51,7 @@ export default class Ocean {
     }
 
     this._node.addActor({
+      label: 'grid',
       draw: function(ctx) {
         ctx.strokeStyle = '#024';
         ctx.lineWidth = 1;
@@ -83,6 +84,7 @@ export default class Ocean {
     const self = this;
 
     let w = {
+      label: 'wave',
       init: function() {
         this._node.position = [
           _randf(20, 220),

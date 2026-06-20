@@ -12,6 +12,7 @@
 - [celest](celest/)
 - [dara](dara/)
 - [ella](ella/)
+- [freya])(freya/)
 
 ## name list
 
@@ -20,7 +21,7 @@
 - cira - cyra - calla
 - dax - dione - dria
 - eartha - eira - ember
-- faye - freya - flora - fira
+- faye -  - flora - fira
 - gaia - galen - gemma - glint
 - harp - halo - hestia - hydra
 - ione - isla - irid - ivy

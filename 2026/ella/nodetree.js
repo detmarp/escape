@@ -105,13 +105,14 @@ export default class NodeTree {
     this.flat = [];
 
     // Walk the tree
-    const walk = (node) => {
+    const walk = (node, depth = 0) => {
+      node.depth = depth;
       this.flat.push(node);
       if (node.children) {
-        node.children.forEach(walk);
+        node.children.forEach(child => walk(child, depth + 1));
       }
     };
-    walk(this.root);
+    walk(this.root, 0);
 
     // check flat list for needs init
     let needInit = null;
@@ -209,6 +210,10 @@ export default class NodeTree {
       }
     }
     walk(this.root);
+
+    if (this.debug) {
+      this._debugDrawTree();
+    }
   }
 
   _debugDraw() {
@@ -227,6 +232,28 @@ export default class NodeTree {
         //this.ctx.arc(position[0], position[1], 5, 0, 2 * Math.PI);
         this.ctx.fill();
       }
+    }
+  }
+
+  _debugDrawTree() {
+    let lines = [];
+    this.ctx.font = '9px monospace';
+    this.ctx.fillStyle = '#fff';
+    this.ctx.shadowColor = '#000';
+    this.ctx.shadowBlur = 4;
+    for (let node of this.flat) {
+      if (node.actor && node.actor.constructor) {
+        let name = node.label ||
+          (node.actor &&
+            (node.actor.label || node.actor.constructor.name)
+          )
+        || 'node';
+        let indent = ' '.repeat(node.depth || 0);
+        lines.push(indent + name);
+      }
+    }
+    for (let i = 0; i < lines.length; i++) {
+      this.ctx.fillText(lines[i], 2, 10 + i * 7);
     }
   }
 
