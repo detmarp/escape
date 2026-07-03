@@ -11,7 +11,7 @@
 - [boreal](boreal/) - standard portable style demo
 - [celest](celest/)
 - [dara](dara/)
-- [ella](ella/)
+- [boatgame](../boatgame/)
 - [freya])(freya/)
 
 ## name list

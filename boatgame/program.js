@@ -1,4 +1,4 @@
-import Astra from '../astra/astra.js';
+import Astra from '../2026/astra/astra.js';
 import ScreenMain from './screen/screenmain.js';
 import ScreenSettings from './screen/screensettings.js';
 import ScreenDemo from './screen/screendemo.js';
@@ -35,7 +35,7 @@ export default class Program {
     this.lastTime = 0;
     this.elapsedTime = 0;
     this.frame = 0;
-    document.title = 'Ella';
+    document.title = 'Boat Game';
     this.persist = new Persist();
   }
 

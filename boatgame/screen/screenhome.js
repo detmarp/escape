@@ -1,5 +1,5 @@
 import Ux2 from '../ux2.js';
-import Celest from '../../celest/celest.js';
+import Celest from '../../2026/celest/celest.js';
 
 export default class ScreenHome {
   static count = 0;

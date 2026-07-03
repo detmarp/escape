@@ -1,6 +1,6 @@
 import Board from '../board.js';
 import Ux2 from '../ux2.js';
-import Celest from '../../celest/celest.js';
+import Celest from '../../2026/celest/celest.js';
 import NodeTree from '../nodetree.js';
 import OceanFx from '../oceanfx.js';
 

@@ -1,4 +1,4 @@
-import Boreal from '../../boreal/boreal.js';
+import Boreal from '../../2026/boreal/boreal.js';
 import Ux2 from '../ux2.js';
 
 export default class ScreenMain {

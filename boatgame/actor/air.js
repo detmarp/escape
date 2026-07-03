@@ -1,7 +1,7 @@
 function _dot(ctx, color, position) {
   ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.arc(position[0], position[1], 2, 0, 2 * Math.PI);
+  ctx.arc(position[0], position[1], 5, 0, 2 * Math.PI);
   ctx.fill();
 }
 
@@ -47,7 +47,22 @@ export default class Air {
       if (this.board.lock) {
         this._lock(ctx);
       }
+      for (let cell of this.board.extra.cells) {
+        if (cell.shot) {
+          let hit = cell.hit;
+          if (hit) {
+            // Draw a red dot for hits; white dota are drawn on surface
+            let color = hit ? 'red' : 'lime';
+            let x = cell.x;
+            let y = cell.y;
+            let pos = _toPosition([x, y]);
+            _dot(ctx, color, pos);
+          }
+        }
+      }
     }
+
+
   }
 
   _cursor(ctx) {

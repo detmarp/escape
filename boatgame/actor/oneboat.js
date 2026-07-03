@@ -57,8 +57,8 @@ export default class OneBoat {
     let tl = _toPosition([startX - r, startY - r]);
     let br = _toPosition([endX + r, endY + r]);
 
-    // Fill with medium blue first
-    ctx.fillStyle = '#48fb';
+    // Fill with bright gray first
+    ctx.fillStyle = '#ddd';
     ctx.fillRect(
       tl[0], tl[1],
       br[0] - tl[0],

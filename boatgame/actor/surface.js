@@ -42,11 +42,14 @@ export default class Surface {
     for (let cell of this.board.extra.cells) {
       if (cell.shot) {
         let hit = cell.hit;
-        let color = hit ? 'red' : 'white';
-        let x = cell.x;
-        let y = cell.y;
-        let pos = _toPosition(x, y);
-        _dot(ctx, color, pos[0], pos[1]);
+        if (!hit) {
+          // draw misses; hits are drawn on air
+          let color = hit ? 'lime' : 'white';
+          let x = cell.x;
+          let y = cell.y;
+          let pos = _toPosition(x, y);
+          _dot(ctx, color, pos[0], pos[1]);
+        }
       }
     }
 
