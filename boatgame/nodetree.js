@@ -13,7 +13,7 @@ export default class NodeTree {
     }
     this.frame = 0;
     this.lastTime = performance.now();
-    this.debug = true;
+    //this.debug = true;
     this.eventQueue = [];
     this.clear();
   }
@@ -260,9 +260,7 @@ export default class NodeTree {
   _newNode(obj, params = {}) {
     return {
       ttl: null,
-
       ...params,
-
       actor: obj,
       id: NodeTree.id++,
       parent: null,

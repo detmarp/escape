@@ -18,6 +18,7 @@ export default class ScreenSetup {
   constructor(parent, params) {
     this.parent = parent;
     this.params = params;
+    this.canPlay = true;
     this.fastDemo = params.program.settings.fastDemo;
     this.debug = true;
     this.onePlayer = params.program.settings.onePlayerDemo;
@@ -76,39 +77,46 @@ export default class ScreenSetup {
   _makeHeader() {
     this.header = this.ux.header({
       parent: this.celest.inner,
-      onhome: () => this.params.program.goto('home')
+      buttons: [
+        {
+          text: '🏠',
+          onClick: () => this.params.program.goto('home'),
+        },
+        {
+          text: 'Prev',
+          onClick: () => this._select(-1),
+        },
+        {
+          text: 'Next',
+          onClick: () => this._select(1),
+        },
+        {
+          text: `${this.seedIndex}`,
+        },
+      ],
     });
+
+    this.label = this.header.querySelectorAll('button')[3] || null;
   }
 
   _makeFooter() {
     this.footer = this.ux.div({
-      size: [360, 30],
+      size: [360, 60],
       position: [0, 540],
-      border: `#222`,
+      //border: `#222`,
     });
-    let prev = this.ux.div({
-      type: 'button',
+    this.playRect = this.ux.homeText({
       parent: this.footer,
-      text: 'Previous',
-      onclick: () => this._select(-1),
-    });
-    let next = this.ux.div({
-      type: 'button',
-      parent: this.footer,
-      text: 'Next',
-      onclick: () => this._select(1),
-    });
-    let play = this.ux.div({
-      type: 'button',
-      parent: this.footer,
+      size: [360, 60],
+      position: [0, 0],
       text: 'Play',
-      onclick: () => this.params.program.goto('game'),
+      onclick: this.canPlay ? () => this.params.program.goto('game') : null,
     });
-    this.label = this.ux.div({
-      type: 'button',
-      parent: this.footer,
-      text: '',
-    });
+
+    if (!this.canPlay) {
+      this.playRect.style.color = '#bbb8';
+      this.playRect.style.pointerEvents = 'none';
+    }
   }
 
   _select(delta) {
@@ -136,7 +144,9 @@ export default class ScreenSetup {
   }
 
   _refreshFooter() {
-    this.label.textContent = `${this.seedIndex}`;
+    if (this.label) {
+      this.label.textContent = `${this.seedIndex}`;
+    }
   }
 
   _refresh() {

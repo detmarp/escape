@@ -99,6 +99,18 @@ export default class HumanPlayer {
     } else if (event.action === 'end' || event.action === 'up' || event.action === 'cancel') {
       this.fingerDown = false;
       if (this._dragActive && this.cursor && this._inRange(this.cursor)) {
+        const [x, y] = this.cursor;
+        const w = this.otherBoard.data.size[0];
+        const targetOffset = y * w + x;
+        const alreadyShot = this.otherBoard.data.shots.includes(targetOffset);
+        if (alreadyShot) {
+          this.target = null;
+          this.cursor = null;
+          this._dragActive = false;
+          this.otherBoard.cursor = null;
+          this.otherBoard.cursorLines = null;
+          return;
+        }
         this.target = this.cursor;
         this.otherBoard.cursor = null;
         this.otherBoard.cursorLines = null;
@@ -177,6 +189,9 @@ export default class HumanPlayer {
 
   _onAllDone() {
     this.otherBoard.hudOff && this.otherBoard.hudOff();
+    if (this._node && this._node.tree) {
+      this._node.tree.remove(this);
+    }
     if (this.doneCallback) {
       this.doneCallback();
       this.doneCallback = null;
