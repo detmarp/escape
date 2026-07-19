@@ -22,7 +22,7 @@
 - dax - dione - dria
 - eartha - eira - ember
 - faye -  - flora - fira
-- gaia - galen - gemma - glint
+- gaia - galen - glint
 - harp - halo - hestia - hydra
 - ione - isla - irid - ivy
 - juno - jara - jessa - jade

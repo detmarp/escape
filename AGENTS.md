@@ -8,6 +8,8 @@
 - **No comments in code**: Never add comments to code unless explicitly requested by the user
 - **Clean minimal code**: Focus on writing self-explanatory, clean code without commentary
 - **Let code speak**: Variable names, function names, and structure should be clear enough without comments
+- **Python indentation**: Always use 2 spaces in Python files
+- **No tabs in Python**: Never use tab characters in Python files
 
 ## When Code Comments Are Acceptable
 
