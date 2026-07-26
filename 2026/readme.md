@@ -12,7 +12,8 @@
 - [celest](celest/)
 - [dara](dara/)
 - [boatgame](../boatgame/)
-- [freya])(freya/)
+- [freya](freya/)
+- [hydra](hydra/)
 
 ## name list
 

@@ -1,4 +1,4 @@
-import Energy from './energy/Energy.js';
+import Energy from './energy/energy.js';
 import SimpleBox200 from './energyexample/actor/simplebox200.js';
 import CanvasInfo from './energyexample/actor/canvasinfo.js';
 
