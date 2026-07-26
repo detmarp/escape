@@ -23,7 +23,7 @@
 - eartha - eira - ember
 - faye -  - flora - fira
 - gaia - galen - glint
-- harp - halo - hestia - hydra
+- harp - halo - hestia
 - ione - isla - irid - ivy
 - juno - jara - jessa - jade
 - kira - kaia - keira - kestrel

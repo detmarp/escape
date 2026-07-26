@@ -1,0 +1,283 @@
+// class NodeTree
+// A simple Unity-inpired tree of transform nodes.
+// For Canvas 2d usage.
+// With lists of children and components.
+// With support for recursive work and draw traversal.
+// Intrinsic TTL support, generator support.
+export default class NodeTree {
+  static id = 0;
+
+  constructor(params = {}) {
+    if (params.canvas) {
+      this.setCanvas(params.canvas);
+    }
+    this.frame = 0;
+    this.lastTime = performance.now();
+    //this.debug = true;
+    this.eventQueue = [];
+    this.clear();
+  }
+
+  setCanvas(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+  }
+
+  // Helper func to add a just a node, not an actor.
+  addNode(params, parent) {
+    return this.addActor({
+      node: params
+    }, parent);
+  }
+
+  addActor(actor, parent, params = {}) {
+    actor ??= {};
+    parent ??= this.root;
+
+    if (parent.tree !== this) {
+      throw new Error('Parent node is not in this NodeTree');
+    }
+
+    let p = {
+      ...actor.node,
+      ...params,
+    };
+    let node = this._newNode(actor, p);
+
+    parent.children.push(node);
+    node.parent = parent;
+    actor._node = node;
+
+    if (actor.added) {
+      actor.added();
+    }
+
+    return actor;
+  }
+
+  remove(actor) {
+    if (actor && actor._node) {
+      actor._node.kill = true;
+    }
+  }
+
+  _removeNode(node) {
+    if (node.parent) {
+      let idx = node.parent.children.indexOf(node);
+      if (idx !== -1) {
+        node.parent.children.splice(idx, 1);
+      }
+    }
+    if (node.actor && node.actor.term) {
+      node.actor.term();
+    }
+    node.removed = true;
+  }
+
+  update() {
+    this._work();
+    this._draw();
+    if (this.debug) {
+      this._debugDraw();
+    }
+    // do 'kill' cleanup here
+    for (let node of this.flat) {
+      if (node.kill) {
+        this._removeNode(node);
+      }
+    }
+  }
+
+  clear() {
+    this.root = this._newNode();
+  }
+
+  _work() {
+    const now = performance.now();
+    let dt = (now - this.lastTime) / 1000;
+    if (this.debugSpeed) {
+      dt = dt * this.debugSpeed;
+    }
+    this.lastTime = now;
+    this.frame++;
+    let time = this.lastTime / 1000;
+
+    this.flat = [];
+
+    // Walk the tree
+    const walk = (node, depth = 0) => {
+      node.depth = depth;
+      this.flat.push(node);
+      if (node.children) {
+        node.children.forEach(child => walk(child, depth + 1));
+      }
+    };
+    walk(this.root, 0);
+
+    // check flat list for needs init
+    let needInit = null;
+    for (let node of this.flat) {
+      if (!node.inited) {
+        if (node.actor && node.actor.init) {
+          needInit ??= [];
+          needInit.push(node);
+        }
+        else {
+          node.inited = true;
+        }
+      }
+    }
+
+    // do inits
+    if (needInit) {
+      for (let node of needInit) {
+        node.actor.init();
+        node.inited = true;
+      }
+    }
+
+    // do work
+    for (let node of this.flat) {
+      node.age += dt;
+      if (node.actor) {
+        if (node.ttl) {
+          node.t = node.age / node.ttl;
+          if (node.age > node.ttl) {
+            node.t = 1;
+            node.kill = true;
+          }
+        } else if (node.period) {
+          node.t = (node.age % node.period) / node.period;
+        } else {
+          node.t = 0;
+        }
+        if (node.actor && node.actor.work) {
+          node.actor.work(dt, time, this.frame);
+        }
+      }
+    }
+
+    this._dispatchEvents();
+  }
+
+  sendEvent(type, data = {}) {
+    this.eventQueue.push({ type, data });
+  }
+
+  _dispatchEvents() {
+    if (this.eventQueue.length === 0) return;
+
+    const events = this.eventQueue;
+    this.eventQueue = [];
+
+    for (const event of events) {
+      for (const node of this.flat) {
+        if (!node.kill && node.actor && node.actor.onEvent) {
+          node.actor.onEvent(event.type, event.data);
+        }
+      }
+    }
+  }
+
+  _draw() {
+    // walk the tree, not the flat list
+    const walk = (node) => {
+      if (!node.inited) {
+        return;
+      }
+      let transform = null;
+      if (node.position || node.rotation || node.offset) {
+        transform = true;
+        this.ctx.save();
+        if (node.position) {
+          this.ctx.translate(node.position[0], node.position[1]);
+        }
+        if (node.rotation) {
+          this.ctx.rotate(node.rotation);
+        }
+        if (node.offset) {
+          this.ctx.translate(-node.offset[0], -node.offset[1]);
+        }
+      }
+      if (node.actor && node.actor.draw) {
+        node.actor.draw(this.ctx);
+      }
+      if (node.children) {
+        node.children.forEach(walk);
+      }
+      if (transform) {
+        this.ctx.restore();
+      }
+    }
+    walk(this.root);
+
+    if (this.debug) {
+      this._debugDrawTree();
+    }
+  }
+
+  _debugDraw() {
+      //console.log(`ddd ${this.frame} ${this.flat.length}`);
+      for (let node of this.flat) {
+      let position = node.screenPosition || node.position || [0, 0];
+      if (node.size) {
+        // draw green rect
+        this.ctx.strokeStyle = '#0f0';
+        //this.ctx.strokeRect(position[0], position[1], node.size[0], node.size[1]);
+      }
+      else {
+        // draw blue dot
+        this.ctx.fillStyle = '#08f';
+        this.ctx.beginPath();
+        //this.ctx.arc(position[0], position[1], 5, 0, 2 * Math.PI);
+        this.ctx.fill();
+      }
+    }
+  }
+
+  _debugDrawTree() {
+    let lines = [];
+    this.ctx.font = '9px monospace';
+    this.ctx.fillStyle = '#fff';
+    this.ctx.shadowColor = '#000';
+    this.ctx.shadowBlur = 4;
+    for (let node of this.flat) {
+      if (node.actor && node.actor.constructor) {
+        let name = node.label ||
+          (node.actor &&
+            (node.actor.label || node.actor.constructor.name)
+          )
+        || 'node';
+        let indent = ' '.repeat(node.depth || 0);
+        lines.push(indent + name);
+      }
+    }
+    for (let i = 0; i < lines.length; i++) {
+      this.ctx.fillText(lines[i], 2, 10 + i * 7);
+    }
+  }
+
+  _newNode(obj, params = {}) {
+    return {
+      ttl: null,
+      ...params,
+      actor: obj,
+      id: NodeTree.id++,
+      parent: null,
+      children: [],
+      age: 0,
+      tree: this,
+      // helper funcs
+      addActor(actor, params) {
+        return this.tree.addActor(actor, this, params);
+      },
+      sendEvent(type, data) {
+        this.tree.sendEvent(type, {
+          sender: this.actor,
+          ...data,
+        }
+        );
+      }
+    };
+  }
+}
