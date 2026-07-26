@@ -1,5 +1,5 @@
 import AutoCanvas from './autocanvas.js';
-import NodeTree from './nodeTree.js';
+import NodeTree from './nodetree.js';
 
 export default class Energy {
   static instance = null;
