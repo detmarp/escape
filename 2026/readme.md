@@ -14,6 +14,7 @@
 - [boatgame](../boatgame/)
 - [freya](freya/)
 - [hydra](hydra/)
+- [ivy](ivy/)
 
 ## name list
 
@@ -25,7 +26,7 @@
 - faye -  - flora - fira
 - gaia - galen - glint
 - harp - halo - hestia
-- ione - isla - irid - ivy
+- ione - isla - irid
 - juno - jara - jessa - jade
 - kira - kaia - keira - kestrel
 - lyra - lira - lune - lirael
