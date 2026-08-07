@@ -1,54 +1,41 @@
 export default {
-  buildings: [
-    {
-      id: 'factory',
-      name: 'Factory',
+  blueprints: {
+    'hangar': {
+      name: 'Hangar',
+      levels: [
+        {},
+        {},
+      ],
       cost: 100,
       buildTime: 5,
       productionRate: 10,
       productionType: 'money',
     },
-    {
-      id: 'assembly',
-      name: 'Assembly',
-      cost: 150,
-      buildTime: 8,
-      productionRate: 8,
-      productionType: 'money',
-    },
-    {
-      id: 'launchpad',
+    'launchpad': {
       name: 'Launch Pad',
+      levels: [ {} ],
       cost: 500,
       buildTime: 15,
       productionRate: 0,
       productionType: null,
     },
-    {
-      id: 'school',
-      name: 'Astronaut School',
+    'bank': {
+      name: 'Bank',
+      levels: [ {} ],
+      cost: 200,
+      buildTime: 8,
+      productionRate: 15,
+      productionType: 'money',
+    },
+    'hq': {
+      name: 'HQ',
+      levels: [ {} ],
       cost: 300,
       buildTime: 10,
-      productionRate: 0,
-      productionType: null,
+      productionRate: 5,
+      productionType: 'money',
     },
-    {
-      id: 'corps',
-      name: 'Astronaut Corps',
-      cost: 400,
-      buildTime: 12,
-      productionRate: 0,
-      productionType: null,
-    },
-    {
-      id: 'lab',
-      name: 'Laboratory',
-      cost: 600,
-      buildTime: 20,
-      productionRate: 0,
-      productionType: null,
-    },
-  ],
+  },
   rules: {
     costScaling: 1.2,
     maxLevel: 100,
@@ -56,8 +43,12 @@ export default {
   },
   setup: {
     basic: {
-      startingMoney: 1000,
-      startingBuildings: [],
+      money: 10,
+      buildings: [
+        { id: 'hangar', level: 0 },
+        { id: 'launchpad', level: 0 },
+        { id: 'hq', level: 0 },
+      ],
     },
   },
 };

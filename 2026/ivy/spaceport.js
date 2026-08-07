@@ -1,68 +1,28 @@
-import rules from './spacerules.js';
-
 export default class Spaceport {
   constructor(params = {}) {
-    this.rules = params.rules || rules;
-    this.money = params.startingMoney ?? this.rules.setup.basic.startingMoney;
-    this.buildings = this._initBuildings();
-    this.processes = [];
-    this.history = {
-      launches: 0,
-      missionsCompleted: 0,
-      disasters: 0,
-      retiredAstronauts: 0,
-      inMemoriamAstronauts: 0,
-    };
-    this.lastUpdate = Date.now();
+    this.rules = params.rules || {};
+    this.buildings = [];
+    this.history = {};
+    this.lastUpdate = 0;
+  }
 
-    if (params.initialBuildings) {
-      for (const bid of params.initialBuildings) {
-        if (this.buildings[bid]) {
-          this.buildings[bid].level = 1;
-        }
+  getBuilding(id) {
+    // search for building by id in the buildings array
+    for (const building of this.buildings) {
+      if (building.id === id) {
+        return building;
       }
     }
   }
 
-  _initBuildings() {
-    const buildings = {};
-    for (const cfg of this.rules.buildings) {
-      buildings[cfg.id] = {
-        id: cfg.id,
-        name: cfg.name,
-        level: 0,
-        productionRate: cfg.productionRate,
-        buildTime: cfg.buildTime,
-        cost: cfg.cost,
-      };
-    }
-    return buildings;
-  }
-
-  getBuilding(id) {
-    return this.buildings[id] || null;
-  }
-
-  getProcessesFor(buildingId) {
-    return this.processes.filter(p => p.buildingId === buildingId);
-  }
-
-  addProcess(proc) {
-    this.processes.push(proc);
-  }
-
-  removeProcess(procId) {
-    const idx = this.processes.findIndex(p => p.id === procId);
-    if (idx !== -1) {
-      this.processes.splice(idx, 1);
-    }
-  }
-
   toObject() {
+    const buildings = [];
+    for (const b of this.buildings) {
+      buildings.push(b);
+    }
     return {
       money: this.money,
-      buildings: this.buildings,
-      processes: this.processes,
+      buildings,
       history: this.history,
       lastUpdate: this.lastUpdate,
     };
@@ -71,10 +31,15 @@ export default class Spaceport {
   static fromObject(obj, rulesOverride = null) {
     const port = new Spaceport({ rules: rulesOverride });
     port.money = obj.money;
-    port.buildings = obj.buildings;
-    port.processes = obj.processes;
-    port.history = obj.history;
-    port.lastUpdate = obj.lastUpdate;
+    if (obj.buildings) {
+      for (const b in obj.buildings) {
+        if (port.buildings[b]) {
+          port.buildings[b].level = obj.buildings[b].level;
+        }
+      }
+    }
+    port.history = obj.history || port.history;
+    port.lastUpdate = obj.lastUpdate || Date.now();
     return port;
   }
 }
