@@ -13,6 +13,8 @@ export default class Ux {
   static button(params = {}) {
     const btn = document.createElement('button');
     btn.textContent = params.text || '';
+    btn.style.margin = '2px';
+    btn.style.padding = '2px 6px';
     if (params.onclick) btn.onclick = params.onclick;
     if (params.disabled) {
       btn.disabled = true;
@@ -22,6 +24,22 @@ export default class Ux {
     }
     if (params.parent) params.parent.appendChild(btn);
     return btn;
+  }
+
+  static gameHeader(params = {}) {
+    const div = Ux.div(params);
+    div.space = params.space;
+    div.redraw = (params = {}) => {
+      let text = `🪙${div.space.spaceport.money} 🔷${div.space.spaceport.gems} ${div.space.time}`;
+      params.text ||= text;
+      div.textDiv.redraw(params);
+    };
+
+    div.textDiv = Ux.text1({ parent: div, });
+
+    div.redraw();
+
+    return div;
   }
 
   static setupFullscreen() {
@@ -73,10 +91,63 @@ export default class Ux {
     return div;
   }
 
-  static building(params = {}) {
+  static box1(params = {}) {
     let div = Ux.div(params);
+    Object.assign(div.style, {
+      border: '1px solid #999',
+      padding: '2px',
+      margin: '2px',
+      background: params.background || '#fafafa',
+      fontFamily: params.fontFamily || 'monospace',
+      fontSize: params.fontSize || '12px',
+    });
+    return div;
+  }
+
+  static text1(params = {}) {
+    let div = Ux.div(params);
+    // text contents from params.text, with line break, pre formatting
+    div.redraw = (params = {}) => {
+      div.textContent = params.text || '';
+    }
+
+    div.redraw(params);
+
+    div.style.whiteSpace = 'pre';
+    Object.assign(div.style, {
+      border: '1px solid #999',
+      padding: '2px',
+      margin: '2px',
+      background: params.background || '#fafafa',
+      fontFamily: params.fontFamily || 'monospace',
+      fontSize: params.fontSize || '12px',
+
+    });
+    // here's a redraw func that will update the text contents
+    return div;
+  }
+
+  static building2(params = {}) {
+    let div = Ux.box1(params);
     div.redraw = (params = {}) => {
     }
+    let text = Ux.text1({parent: div, text: 'Hello'});
+    let buttons = [
+      'Upgrade',
+      'Finish',
+      'Research',
+      'Speedup',
+      'Build',
+      'Launch',
+      'Abort',
+      'Mission',
+    ].map(text => {
+      return Ux.button({text: text, parent: div, onclick: () => {
+        if (params.onCommand) {
+          params.onCommand(text);
+        }
+      }});
+    });
     return div;
   }
 
@@ -105,55 +176,86 @@ export default class Ux {
     return div;
   }
 
-  static createHeader(params = {}) {
-    const header = document.createElement('div');
-    Object.assign(header.style, {
-      padding: params.padding || '12px',
-      borderBottom: params.borderBottom || '1px solid #ddd',
-      background: params.background || 'white',
-    });
+  static createGameLayout(params = {}) {
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.height = '100%';
 
-    const infoDisplay = document.createElement('div');
-    Object.assign(infoDisplay.style, {
-      marginBottom: '8px',
-      fontSize: '13px',
-      color: params.color || '#666',
+    // 1. Meta controls (top stripe)
+    const metaControls = document.createElement('div');
+    Object.assign(metaControls.style, {
+      padding: '4px 12px',
+      background: '#f0f0f0',
+      display: 'flex',
+      justifyContent: 'flex-start',
+      gap: '8px'
     });
-
-    const btnContainer = document.createElement('div');
-    btnContainer.style.marginTop = '8px';
 
     if (params.onReset) {
-      const resetBtn = Ux.button({ text: params.resetLabel || 'Reset', onclick: params.onReset, parent: btnContainer });
-      resetBtn.style.marginRight = '8px';
+      Ux.button({ text: 'Reset', onclick: params.onReset, parent: metaControls });
     }
-
     if (params.onSave) {
-      const saveBtn = Ux.button({ text: params.saveLabel || 'Save', onclick: params.onSave, parent: btnContainer });
-      saveBtn.style.marginRight = '8px';
+      Ux.button({ text: 'Save', onclick: params.onSave, parent: metaControls });
     }
-
     if (params.onNewGame) {
-      Ux.button({ text: params.newGameLabel || 'New game', onclick: params.onNewGame, parent: btnContainer });
+      Ux.button({ text: 'New game', onclick: params.onNewGame, parent: metaControls });
     }
 
-    const counterDisplay = document.createElement('div');
-    Object.assign(counterDisplay.style, {
-      marginTop: '8px',
-      fontSize: '14px',
-      fontWeight: 'bold',
+    // 2. Game header (resources)
+    const gameHeader = document.createElement('div');
+    Object.assign(gameHeader.style, {
+      padding: '8px 12px',
+      background: '#fff',
+      display: 'flex',
+      justifyContent: 'space-between',
+      borderBottom: '1px solid #ddd'
     });
 
-    header.appendChild(infoDisplay);
-    header.appendChild(btnContainer);
-    header.appendChild(counterDisplay);
+    const resources = document.createElement('div');
+    resources.style.display = 'flex';
+    resources.style.gap = '16px';
 
-    header.redraw = (data = {}) => {
-      infoDisplay.textContent = data.info || '';
-      counterDisplay.textContent = data.counter || '';
+    const moneyDisplay = document.createElement('div');
+    moneyDisplay.textContent = '💸 $10';
+    moneyDisplay.style.fontWeight = 'bold';
+
+    const gemsDisplay = document.createElement('div');
+    gemsDisplay.textContent = '💠 5';
+    gemsDisplay.style.fontWeight = 'bold';
+
+    resources.appendChild(moneyDisplay);
+    resources.appendChild(gemsDisplay);
+    gameHeader.appendChild(resources);
+
+    // 3. Sky section
+    const sky = Ux.sky(params.skyParams || {});
+
+    // 4. City/buildings area
+    const city = document.createElement('div');
+    Object.assign(city.style, {
+      flex: '1',
+      overflowY: 'auto',
+      padding: '12px',
+      background: params.cityBackground || '#f9f9f9',
+      display: 'flex',
+      flexWrap: 'wrap',
+      alignContent: 'flex-start',
+      gap: '8px'
+    });
+
+    container.appendChild(metaControls);
+    container.appendChild(gameHeader);
+    container.appendChild(sky);
+    container.appendChild(city);
+
+    // Update function
+    container.updateResources = (data = {}) => {
+      moneyDisplay.textContent = `💸 $${data.money || 10}`;
+      gemsDisplay.textContent = `💠 ${data.gems || 5}`;
     };
 
-    return header;
+    return container;
   }
 
   static sky(params = {}) {
@@ -176,25 +278,25 @@ export default class Ux {
     Object.assign(div.style, {
       border: params.border || '1px solid #999',
       padding: params.padding || '12px',
-      marginBottom: params.marginBottom || '8px',
+      margin: '1px',
       background: params.background || '#fafafa',
       fontFamily: params.fontFamily || 'monospace',
       fontSize: params.fontSize || '12px',
+      width: 'auto',
+      display: 'inline-block',
     });
 
     const nameLevel = document.createElement('div');
     nameLevel.style.marginBottom = '8px';
+    div.appendChild(nameLevel);
 
     const upgradeBtn = Ux.button({ text: 'Upgrade', onclick: params.onUpgrade, disabled: !params.onUpgrade, parent: div });
     const speedupBtn = Ux.button({ text: 'Speedup', onclick: params.onSpeedup, disabled: !params.onSpeedup, parent: div });
     const collectBtn = Ux.button({ text: 'Collect', onclick: params.onCollect, disabled: !params.onCollect, parent: div });
 
-    div.appendChild(nameLevel);
-    div.appendChild(upgradeBtn);
-    div.appendChild(speedupBtn);
-    div.appendChild(collectBtn);
     div.redraw = (data = {}) => {
-      nameLevel.textContent = `${data.name} [${data.level}] ${JSON.stringify(data.info)}`;
+      let infoStr = data.info?.t ? ` (${data.info.t})` : '';
+      nameLevel.textContent = `${data.name} [${data.level}]${infoStr}`;
     };
 
     return div;
@@ -227,14 +329,16 @@ export default class Ux {
     Object.assign(div.style, {
       border: '1px solid #999',
       padding: '12px',
-      marginBottom: '8px',
+      margin: '1px',
       background: '#f5f5f5',
+      width: 'auto',
+      display: 'inline-block',
     });
 
     const collapsedDiv = document.createElement('div');
     Object.assign(collapsedDiv.style, {
       display: 'flex',
-      justifyContent: 'center',
+      justifyContent: 'flex-start',
     });
     const storeBtn = Ux.button({ text: 'Store', parent: collapsedDiv });
     storeBtn.onclick = () => {

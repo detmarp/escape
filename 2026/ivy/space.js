@@ -5,6 +5,7 @@ export default class Space {
   constructor(saveData, now, params = {}) {
     this._id = 0;
     this.lastTime = now;
+    this.time = now;
     this.params = params;
     this.saveData = saveData;
     this.rules = rules;
@@ -16,15 +17,20 @@ export default class Space {
   }
 
   *update(now) {
-    let endTime = now;
+    if (now <= this.time) {
+      return;
+    }
 
-    let pending = this._findPending();
-    //console.log(`uuu ${now} ${JSON.stringify(pending)}`);
+    let pending = this._findPending(now);
 
     if (pending.length > 0) {
+      console.log(`ppp0 pending: ${JSON.stringify(pending)}`);
+      for (var p of pending) {
+        console.log(`ppp1 pending: ${p.time - this.time} ${JSON.stringify(p)}`);
+      }
       let mark = pending[0];
       if (mark.time <= now) {
-        endTime = mark.time;
+        this.time = mark.time;
         pending.shift();
         // do mark
         if (mark.type === 'upgrade') {
@@ -37,7 +43,18 @@ export default class Space {
         }
       }
     }
+    this.time = now;
     this.spaceport.lastUpdate = now;
+  }
+
+  doCommand(command) {
+    console.log(`ccc Command: ${JSON.stringify(command)}`);
+    let event = {
+      id: this._id++,
+      command: command,
+      time: this.time + 1000,
+    };
+    this.spaceport.addPending(event);
   }
 
   _doEvent(event) {
@@ -111,7 +128,7 @@ export default class Space {
     return port;
   }
 
-  _findPending() {
+  _findPending(now) {
     let pending = [];
     for (const building of this.spaceport.buildings) {
       if (building.upgradeEnd) {
@@ -120,8 +137,19 @@ export default class Space {
           id: building.id,
           time: building.upgradeEnd,
         };
-        pending.push(thing);
+        //pending.push(thing);
       }
+    }
+    if (this.spaceport.data && this.spaceport.data.pending) {
+      let newPending = [];
+      for (const p of this.spaceport.data.pending) {
+        if (p.time <= now) {
+          pending.push(p);
+        } else {
+          newPending.push(p);
+        }
+      }
+      this.spaceport.data.pending = newPending;
     }
 
     pending.sort((a, b) => {

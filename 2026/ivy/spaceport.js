@@ -4,6 +4,7 @@ export default class Spaceport {
     this.buildings = [];
     this.history = {};
     this.lastUpdate = 0;
+    this.data = { here: 'you go'};
   }
 
   getBuilding(id) {
@@ -16,16 +17,7 @@ export default class Spaceport {
   }
 
   toObject() {
-    const buildings = [];
-    for (const b of this.buildings) {
-      buildings.push(b);
-    }
-    return {
-      money: this.money,
-      buildings,
-      history: this.history,
-      lastUpdate: this.lastUpdate,
-    };
+    return this.data;
   }
 
   static fromObject(obj, rulesOverride = null) {
@@ -41,5 +33,10 @@ export default class Spaceport {
     port.history = obj.history || port.history;
     port.lastUpdate = obj.lastUpdate || Date.now();
     return port;
+  }
+
+  addPending(event) {
+    this.data.pending ||= [];
+    this.data.pending.push(event);
   }
 }

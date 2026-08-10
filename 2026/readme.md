@@ -15,6 +15,7 @@
 - [freya](freya/)
 - [hydra](hydra/)
 - [ivy](ivy/)
+- [carcassonne](carcassonne)
 
 ## name list
 
