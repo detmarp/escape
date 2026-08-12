@@ -62,7 +62,6 @@ export default class View {
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     this.ctx.save();
-    this.ctx.translate(-this.cameraX, -this.cameraY);
     this.ctx.scale(this.zoom, this.zoom);
 
     let topleft = this._deviceToTile([0, 0]);
@@ -71,7 +70,10 @@ export default class View {
 
     for (let row = Math.ceil(topleft[1]); row < Math.floor(bottomright[1]); row++) {
       for (let col = Math.ceil(topleft[0]); col < Math.floor(bottomright[0]); col++) {
+        this.ctx.save();
+        this.ctx.translate(col * this.sprites.tileSize - this.cameraX, row * this.sprites.tileSize - this.cameraY);
         this.sprites.draw(this.ctx, col, row);
+        this.ctx.restore();
       }
     }
 

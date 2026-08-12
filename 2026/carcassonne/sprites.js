@@ -8,8 +8,8 @@ export default class Sprites {
   }
 
   draw(ctx, x, y) {
-    const px = x * this.tileSize;
-    const py = y * this.tileSize;
+    const px = 0;
+    const py = 0;
 
     ctx.fillStyle = '#fff';
     ctx.fillRect(px, py, this.tileSize, this.tileSize);

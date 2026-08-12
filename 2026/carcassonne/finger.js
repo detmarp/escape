@@ -9,6 +9,7 @@ export default class Finger {
     this.mouseX = 0;
     this.mouseY = 0;
     this.mouseDown = false;
+    this.mouseIgnore = false;
     this.ignoreUntilZero = false;
 
     this.dragWorld = null;
@@ -38,10 +39,16 @@ export default class Finger {
     this.canvas.addEventListener('mousedown', e => this.onMouseDown(e));
     this.canvas.addEventListener('mousemove', e => this.onMouseMove(e));
     this.canvas.addEventListener('mouseup', e => this.onMouseUp(e));
+    this.canvas.addEventListener('mouseleave', e => this.onMouseLeave(e));
+    this.canvas.addEventListener('mouseenter', e => this.onMouseEnter(e));
     this.canvas.addEventListener('wheel', e => this.onMouseWheel(e), { passive: false });
   }
 
   onMouseDown(e) {
+    if (e.button !== 0) {
+      this.mouseIgnore = true;
+      return;
+    }
     const rect = this.canvas.getBoundingClientRect();
     this.mouseX = e.clientX - rect.left;
     this.mouseY = e.clientY - rect.top;
@@ -49,14 +56,33 @@ export default class Finger {
   }
 
   onMouseUp(e) {
+    if (e.button !== 0) return;
     this.mouseDown = false;
     this.dragWorld = null;
+    if (e.buttons === 0) {
+      this.mouseIgnore = false;
+    }
   }
 
   onMouseMove(e) {
+    if (this.mouseIgnore) return;
     const rect = this.canvas.getBoundingClientRect();
     this.mouseX = e.clientX - rect.left;
     this.mouseY = e.clientY - rect.top;
+  }
+
+  onMouseLeave(e) {
+    if (this.mouseDown) {
+      this.mouseIgnore = true;
+      this.mouseDown = false;
+      this.dragWorld = null;
+    }
+  }
+
+  onMouseEnter(e) {
+    if (e.buttons === 0) {
+      this.mouseIgnore = false;
+    }
   }
 
   onMouseWheel(e) {
@@ -129,7 +155,7 @@ export default class Finger {
   }
 
   handleMouseDrag() {
-    if (!this.mouseDown) return;
+    if (!this.mouseDown || this.mouseIgnore) return;
 
     if (!this.dragWorld) {
       this.dragWorld = this.screenToWorld(this.mouseX, this.mouseY);
