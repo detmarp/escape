@@ -15,7 +15,8 @@
 - [freya](freya/)
 - [hydra](hydra/)
 - [ivy](ivy/)
-- [carcassonne](carcassonne)
+- [carcassonne](carcassonne/)
+- [jade](jade/)
 
 ## name list
 
@@ -28,7 +29,7 @@
 - gaia - galen - glint
 - harp - halo - hestia
 - ione - isla - irid
-- juno - jara - jessa - jade
+- juno - jara - jessa
 - kira - kaia - keira - kestrel
 - lyra - lira - lune - lirael
 - mika - mira - maia - mist

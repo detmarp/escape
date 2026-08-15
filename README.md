@@ -7,8 +7,10 @@
 - [2026](2026)
   - [2026/astra](2026/astra/) - fixed app page demo
   - [2026/boreal](2026/boreal/) - standard portable style demo
-  - [boatgame/](boatgame/) - battleship
-  - [2026/hydra/](2026/hydra/) - 2d engine
+  - [boatgame](boatgame/) - battleship
+  - [2026/hydra](2026/hydra/) - 2d engine
+  - [2026/ivy](2026/ivy/)
+  - [2026/carcassonne](2026/carcassonne)
 - 2024
   - [Arwen](arwen/)
   - [Bryn](bryn/)
