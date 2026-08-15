@@ -419,7 +419,14 @@ export default class Ux {
   static screen2(params = {}) {
     let div = Ux.div(params);
     new Boreal(div, { scrollable: true });
+    div.redraw = (p = {}) => {
+    };
+    div.redraw(params);
+    return div;
+  }
 
+  static header2(params = {}) {
+    let div = Ux.div(params);
     Ux.text1({
       parent: div,
       text: 'Screen2',
@@ -455,4 +462,22 @@ export default class Ux {
 
     return div;
   }
+
+  static hr(params = {}) {
+    let div = Ux.div(params);
+    Object.assign(div.style, {
+      borderTop: '1px solid #999',
+      margin: '4px 0',
+    });
+    return div;
+  }
+
+  static city2(params = {}) {
+    let div = Ux.div(params);
+    div.redraw = (p = {}) => {
+    }
+    div.redraw(params);
+    return div;
+  }
+
 }

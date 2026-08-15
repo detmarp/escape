@@ -13,13 +13,24 @@ export default class Screen2 {
 
   init() {
     this.parent.innerHTML = '';
-    this.top = Ux.screen2({
+    this.div = Ux.screen2({
       parent: this.parent,
+      text: 'Screen2',
+    });
+    this.header = Ux.header2({
+      parent: this.div,
       buttons: [
         { text: 'Restart', onClick: () => this.program.gotoScene() },
-        { text: 'B', onClick: () => console.log('aaa B') },
-        { text: 'C', onClick: () => console.log('aaa C') },
+        { text: 'Save', onClick: () => console.log('aaa B') },
+        { text: 'New game', onClick: () => console.log('aaa C') },
+        { text: 'Load test 1', onClick: () => console.log('aaa D') },
+        { text: 'Load test 2', onClick: () => console.log('aaa E') },
       ],
+    });
+    Ux.hr({ parent: this.div });
+    this.saveArea = Ux.text1({
+      parent: this.div,
+      text: `${JSON.stringify(this.program.persist.data)}`,
     });
 
     this._updateScreen();
@@ -63,6 +74,6 @@ export default class Screen2 {
       dt: this.dt,
       count: Screen2.count,
     };
-    this.top.redraw(params);
+    this.header.redraw(params);
   }
 }
