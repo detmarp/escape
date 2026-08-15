@@ -1,3 +1,5 @@
+import MyTouch from './mytouch.js';
+
 export default class View {
   constructor(root) {
     this.canvas = document.createElement('canvas');
@@ -6,6 +8,10 @@ export default class View {
 
     this.lastFrameTime = 0;
     this.frame = 0;
+    this.myTouch = new MyTouch(this.canvas);
+    this.myTouch.onChangeCallback = (touches, type) => {
+      console.log(`ttt ${type}  ${JSON.stringify(touches)}`);
+    }
   }
 
   start() {

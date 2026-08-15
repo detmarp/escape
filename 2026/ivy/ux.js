@@ -1,4 +1,7 @@
+import Boreal from '../boreal/boreal.js';
+
 // Ux is a set of div-formatting and UI helper functions.
+
 export default class Ux {
   static id = 0;
 
@@ -409,6 +412,46 @@ export default class Ux {
 
     div.redraw = (newParams = {}) => {
     };
+
+    return div;
+  }
+
+  static screen2(params = {}) {
+    let div = Ux.div(params);
+    new Boreal(div, { scrollable: true });
+
+    Ux.text1({
+      parent: div,
+      text: 'Screen2',
+    });
+
+    if (params.buttons) {
+      let buttonsDiv = Ux.div({ parent: div });
+      Object.assign(buttonsDiv.style, {
+        display: 'flex',
+        gap: '8px',
+        marginBottom: '12px',
+      });
+
+      params.buttons.forEach(btn => {
+        const button = Ux.button({ text: btn.text, parent: buttonsDiv });
+        if (btn.onClick) {
+          button.onclick = btn.onClick;
+        }
+      });
+    }
+
+    let textB = Ux.text1({
+      parent: div,
+    });
+
+    div.redraw = (p = {}) => {
+      textB.redraw({
+        text: `count:${p.count || 0} frame:${p.frame || 0} dt:${(p.dt || 0).toFixed(3)}`,
+      });
+    };
+
+    div.redraw(params);
 
     return div;
   }
