@@ -33,6 +33,7 @@ export default class View {
     this.finger = new Finger(this.canvas);
 
     this.drag = [];
+    this.seed = Date.now();
   }
 
   start() {
@@ -116,10 +117,10 @@ export default class View {
       let row = tile.row;
       this.ctx.save();
       this.ctx.translate(col * this.sprites.tileSize - this.cameraX, row * this.sprites.tileSize - this.cameraY);
-      let rand = new Random(col * 1000 + row);
+      let rand = new Random(col * 1000 + row + this.seed);
       let n = rand.next(64);
       let r = rand.next(4);
-      this.sprites.draw(this.ctx, n, r);
+      this.sprites.draw(this.ctx, tile);
       this.ctx.restore();
     }
     this.ctx.restore();
@@ -137,7 +138,7 @@ export default class View {
 
   _rebuildBoard() {
     this.board ||= {};
-    let missing = null;
+    let newBoard = {};
 
     let topleft = this._deviceToTile([0, 0]);
     let bottomright = this._deviceToTile([this.canvas.width, this.canvas.height]);
@@ -156,31 +157,88 @@ export default class View {
           found.push(key);
         }
         else {
-          this.board[key] = true;
-          missing ||= [];
-          missing.push({
-            key: key,
-            col: col,
-            row: row,
-          });
+          let neighbors = this._getNeigbors(col, row, newBoard, this.board);
+          let [n, r] = this._chooseTile(neighbors, col * 1000 + row + Date.now());
+          let code = this._rotate(this.sprites.codes[n], r);
+          newBoard[key] = {
+            key,
+            col,
+            row,
+            n,
+            r,
+            code,
+            neighbors,
+          };
         }
       }
     }
 
-    if (!missing && found.length == Object.keys(this.board).length) {
-      return;
-    }
-
-    let newBoard = {};
     for (let key of found) {
       newBoard[key] = this.board[key];
     }
-    if (missing) {
-      for (let tile of missing) {
-        newBoard[tile.key] = tile;
+    this.board = newBoard;
+  }
+
+  _chooseTile(neighbors, seed) {
+    // ok, we need to walk the 24 tiles, with their 4 possible rotations, make a list of those whose codes match, using '-' as don't cares,
+    // then choose one n,r from that list. I assume there will always ba a match
+    let matches = [];
+    for (let n = 0; n < this.sprites.codes.length; n++) {
+      let code = this.sprites.codes[n];
+      for (let r = 0; r < 4; r++) {
+        let rotated = this._rotate(code, r);
+        let match = true;
+        for (let i = 0; i < 4; i++) {
+          if (neighbors[i] !== '-' && neighbors[i] !== rotated[i]) {
+            match = false;
+            break;
+          }
+        }
+        if (match) {
+          matches.push([n, r, code]);
+        }
       }
     }
-    console.log(`bbb ${found.length} ${missing?.length || 0} ${Object.keys(this.board).length}`);
-    this.board = newBoard;
+    let rand = new Random(seed);
+    let choice = matches[rand.next(matches.length)];
+    return choice;
+  }
+
+  _getNeigbors(col, row, newBoard, oldBoard) {
+    let deltas = [
+      [1, 0, 2],
+      [0, 1, 3],
+      [-1, 0, 0],
+      [0, -1, 1],
+    ];
+    let neighbors = '';
+    for (let [dx, dy, edge] of deltas) {
+      let key = `${col + dx},${row + dy}`;
+      let n = null;
+      let a = newBoard[key];
+      if (a) {
+        n = a.code;
+      } else {
+        let b = oldBoard[key];
+        if (b) {
+          n = b.code;
+        }
+      }
+      if (n) {
+        neighbors += n[edge];
+      } else {
+        neighbors += '-';
+      }
+    }
+    return neighbors;
+  }
+
+  _rotate(code, d) {
+    // for string code, if l > 0, find d%l, then rebuild from 2 halves to achieve rotation to the left dist d
+    if (code.length > 0) {
+      d = d % code.length;
+      code = code.slice(d) + code.slice(0, d);
+    }
+    return code;
   }
 }

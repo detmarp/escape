@@ -7,14 +7,21 @@ export default class Sprites {
 
     this.sheet = new Image();
     this.sheet.src = 'data/c03.png';
+    this.codes = [
+      'grgg', 'gggg', 'cccc', 'crgr', 'gggc', 'cgcg',
+      'gcgc', 'cgcg', 'ccgg', 'rrgc', 'cgrr', 'crrr',
+      'ggcc', 'ggcc', 'rrcc', 'rrcc', 'cgcc', 'cgcc',
+      'crcc', 'crcc', 'grgr', 'grrg', 'rrrg', 'rrrr',
+    ];
   }
 
   getImage(params = {}, x = 0, y = 0) {
   }
 
-  draw(ctx, n, r) {
+  draw(ctx, data) {
+    const { n, r } = data;
     this._drawSprite(ctx, 0, 0, n, r);
-    //this._drawPlaceholder(ctx, 0, 0);
+    //this._drawPlaceholder(ctx, data);
   }
 
   _getSource(n) {
@@ -38,12 +45,12 @@ export default class Sprites {
     const cy = y + sh / 2;
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.rotate((r * Math.PI) / 2);
+    ctx.rotate(-(r * Math.PI) / 2);
     ctx.drawImage(this.sheet, sx, sy, sw, sh, -sw / 2, -sh / 2, sw, sh);
     ctx.restore();
   }
 
-  _drawPlaceholder(ctx, x, y) {
+  _drawPlaceholder(ctx, data) {
     const px = 0;
     const py = 0;
 
@@ -55,8 +62,9 @@ export default class Sprites {
     ctx.strokeRect(px, py, this.tileSize, this.tileSize);
 
     ctx.fillStyle = '#000';
-    ctx.font = '12px monospace';
-    ctx.fillText(`${x},${y}`, px + 5, py + 20);
+    ctx.font = 'bold 16px monospace';
+    ctx.fillText(`${data.key} ${data.n} ${data.r}`, px + 4, py + 12);
+    ctx.fillText(`${data.code} ${data.neighbors}`, px + 4, py + 28);
   }
 
 
