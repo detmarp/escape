@@ -14,6 +14,7 @@ export default class Program {
 
   run() {
     document.title = 'ivy';
+    this.gameData = this.persist.data?.current || {};
     this.gotoScene();
   }
 
@@ -22,12 +23,16 @@ export default class Program {
       this.screen.term();
     }
     this.screenRoot.innerHTML = '';
-    this.screen = new Screen2(this.screenRoot, this, {});
+    const params = {
+      gameData: this.gameData,
+    };
+    this.screen = new Screen2(this.screenRoot, this, params);
     this.screen.init();
   }
 
   save() {
     this.persist.data ||= {};
+    this.persist.data.count = (this.persist.data.count || 0) + 1;
     this.persist.save();
   }
 

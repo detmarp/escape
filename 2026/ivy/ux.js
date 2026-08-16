@@ -116,7 +116,8 @@ export default class Ux {
 
     div.redraw(params);
 
-    div.style.whiteSpace = 'pre';
+    div.style.whiteSpace = 'pre-wrap';
+    div.style.wordBreak = 'break-word';
     Object.assign(div.style, {
       border: '1px solid #999',
       padding: '2px',
