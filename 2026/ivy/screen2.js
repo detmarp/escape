@@ -93,30 +93,41 @@ export default class Screen2 {
   }
 
   _restart(gameData = null) {
-    if (gameData) {
-      this.program.gameData = gameData;
-    }
+    this.program.gameData = gameData;
     this.program.gotoScene();
   }
 
   _createSpaceGame(gameData) {
+    console.log(`ccc0 ${JSON.stringify(gameData)}`);
+
+    if (!gameData || Object.keys(gameData).length == 0) {
+      gameData = this._createDefaultGame();
+    }
+
+    gameData = this._normalizeGameData(gameData);
+
+    console.log(`ccc1 ${JSON.stringify(gameData)}`);
     this.game = {
-      hello: 'this is a space game',
-      setupData: gameData,
+      data: gameData,
     };
   }
 
-  _save() {
+  _createDefaultGame() {
     let data = {
-      here: 'is some data to save for this space game',
-      a: 'asdfasdfasdfasdfasdfasdfasfasdfasdfasdfasdf',
-      b: 'asdfasdfasdfasdfasdfasdfasfasdfasdfasdfasdf',
-      c: 'asdfasdfasdfasdfasdfasdfasfasdfasdfasdfasdf',
-      d: 'asdfasdfasdfasdfasdfasdfasfasdfasdfasdfasdf',
-      e: 'asdfasdfasdfasdfasdfasdfasfasdfasdfasdfasdf',
-      f: 'asdfasdfasdfasdfasdfasdfasfasdfasdfasdfasdf',
-      setup: this.game.setupData,
+      buildings: [
+        { type: 'hq', level: 1 },
+      ],
     };
+    return data;
+  }
+
+  _normalizeGameData(data) {
+    data = { ... data };
+    return data;
+  }
+
+  _save() {
+    let data = { ... this.game.data ?? {}};
     this.program.persist.data ||= {};
     this.program.persist.data.current = data;
     this.program.save();
