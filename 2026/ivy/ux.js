@@ -430,7 +430,7 @@ export default class Ux {
     let div = Ux.div(params);
     Ux.text1({
       parent: div,
-      text: 'Screen2',
+      text: 'Space game',
     });
 
     if (params.buttons) {
@@ -455,7 +455,7 @@ export default class Ux {
 
     div.redraw = (p = {}) => {
       textB.redraw({
-        text: `count:${p.count || 0} frame:${p.frame || 0} dt:${(p.dt || 0).toFixed(3)}`,
+        text: `count:${p.count || 0} now:${p.now || 0} frame:${p.frame || 0} dt:${(p.dt || 0).toFixed(3)}`,
       });
     };
 

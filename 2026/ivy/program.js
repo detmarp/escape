@@ -1,4 +1,4 @@
-import Screen1 from './screen1.js';
+//import Screen1 from './screen1.js';
 import Screen2 from './screen2.js';
 import Persist from './persist.js';
 

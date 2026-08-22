@@ -1,5 +1,5 @@
 import Spaceport from './spaceport.js';
-import rules from './spacerules.js';
+import rules from '../spacerules.js';
 
 export default class Space {
   constructor(saveData, now, params = {}) {
