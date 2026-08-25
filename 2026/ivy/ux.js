@@ -155,6 +155,23 @@ export default class Ux {
     return div;
   }
 
+  static building3(params = {}) {
+    let div = Ux.box1(params);
+
+    // make div have conservative size-to-fit
+    div.style.display = 'inline-block';
+    div.style.width = 'auto';
+    div.style.height = 'auto';
+    div.style.flex = '0 0 auto';
+
+    div.redraw = (params = {}) => {
+      div.textContent = `${JSON.stringify(params)}`;
+    }
+    let p = { ...params, parent: undefined };
+    div.redraw(p);
+    return div;
+  }
+
   static createBuildingsPanel(params = {}) {
     const div = document.createElement('div');
     Object.assign(div.style, {
@@ -361,16 +378,17 @@ export default class Ux {
       marginBottom: '12px',
     });
 
-    const title = document.createElement('div');
-    title.textContent = 'Store';
-    title.style.fontWeight = 'bold';
-    header.appendChild(title);
-
     const closeBtn = Ux.button({ text: 'X', parent: header });
     closeBtn.onclick = () => {
       expandedDiv.style.display = 'none';
       collapsedDiv.style.display = 'flex';
     };
+
+    const title = document.createElement('div');
+    title.textContent = 'Store';
+    title.style.fontWeight = 'bold';
+    header.appendChild(title);
+
     expandedDiv.appendChild(header);
 
     const itemsContainer = document.createElement('div');
@@ -476,6 +494,7 @@ export default class Ux {
   static city2(params = {}) {
     let div = Ux.div(params);
     div.redraw = (p = {}) => {
+      div.textContent = `${JSON.stringify(p)}`;
     }
     div.redraw(params);
     return div;

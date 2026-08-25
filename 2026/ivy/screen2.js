@@ -12,9 +12,9 @@ export default class Screen2 {
     Screen2.count++;
   }
 
-  init() {
+  async init() {
     this.now = Date.now();
-    this._createSpaceGame(this.params.gameData);
+    await this._createSpaceGame(this.params.gameData);
 
     this.parent.innerHTML = '';
     this.div = Ux.screen2({
@@ -26,8 +26,35 @@ export default class Screen2 {
       buttons: [
         { text: 'Save', onClick: () => this._save() },
         { text: 'New game', onClick: () => this._restart({}) },
-        { text: 'Load test 1', onClick: () => this._restart({ id: 11, data: {test: 1} }) },
-        { text: 'Load test 2', onClick: () => this._restart({ id: 22, data: {test: 2} }) },
+        { text: 'Load test 1', onClick: () => this._restart(
+          {
+            id: 11,
+            data: {
+              test: 1,
+              buildings: [
+                { type: 'hq', level: 0, id: 1 },
+              ],
+              pending: [
+                {
+                  'event': { 'event': 'upgrade', 'buildingId': 1, },
+                  'time': -5000
+                },
+              ],
+            },
+          })
+        },
+        { text: 'Load test 2', onClick: () => this._restart(
+          {
+            id: 22,
+            data: {
+              test: 2,
+              buildings: [
+                { type: 'hq', level: 1 },
+                { type: 'launchpad', level: 2 },
+              ],
+            },
+          })
+        },
         { text: 'Restart', onClick: () => this._restart(this.game.data) },
         { text: 'Delete and restart', onClick: () => {
           this.program._deleteSaved();
@@ -91,7 +118,9 @@ export default class Screen2 {
     }
 
     if (this.game.dirty) {
+      this._rebuildBoardView();
       this._save();
+      this.game.dirty = false;
     }
   }
 
@@ -118,21 +147,44 @@ export default class Screen2 {
     };
     this.header.redraw(params);
     this._updatePendingArea();
+    this._updateBanner();
+  }
+
+  _updateBanner() {
+    // 💰🪙💴💵💶💷 - 💎🔷🔶⭐🌟✨⚡- << library of emojis to play with
+    const c = this.game.data.currency;
+    this.banner.textContent = `🪙${c.gold} 💎${c.gems}`;
   }
 
   _rebuildBoardView() {
     this.boardView.innerHTML = '';
 
-    this.gameDataArea = Ux.text1({
+    this.banner = Ux.text1({
       parent: this.boardView,
-      text: `${JSON.stringify(this.params.gameData)}`,
     });
+    this._updateBanner();
+
+    this.sky = Ux.box1({ parent: this.boardView });
+    this.sky.style.minHeight = '6em';
+    this.sky.style.background = 'linear-gradient(to bottom, #000030 0%, #000030 60%, #000050 70%, #4a90d9 80%, #87CEEB 100%)';
 
     this.city = Ux.box1({parent: this.boardView});
+    this.city.style.minHeight = '8em';
     this.city.style.background = 'linear-gradient(to bottom, hsl(120, 60%, 50%), hsl(120, 30%, 50%))';
 
+    if (this.game.data.buildings) {
+      for (let building of this.game.data.buildings) {
+        const buildingDiv = Ux.building3({
+          ... building,
+          parent: this.city,
+        });
+      }
+    }
+
+    const storeRow = Ux.div({ parent: this.city });
+    storeRow.style.width = '100%';
     Ux.store({
-      parent: this.city,
+      parent: storeRow,
       items: [
         {
           name: 'Build Launchpad',
@@ -163,11 +215,11 @@ export default class Screen2 {
     this.program.gotoScene();
   }
 
-  _createSpaceGame(gameData) {
+  async _createSpaceGame(gameData) {
     console.log(`ccc0 ${JSON.stringify(gameData)}`);
 
     if (!gameData || Object.keys(gameData).length == 0) {
-      gameData = this._createDefaultGame();
+      gameData = await this._createDefaultGame();
     }
 
     gameData = this._normalizeGameData(gameData);
@@ -178,12 +230,15 @@ export default class Screen2 {
     this.game.start(this.now);
   }
 
-  _createDefaultGame() {
-    let data = {
-      buildings: [
-        { type: 'hq', level: 1 },
-      ],
-    };
+  async _createDefaultGame() {
+    let data = await this.program.loadObject('./data/city0.js');
+    if (!data) {
+      data = {
+        buildings: [
+          { type: 'hq', level: 1 },
+        ],
+      };
+    }
     return data;
   }
 
@@ -196,15 +251,17 @@ export default class Screen2 {
     let data = { ... this.game.data ?? {}};
     this.game.dirty = false;
     this.program.persist.data ||= {};
-    this.program.persist.data.current = {
+    let saveGame = {
       id: this.game._id,
       data,
     };
+    this.program.persist.data.current = saveGame;
     this.program.save();
+    console.log(`screen2._save\n${JSON.stringify(saveGame, null, 2)}`);
     this._updateSaveArea();
   }
 
-    _timeString(ms) {
+  _timeString(ms) {
     let suffix = '';
     if (ms < 0) {
       suffix = ' ago';
@@ -224,5 +281,4 @@ export default class Screen2 {
       return `${seconds}s${suffix}`;
     }
   }
-
 }

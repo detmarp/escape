@@ -12,13 +12,13 @@ export default class Program {
     this.screen = null;
   }
 
-  run() {
+  async run() {
     document.title = 'ivy';
     this.gameData = this.persist.data?.current || {};
-    this.gotoScene();
+    await this.gotoScene();
   }
 
-  gotoScene() {
+  async gotoScene() {
     if (this.screen) {
       this.screen.term();
     }
@@ -27,7 +27,7 @@ export default class Program {
       gameData: this.gameData,
     };
     this.screen = new Screen2(this.screenRoot, this, params);
-    this.screen.init();
+    await this.screen.init();
   }
 
   save() {
@@ -38,5 +38,10 @@ export default class Program {
 
   _deleteSaved() {
     this.persist.clear();
+  }
+
+  async loadObject(filename) {
+    const mod = await import(filename);
+    return JSON.parse(JSON.stringify(mod.default));
   }
 }

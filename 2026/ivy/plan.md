@@ -1,40 +1,62 @@
-# Space Race Game - Minimal Plan
+# Space Race Game - MVP Plan
 
 ## Core Concept
-Time-based solo resource game. Build structures, collect resources, watch timers count down.
+Time-based solo resource game. Build a space program from 1947 onward.
+Real-time timers for buildings. Newspaper date advances through achievements.
 
-## Mechanics
-- **Resources**: $M (money)
-- **Buildings**:
-  - Factory (energy production)
-  - Assembly building (metal production)
-  - Launch pad (spacecraft production)
-  - Astronaut school (train astronauts)
-  - Astronaut corps (astronaut management)
-  - Laboratory (research/upgrades)
-- **Actions**: Build, Upgrade, Collect
-- **Time**: Real-time timers. Buildings take time to complete.
+## Architecture (implemented)
+- **Command** → UI emits (e.g. button click)
+- **Event** → queued in `pending[]` with a fire time
+- **Action** → yielded from `*update()`, mutates state, reported to UI
+- `SpaceGame` owns the generator loop, `SpaceCity`/`SpaceUtil` are stubs
 
-## UI Layout
-- Header: Resource display (Energy / Metal / Crystals)
-- Main: Building list with buttons
-- Each building shows: level, production rate, time remaining
+## Resources (next)
+- **Gold** ($) — earned from buildings, spent on construction
+- **Gems** (💠) — premium currency, speedups, IAP-simulated in MVP
 
-## Game Loop
-- `update(unixTimestamp)`: Steps forward all processes
-- Iterates through each process, checking if `dueTime <= currentTime`
-- For each crossed threshold, generate event (e.g., building complete, production tick)
-- Continue until all remaining processes have `dueTime > currentTime`
-- Process: `{ id, type, dueTime, relatedBuildingId, ... }`
+## Newspaper Date
+- Starts: **January 1947**
+- Base tick: 1 game month per real hour (slow drift)
+- Achievement jumps: milestones add months/years
+  - First rocket launch: +3 months
+  - First satellite: +1 year
+  - First manned flight: +2 years
+  - Major failure: +6 months
+- Newspaper date gates tech tree (blueprints have `minYear`)
+- No rivals in MVP
 
-## Data Structure
-- State: `{ money, buildings, processes, history, lastUpdate }`
-- Building: `{ id, name, level, productionRate, buildTime, completedAt }`
-- Process: `{ id, type, dueTime, buildingId }` (type: 'build', 'produce', etc.)
-- History: `{ launches, missionsCompleted, disasters, retiredAstronauts, inMemoriamAstronauts }`
+## Headlines (stretch)
+- Triggered by achievements and newspaper date milestones
+- Displayed in old-timey newspaper font on screen
+- Examples: "Sputnik Orbits Earth!", "Rocket Explodes on Pad"
+
+## Buildings
+- HQ — passive gold production
+- Hangar — rocket storage
+- Launch Pad — launch missions
+- Bank — gold storage
+- Laboratory — research
+
+## Missions (MVP target: 3)
+1. Suborbital hop (early, cheap)
+2. Satellite launch (the big milestone)
+3. Manned orbital (stretch)
+
+## Data Files
+- `data/city0.js` — default starting city
+- `spacerules.js` — blueprints, costs, production rates
+- More data files as test fixtures
+
+## UI
+- `Ux` class — div builders, buttons, text panels
+- `Screen2` — main game screen with debug buttons
+- Boreal for scrollable containers
+- `Persist` — localStorage save/load
 
 ## Next Steps
-1. Implement Space class with init/update/save/load
-2. Build UI with Boreal
-3. Add real-time update loop via RAF
-4. Persist to localStorage
+1. Add gold + gems resources
+2. Wire blueprints from spacerules into SpaceGame
+3. Implement newspaper date with base tick + achievement jumps
+4. Building production/collection ticks
+5. Store generated from blueprints dynamically
+6. Headlines display (stretch)
