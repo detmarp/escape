@@ -1,6 +1,6 @@
 import SpaceCity from './spacecity.js';
 import SpaceUtil from './spaceutil.js';
-import rules from './data/rules0.js';
+import rules from '../data/rules0.js';
 
 export default class SpaceGame {
   constructor() {

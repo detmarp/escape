@@ -11,6 +11,7 @@
   - [2026/hydra](2026/hydra/) - 2d engine
   - [2026/ivy](2026/ivy/)
   - [2026/carcassonne](2026/carcassonne)
+  - [2026/kai](2026/kai/)
 - 2024
   - [Arwen](arwen/)
   - [Bryn](bryn/)

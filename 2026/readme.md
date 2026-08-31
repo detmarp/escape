@@ -17,6 +17,7 @@
 - [ivy](ivy/)
 - [carcassonne](carcassonne/)
 - [jade](jade/)
+- [kai](kai/)
 
 ## name list
 

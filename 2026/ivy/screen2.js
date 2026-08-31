@@ -148,6 +148,7 @@ export default class Screen2 {
     this.header.redraw(params);
     this._updatePendingArea();
     this._updateBanner();
+    this._createOrUpdateBuildings(false);
   }
 
   _updateBanner() {
@@ -172,14 +173,7 @@ export default class Screen2 {
     this.city.style.minHeight = '8em';
     this.city.style.background = 'linear-gradient(to bottom, hsl(120, 60%, 50%), hsl(120, 30%, 50%))';
 
-    if (this.game.data.buildings) {
-      for (let building of this.game.data.buildings) {
-        const buildingDiv = Ux.building3({
-          ... building,
-          parent: this.city,
-        });
-      }
-    }
+    this._createOrUpdateBuildings(true);
 
     const storeRow = Ux.div({ parent: this.city });
     storeRow.style.width = '100%';
@@ -261,6 +255,19 @@ export default class Screen2 {
     this._updateSaveArea();
   }
 
+  _currencyString(cost) {
+    // first char; cost.currency gold:🪙, gems:💎, else '$'
+    // make a lttle table for above
+    // value, .amount else '0'
+    let symbol = {
+      gold: '🪙',
+      gems: '💎',
+      default: '$',
+    };
+    let value = cost?.amount ?? 0;
+    return `${symbol[cost?.currency] ?? symbol.default}${value}`;
+  }
+
   _timeString(ms) {
     let suffix = '';
     if (ms < 0) {
@@ -279,6 +286,83 @@ export default class Screen2 {
       return `${minutes}m${seconds > 0 ? seconds + 's' : ''}${suffix}`;
     } else {
       return `${seconds}s${suffix}`;
+    }
+  }
+
+  _createOrUpdateBuildings(create) {
+    if (!this.game.data.buildings) {
+      return;
+    }
+    if (create) {
+      this.city._divs = {};
+    }
+
+    for (let building of this.game.data.buildings) {
+      let summary = this.game.getBuildingSummary(building.id);
+      if (!summary) {
+        continue;
+      }
+
+      let buildingDiv;
+      let canSpeedup = summary.upgradeTime && summary.speedupCost;
+
+      if (create) {
+        // Initially create all the elements in a building
+        let controls = {
+          text: {},
+        }
+
+        if (canSpeedup) {
+          controls.speedup = {
+            text: {},
+            onclick: () => {
+              console.log(`Speed up clicked for building ${building.id}`);
+            },
+          };
+        }
+
+        controls.footer = {};
+
+        buildingDiv = Ux.building3({
+          ... building,
+          parent: this.city,
+          controls: controls,
+        });
+        this.city._divs[building.id] = buildingDiv;
+      }
+      else {
+        buildingDiv = this.city._divs[building.id];
+      }
+
+      if (buildingDiv) {
+        // Optionally update certain building controls
+        let text = '';
+        let name = `${summary.name ?? '?'} [${summary.level ?? '?'}]`;
+        text += name;
+        if (summary.upgradeTime) {
+          text += `\n${this._timeString(summary.upgradeTime)}`;
+        }
+        let controls = {
+          text: {
+            text: `${text}\n`,
+          },
+          footer: {
+            text: `${JSON.stringify(summary)}`,
+          },
+          speedup: {},
+        };
+
+        controls.speedup.disabled = !canSpeedup;
+        if (canSpeedup) {
+          controls.speedup.text = `Speed up ${this._currencyString(summary.speedupCost)}`;
+        }
+
+        buildingDiv.redraw({
+          controls: {
+            ...controls,
+          },
+        });
+      }
     }
   }
 }

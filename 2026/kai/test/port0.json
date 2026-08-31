@@ -1,0 +1,54 @@
+{
+  "time": 1723032000000,
+  "currency": [
+    { "type": "gold", "amount": 1000, "max": 10000 },
+    { "type": "gems", "amount": 50, "max": 100 }
+  ],
+  "building":[
+    {
+      "type": "hq",
+      "level": 3
+    },
+    {
+      "type": "launchpad",
+      "upgradeEnd": -120,
+      "level": 3
+    },
+    {
+      "type": "laboratory",
+      "level": 2
+    },
+    {
+      "type": "assembly",
+      "upgradeEnd": -240,
+      "level": 2
+    }
+  ],
+  "pending": [
+    { "type": "launchpad", "action": "upgrade", "endTime": -120 },
+    { "type": "assembly", "action": "upgrade", "endTime": -240 }
+  ],
+  "tech": [
+    { "type": "singlestage", "certified": false },
+    { "type": "alox", "certified": false },
+    { "type": "multistage", "certified": false, "placeholder": true },
+    { "type": "klox", "certified": false, "placeholder": true },
+    { "type": "payload", "certified": false, "placeholder": true },
+    { "type": "lifecapsule", "certified": false, "placeholder": true },
+    { "type": "sputnik", "certified": false, "placeholder": true },
+    { "type": "reentry", "certified": false, "placeholder": true },
+    { "type": "telemetry", "certified": false, "placeholder": true },
+    { "type": "avionics", "certified": false, "placeholder": true }
+  ],
+  "craft": [
+    { "type": "rocket2", "purchased": true, "location": "assembly", "construction": true },
+    { "type": "stage", "location": "orbit" },
+    { "type": "sputnik", "location": "orbit" }
+  ],
+  "mission": [
+    { "type": "karman", "status": "complete" },
+    { "type": "orbit", "status": "selected" }
+  ],
+
+  "end": true
+}
