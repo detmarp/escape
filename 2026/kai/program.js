@@ -11,13 +11,13 @@ export default class Program {
     this.screen = null;
   }
 
-  async run() {
+  run() {
     document.title = 'kai';
     this.gameData = this.persist.data?.current || {};
-    await this.gotoScene();
+    this.gotoScene();
   }
 
-  async gotoScene() {
+  gotoScene() {
     if (this.screen) {
       this.screen.term();
     }
@@ -26,7 +26,7 @@ export default class Program {
       gameData: this.gameData,
     };
     this.screen = new Screen2(this.screenRoot, this, params);
-    await this.screen.init();
+    this.screen.init();
   }
 
   save() {

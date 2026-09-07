@@ -10,6 +10,12 @@ export default class Ux {
     div.params = {...params};
     let parent = params.parent || document.body;
     parent.appendChild(div);
+    if (params.text) {
+      div.textContent = params.text;
+    }
+    if (params.display) {
+      div.style.display = params.display;
+    }
     return div;
   }
 
