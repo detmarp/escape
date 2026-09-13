@@ -12,6 +12,8 @@ export default class Screen2 {
       playerCount: 3,
     };
     this.select = {
+      playerIndex: null,
+      suitName: null,
       a: 0,
       b: 0,
       c: 0,
@@ -135,6 +137,11 @@ export default class Screen2 {
         }
         dirty = true;
         console.log(`rrr ${JSON.stringify(result.value)}`)
+
+        if (result.value.verb === 'turn') {
+          // start new turn
+          console.log(`sss Starting new turn`);
+        }
       }
     }
     if (dirty) {
@@ -148,105 +155,6 @@ export default class Screen2 {
 
   _buildTable() {
     this.table.innerHTML = '';
-    Ux.button({
-      parent: this.table,
-      text: 'Shuffle',
-      onclick: () => {
-        this.letters.enqueueCommand({
-          verb: 'shuffle',
-        });
-      },
-    });
-    Ux.button({
-      parent: this.table,
-      text: 'A',
-      onclick: () => {
-        this.select.a = ((this.select.a ?? 0) + 1) % this.setup.playerCount;
-        this._buildTable();
-      },
-    });
-    Ux.div({
-      parent: this.table,
-      text: `A=${this.select.a}`,
-      display: 'inline-block',
-    });
-    Ux.button({
-      parent: this.table,
-      text: 'B',
-      onclick: () => {
-        this.select.b = ((this.select.b ?? 0) + 1) % this.setup.playerCount;
-        this._buildTable();
-      },
-    });
-    Ux.div({
-      parent: this.table,
-      text: `B=${this.select.b}`,
-      display: 'inline-block',
-    }).style.marginRight = '8px';
-    Ux.button({
-      parent: this.table,
-      text: 'C',
-      onclick: () => {
-        this.select.c = this.select.c ? 0 : 1;
-        this._buildTable();
-      },
-    });
-    Ux.div({
-      parent: this.table,
-      text: `C=${this.select.c}`,
-      display: 'inline-block',
-    });
-    Ux.button({
-      parent: this.table,
-      text: 'Deal',
-      onclick: () => {
-        this.letters.enqueueCommand({
-          verb: 'deal',
-          a: this.select.a,
-        });
-      },
-    });
-    Ux.button({
-      parent: this.table,
-      text: 'Pickup',
-      onclick: () => {
-        this.letters.enqueueCommand({
-          verb: 'pickup',
-        });
-      },
-    });
-    Ux.button({
-      parent: this.table,
-      text: 'Play',
-      onclick: () => {
-        this.letters.enqueueCommand({
-          verb: 'play',
-          a: this.select.a,
-          c: this.select.c,
-        });
-      },
-    });
-    Ux.button({
-      parent: this.table,
-      text: 'Discard',
-      onclick: () => {
-        this.letters.enqueueCommand({
-          verb: 'discard',
-          a: this.select.a,
-          c: this.select.c,
-        });
-      },
-    });
-    Ux.button({
-      parent: this.table,
-      text: 'Move',
-      onclick: () => {
-        this.letters.enqueueCommand({
-          verb: 'move',
-          a: this.select.a,
-        });
-      },
-    });
 
     let t2 = `Dealer`;
     t2 += `\nDeck: ${this._infoGroup('deck')}`;
@@ -311,15 +219,24 @@ export default class Screen2 {
       parent: parent,
       text: `Player ${p}`,
     });
+
     if (choose) {
       let hand = this._group('player', p);
+
+      let selections;
+
+      if (this.selectedHandCardIndex != null) {
+        let card = hand.cards[this.selectedHandCardIndex];
+        selections = this.letters.findPlayerSelections(p, card.source.suit);
+      }
+
       if (hand?.cards.length < 2) {
         // Draw
         Ux.button({
           parent: div,
           text: `Draw`,
           onclick: () => {
-            this.selected = null;
+            this.selectedHandCardIndex = null;
             this.letters.enqueueCommand({
               verb: 'draw',
               a: p,
@@ -331,34 +248,78 @@ export default class Screen2 {
         // select one of the cards
         for (let i = 0; i < hand.cards.length; i++) {
           let card = hand.cards[i];
-          let text = (this.selected == i) ?
+          let text = (this.selectedHandCardIndex == i) ?
             `<Selected ${card.name}>` :
             `Select ${card.name}`;
           Ux.button({
             parent: div,
             text: text,
             onclick: () => {
-              this.selected = i;
+              this.selectedHandCardIndex = i;
               this._buildTable();
             },
           });
         }
-        if (this.selected != null) {
+        if (this._readyToPlayCard(p, this.selectedHandCardIndex, this.select)) {
           Ux.button({
             parent: div,
-            text: `Play ${hand.cards[this.selected].name} `,
+            text: `Play ${hand.cards[this.selectedHandCardIndex].name} `,
             onclick: () => {
-              this.letters.enqueueCommand({
+              let command = {
+                player: p,
+                cardIndex: this.selectedHandCardIndex,
+                suit: hand.cards[this.selectedHandCardIndex].source.suit,
                 verb: 'play',
-                a: p,
-                c: this.selected,
-              });
-              this.selected = null;
+              };
+              if (this.select.playerIndex != null) {
+                command.toPlayer = this.select.playerIndex;
+              }
+              if (this.select.suitName != null) {
+                command.guessSuit = this.select.suitName;
+              }
+              this.letters.enqueueCommand(command);
+              this.selectedHandCardIndex = null;
             },
           });
         }
       }
+
+      if (selections) {
+        if (selections.pickPlayer) {
+          for (let i of selections.pickPlayer) {
+            let label = (this.select.playerIndex == i) ?
+              `<Player ${i}>` :
+              `Player ${i}`;
+
+            Ux.button({
+              parent: div,
+              text: label,
+              onclick: () => {
+                this.select.playerIndex = i;
+                this._buildTable();
+              },
+            });
+          }
+        }
+        if (selections.pickCard) {
+          for (let suit of selections.pickCard) {
+            let label = (this.select.suitName == suit) ?
+              `<${suit}>` :
+              `${suit}`;
+
+            Ux.button({
+              parent: div,
+              text: label,
+              onclick: () => {
+                this.select.suitName = suit;
+                this._buildTable();
+              },
+            });
+          }
+        }
+      }
     }
+
     let text = ``;
     text += `Hand: ${this._infoGroup('player', p)}`;
     text += `\nShow: ${this._infoGroup('display', p)}`;
@@ -367,6 +328,31 @@ export default class Screen2 {
       parent: div,
       text: text,
     });
+  }
+
+  _readyToPlayCard(playerIndex, cardIndex, selectedValues) {
+    if (cardIndex == null) {
+      return false;
+    }
+
+    let hand = this._group('player', playerIndex);
+    let card = hand.cards[cardIndex];
+    let suit = card?.source?.suit;
+    let selections = this.letters.findPlayerSelections(playerIndex, suit);
+
+    if (selections.pickPlayer) {
+      if (!selections.pickPlayer?.includes(selectedValues.playerIndex)) {
+        return false;
+      }
+    }
+
+    if (selections.pickCard) {
+      if (!selections.pickCard?.includes(selectedValues.suitName)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   _updateScreen() {
@@ -453,11 +439,11 @@ export default class Screen2 {
     let turn = this.letters.data.round?.turn;
     if (turn != null) {
       let info = `Turn: ${turn}`;
-      if (this.selected != null) {
+      if (this.selectedHandCardIndex != null) {
         let hand = this._group('player', turn);
-        let card = hand.cards[this.selected];
+        let card = hand.cards[this.selectedHandCardIndex];
         let suit = card?.source?.suit;
-        info += `\n  Selected: ${this.selected} ${card?.name} (${suit})`;
+        info += `\n  Selected: ${this.selectedHandCardIndex} ${card?.name} (${suit})`;
         info += `\n  ${JSON.stringify(this.letters.findPlayerSelections(turn, card?.source?.suit))}`;
       }
       return info;

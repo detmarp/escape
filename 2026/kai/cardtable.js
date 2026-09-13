@@ -26,12 +26,21 @@ export default class CardTable {
   }
 
   addGroup(name) {
+    let nameString = this.getNameString(name);
     let group = {
-      name,
+      name: nameString,
       cards: [],
     };
-    this.groups[name] = group;
+    this.groups[nameString] = group;
     return group;
+  }
+
+  getNameString(nameCode) {
+    // nameCode can be a string, or an array of stringables to combine.
+    if (Array.isArray(nameCode)) {
+      return nameCode.map(String).join('');
+    }
+    return String(nameCode);
   }
 
   _createTable() {

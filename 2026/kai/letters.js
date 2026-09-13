@@ -169,10 +169,11 @@ export default class Letters {
       selections.pickPlayer = otherPlayers;
     }
     if (rules.needAny && anyPlayers.length > 0) {
-      selections.pickAny = anyPlayers;
+      // includes self
+      selections.pickPlayer = anyPlayers;
     }
     if (rules.needCard) {
-      selections.nameCard = cards;
+      selections.pickCard = cards;
     }
 
     return selections;
@@ -194,6 +195,11 @@ export default class Letters {
         }
       }
     }
+  }
+
+  hasPlayerCard(playerIndex, cardSuit) {
+    let hand = this.cardTable.groups[`player${playerIndex}`]?.cards;
+    return hand?.some(card => card.source.suit === cardSuit);
   }
 
   *_doCommand(command) {
@@ -266,9 +272,9 @@ export default class Letters {
 
   *_command_play(command) {
     // This is not the full game rules, but let's move any display card in to discard, for this player, then put this card faceup as display. then bump up the 'turn' to the next player; yield do_action()s to do this
-    let playerGroup = `player${command.a}`;
-    let displayGroup = `display${command.a}`;
-    let discardGroup = `discard${command.a}`;
+    let playerGroup = `player${command.player}`;
+    let displayGroup = `display${command.player}`;
+    let discardGroup = `discard${command.player}`;
 
     // Move any display cards to discard
     let displayCards = this.cardTable.groups[displayGroup]?.cards ?? [];
@@ -278,17 +284,103 @@ export default class Letters {
       yield `moved ${card.name} from ${displayGroup} to ${discardGroup}`;
     }
 
+    console.log(`ppp _command_play: ${JSON.stringify(command)}`);
+
     // Move the played card from player's hand to display
     let handCards = this.cardTable.groups[playerGroup]?.cards ?? [];
-    if (command.c != null && command.c < handCards.length) {
-      let card = handCards[command.c];
-      this.cardTable.move(card, displayGroup, CardTable.FACE.UP);
-      yield `moved ${card.name} from ${playerGroup} to ${displayGroup}`;
+    let card = handCards[command.cardIndex];
+    this.cardTable.move(card, displayGroup, CardTable.FACE.UP);
+    yield `moved ${card.name} from ${playerGroup} to ${displayGroup}`;
+
+    console.log(`ppp ${JSON.stringify(command)}`);
+
+    switch (command.suit) {
+      case 'guard':
+        // Guess other player's card, if correct they're out
+        if (this.hasPlayerCard(command.toPlayer, command.guessSuit)) {
+          // Chosen player has card, reveal and go out
+          yield *this._doAction({
+            verb: 'move',
+            from: `player${command.toPlayer}`,
+            to: `display${command.toPlayer}`,
+            face: CardTable.FACE.UP,
+          });
+          yield *this._doAction({
+            verb: 'out',
+            player: command.toPlayer,
+          });
+        }
+        else {
+          // Bad guess
+          yield *this._doAction({
+            verb: 'no',
+            player: command.toPlayer,
+            suit: command.guessSuit,
+          });
+        }
+        break;
+      case 'priest':
+        // peek at other player's card
+        yield *this._doAction({
+          verb: 'reveal',
+          from: command.toPlayer,
+          to: command.player,
+        });
+        break;
+      case 'baron':
+        // Compare hands, lower hand is out
+        let guesserCard = this.cardTable.groups[`player${command.player}`]?.cards[0];
+        let otherCard = this.cardTable.groups[`player${command.toPlayer}`]?.cards[0];
+        if (guesserCard && otherCard) {
+          let otherHigher = otherCard.value - guesserCard.value;
+          if (otherHigher == 0) {
+            // Tie, nothing
+            yield *this._doAction({
+              verb: 'tie',
+              players: [command.player, command.toPlayer],
+            });
+            break;
+          }
+          let out = otherHigher > 0 ? command.player : command.toPlayer;
+          if (otherHigher < 0) {
+            yield *this._doAction({
+              verb: 'move',
+              from: `player${out}`,
+              to: `display${out}`,
+              face: CardTable.FACE.UP,
+            });
+          }
+          yield *this._doAction({
+            verb: 'out',
+            player: out,
+          });
+        }
+        break;
+      case 'handmaid':
+        yield *this._doAction({
+          verb: 'protected',
+          player: command.player,
+        });
+        break;
+      case 'prince':
+        // Handle prince card logic here
+        break;
+      case 'king':
+        // Handle king card logic here
+        break;
+      case 'countess':
+        // Handle countess card logic here
+        break;
+      case 'princess':
+        // Handle princess card logic here
+        break;
     }
 
     // Advance the turn to the next player
-    this.data.round.turn = (this.data.round.turn + 1) % this.data.playerCount;
-    yield `advanced turn to player ${this.data.round.turn}`;
+    yield *this._doAction({
+      verb: 'turn',
+      a: (this.data.round.turn + 1) % this.data.playerCount,
+    });
   }
 
   *_doAction(action) {
