@@ -1,17 +1,3 @@
-
-class Random {
-  constructor(seed) {
-    seed ??= Date.now()
-    this.seed = Math.floor(Math.abs(seed));
-  }
-
-  next(n) {
-    this.seed = (this.seed * 9301 + 49297) % 233280;
-    return Math.floor(this.seed / 233280 * n);
-  }
-}
-
-
 export default class CardTable {
   static FACE = Object.freeze({
     UP: 'faceup',

@@ -1,5 +1,6 @@
 import Ux from './ux.js';
 import Letters from './letters.js';
+import Letters2 from './letters2.js';
 
 export default class Screen2 {
   static count = 0;
@@ -24,9 +25,16 @@ export default class Screen2 {
       'Ophelia', 'Lucian', 'Viola', 'Aurelia', 'Finnian', 'Corbin',
       'Mirabel', 'Evander', 'Saffron', 'Gideon',
     ];
+    Screen2.count++;
   }
 
   init() {
+    console.log(`iii init screen2`);
+    this._gotoState('init');
+  }
+
+  _onInit() {
+    console.log(`iii _onInit screen2 ${JSON.stringify(this.params)}`);
     this._createGame(this.params.gameData);
     this.now = performance.now();
     this.lastFrameTime = this.now;
@@ -41,39 +49,8 @@ export default class Screen2 {
       buttons: [
         { text: 'Save', onClick: () => this._save() },
         { text: 'New game', onClick: () => this._restart({}) },
-        { text: 'A', onClick: () => {
-          console.log('Button A clicked');
-        }},
-        { text: 'B', onClick: () => {
-          console.log('Button B clicked');
-        }},
         { text: 'Load test 1', onClick: () => this._restart(
           {
-            id: 11,
-            data: {
-              test: 1,
-              buildings: [
-                { type: 'hq', level: 0, id: 1 },
-              ],
-              pending: [
-                {
-                  'event': { 'event': 'upgrade', 'buildingId': 1, },
-                  'time': -5000
-                },
-              ],
-            },
-          })
-        },
-        { text: 'Load test 2', onClick: () => this._restart(
-          {
-            id: 22,
-            data: {
-              test: 2,
-              buildings: [
-                { type: 'hq', level: 1 },
-                { type: 'launchpad', level: 2 },
-              ],
-            },
           })
         },
         { text: 'Restart', onClick: () => this._restart(this.game.data) },
@@ -85,6 +62,13 @@ export default class Screen2 {
     });
 
     Ux.hr({ parent: this.div });
+
+    this.program.gameSetupData ??= {};
+    this.gameSetupBox = Ux.box1({ parent: this.div });
+    this._gameSetup();
+
+    Ux.hr({ parent: this.div });
+
     this.table = Ux.box1({
       parent: this.div,
     });
@@ -108,6 +92,23 @@ export default class Screen2 {
       cancelAnimationFrame(this.rafId);
       this.rafId = null;
     }
+  }
+
+  _gotoState(state) {
+    console.log(`ggg0 _gotoState ${state}`);
+    switch (state) {
+      case 'init':
+        this._onInit();
+        break;
+      case 'underway':
+        break;
+      case 'gameover':
+        break;
+      default:
+        console.warn(`ggg1 _gotoState: Unknown state: ${state}`);
+        return;
+    }
+    this.state = state;
   }
 
   loop() {
@@ -136,14 +137,31 @@ export default class Screen2 {
           break
         }
         dirty = true;
-        console.log(`rrr ${JSON.stringify(result.value)}`)
+        console.log(`sss0 FROM game update: ${JSON.stringify(result.value)}`)
+
+        if (result.value.verb === 'no') {
+          this.gameMessage(`Player did not have card, ${JSON.stringify(result.value)}`);
+        }
 
         if (result.value.verb === 'turn') {
-          // start new turn
-          console.log(`sss Starting new turn`);
+          //this.gameMessage(`Starting new turn`);
         }
       }
     }
+
+    if (!this.gen2) {
+      this.gen2 = this.letters2.update();
+    }
+    this.result2 = this.gen2?.next();
+    if (this.result2.done) {
+      this.gen2 = null;
+      this.result2 = null;
+    }
+    else {
+      dirty = true;
+      console.log(`sss1 FROM letters2 update: ${JSON.stringify(this.result2.value)}`);
+    }
+
     if (dirty) {
       this._buildTable();
     }
@@ -151,6 +169,11 @@ export default class Screen2 {
 
   draw() {
     this._updateScreen();
+  }
+
+  gameMessage(text) {
+    this.currentMessage = text;
+    this.messageDiv.innerText = this.currentMessage;
   }
 
   _buildTable() {
@@ -164,35 +187,44 @@ export default class Screen2 {
       text: t2,
     });
 
-    let nextDealerAction = this.letters.findNextDealer();
-
     for (let i = 0; i < this.players.length; i++) {
-      let choose = (!nextDealerAction && !this.letters.data.gameOver && (i == this.letters.data.round.turn));
+      let choose = (!this.letters.data.gameOver && (i == this.letters.data.round.turn));
 
       this._buildPlayer(i, this.table, choose);
     }
-    Ux.text1({
+    this.messageDiv = Ux.text1({
       parent: this.table,
-      text: `Info:\n${this._debugInfo()}\n${JSON.stringify(this.letters.data)}`,
+      text: this.currentMessage,
     });
 
-    if (nextDealerAction) {
-      // There is a pending dealer action
-      // For testing / await mode, show a button
-      Ux.button({
-        parent: this.table,
-        text: `Dealer - ${nextDealerAction.verb}`,
-        onclick: () => {
-          this.letters.enqueueCommand({
-            verb: 'dealer',
-          });
-        },
-      });
-      Ux.text1({
-        parent: this.table,
-        text: `${JSON.stringify(nextDealerAction)}`,
-      });
+    // debug info for 2nd version
+    let debug2 = [
+      `l2 data: ${JSON.stringify(this.letters2.data)}`,
+      `l2 state: ${this.letters2.state}`,
+      `r2: ${JSON.stringify(this.result2)}`,
+    ];
+    // show the deck
+    let makeHand = (cards) => {
+      let list = [];
+      for (let card of cards) {
+        list.push(`[${card.name} ${card.face}]`);
+      }
+      return `[${list.join(' ')}]`;
     }
+    debug2.push(`Cards`);
+    for (const [k,v] of Object.entries(this.letters2.cardTable.groups)) {
+      debug2.push(`  ${k}: ${makeHand(v.cards)}`);
+    }
+
+    debug2.push(`qwer`);
+    debug2 = debug2.join('\n');
+
+    Ux.text1({
+      parent: this.table,
+      text: `Debug2:\n${debug2}\nInfo:\n${this._debugInfo()}\n${JSON.stringify(this.letters.data)}`,
+    });
+
+    this._gameSetup();
   }
 
   _group(name, i) {
@@ -215,11 +247,33 @@ export default class Screen2 {
   }
 
   _buildPlayer(p, parent, choose) {
+    let topText = `Player ${p}`;
+    let playerData = this.letters.data.players[p];
+    if (playerData.out) {
+      topText += ` - Out`;
+    }
     let div = Ux.box1({
       parent: parent,
-      text: `Player ${p}`,
+      text: topText,
     });
+    let bgColors = ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF'];// short table of pastel easter egg colors
+    div.style.backgroundColor = bgColors[p % bgColors.length];
 
+    if (this.letters2.canDeal() && p == this.letters2.data.firstTurn) {
+      Ux.div({
+        parent: div,
+      });
+      Ux.button({
+        parent: div,
+        text: `Deal`,
+        onclick: () => {
+          this.letters2.enqueueCommand({
+            verb: 'deal',
+            a: p,
+          });
+        },
+      });
+    }
     if (choose) {
       let hand = this._group('player', p);
 
@@ -230,8 +284,12 @@ export default class Screen2 {
         selections = this.letters.findPlayerSelections(p, card.source.suit);
       }
 
+      console.log(`ggg 0`);
       if (hand?.cards.length < 2) {
+      console.log(`ggg 1`);
+        Ux.div({parent: div, text: `\n`, }); // linebreak
         // Draw
+        console.log(`ggg 2`);
         Ux.button({
           parent: div,
           text: `Draw`,
@@ -245,23 +303,25 @@ export default class Screen2 {
         });
       }
       else {
+        Ux.div({parent: div, text: `\n`, }); // linebreak
         // select one of the cards
         for (let i = 0; i < hand.cards.length; i++) {
           let card = hand.cards[i];
-          let text = (this.selectedHandCardIndex == i) ?
-            `<Selected ${card.name}>` :
-            `Select ${card.name}`;
-          Ux.button({
-            parent: div,
-            text: text,
-            onclick: () => {
+          let text = `${card.name}`;
+          let selected = this.selectedHandCardIndex == i;
+          this._turnSelectionButton(
+            div,
+            text,
+            () => {
               this.selectedHandCardIndex = i;
               this._buildTable();
             },
-          });
+            selected
+          );
         }
         if (this._readyToPlayCard(p, this.selectedHandCardIndex, this.select)) {
-          Ux.button({
+          Ux.div({parent: div, text: `\n`, }); // linebreak
+          let button = Ux.button({
             parent: div,
             text: `Play ${hand.cards[this.selectedHandCardIndex].name} `,
             onclick: () => {
@@ -281,53 +341,69 @@ export default class Screen2 {
               this.selectedHandCardIndex = null;
             },
           });
+          button.style.backgroundColor = 'darkgreen';
         }
       }
 
       if (selections) {
         if (selections.pickPlayer) {
+          Ux.div({parent: div, text: `\n`, }); // linebreak
           for (let i of selections.pickPlayer) {
-            let label = (this.select.playerIndex == i) ?
-              `<Player ${i}>` :
-              `Player ${i}`;
-
-            Ux.button({
-              parent: div,
-              text: label,
-              onclick: () => {
+            this._turnSelectionButton(
+              div,
+              `Player ${i}`,
+              () => {
                 this.select.playerIndex = i;
                 this._buildTable();
               },
-            });
+              this.select.playerIndex == i
+            );
           }
         }
         if (selections.pickCard) {
+          Ux.div({parent: div, text: `\n`, }); // linebreak
           for (let suit of selections.pickCard) {
-            let label = (this.select.suitName == suit) ?
-              `<${suit}>` :
-              `${suit}`;
-
-            Ux.button({
-              parent: div,
-              text: label,
-              onclick: () => {
+            this._turnSelectionButton(
+              div,
+              `${suit}`,
+              () => {
                 this.select.suitName = suit;
                 this._buildTable();
               },
-            });
+              this.select.suitName == suit
+            );
           }
         }
       }
     }
 
     let text = ``;
-    text += `Hand: ${this._infoGroup('player', p)}`;
+    text += `Hand: ${this._infoGroup('player', p)} ${JSON.stringify(playerData.value)} ${JSON.stringify(playerData.Discardvalue)}`;
     text += `\nShow: ${this._infoGroup('display', p)}`;
     text += `\nDiscard: ${this._infoGroup('discard', p)}`;
     let x = Ux.text1({
       parent: div,
       text: text,
     });
+    x.style.backgroundColor = '#ffdd0022';
+  }
+
+  _turnSelectionButton(parent, text, callback, selected) {
+    if (selected) {
+      text = `[${text}]`;
+    }
+
+    let button = Ux.button({
+      parent: parent,
+      text: text,
+      onclick: () => {
+        callback();
+      },
+    });
+
+    if (selected) {
+      button.style.backgroundColor = 'darkcyan';
+    }
   }
 
   _readyToPlayCard(playerIndex, cardIndex, selectedValues) {
@@ -381,11 +457,13 @@ export default class Screen2 {
     let data = gameData;
     this.game = Letters.createFromSave(data);
     this.game.start();
+
+    this.letters2 = Letters2.createFromSave(data);
   }
 
   _createDefaultGame() {
     let params = {
-      playerCount: 3,
+      playerCount: this.program.gameSetupData?.playerCount,
     };
 
     this.letters = Letters.createDefault(params);
@@ -423,6 +501,7 @@ export default class Screen2 {
     let saveGame = {
       id: this.game?._id,
       data,
+      data2: this.letters2?.getSave(),
     };
     this.program.persist.data.current = saveGame;
     this.program.save();
@@ -432,9 +511,6 @@ export default class Screen2 {
   _debugInfo() {
     if (this.letters.isGameOver()) {
       return `Game Over`;
-    }
-    if (this.letters.findNextDealer()) {
-      return "Dealer action pending";
     }
     let turn = this.letters.data.round?.turn;
     if (turn != null) {
@@ -452,6 +528,49 @@ export default class Screen2 {
 
   _updateSaveArea() {
     this.saveArea.textContent = `${JSON.stringify(this.program.persist.data)}`;
+  }
+
+  _gameSetup() {
+    let box = this.gameSetupBox;
+    box.innerHTML = '';
+    Ux.div({ parent: box, text: "Game Setup" });
+    let players = Ux.div({ parent: box });
+    for (let i = 2; i <= 5; i++) {
+      let p = Ux.button({
+        parent: players,
+        text: `${i} players`,
+        onclick: () => {
+          this.program.gameSetupData.playerCount = i;
+          this._gameSetup();
+        }
+      });
+      if (i === this.program.gameSetupData.playerCount) {
+        p.style.backgroundColor = 'orange';
+      }
+    }
+
+    Ux.hr({ parent: box });
+
+    let roundUnderway = this.letters.data.round?.number > 0 && !this.letters.data.gameOver;
+    if (roundUnderway) {
+      let debugEndButton = (p) => {
+        Ux.button({
+          parent: box,
+          text: `Winner: ${p}`,
+          onclick: () => {
+            this.letters.enqueueCommand({
+              verb: 'debugendround',
+              winner: p,
+            });
+          }
+        });
+      };
+      debugEndButton();
+      let tweakDiv = Ux.div({ parent: box });
+      for (let i = 0; i < this.letters.data.playerCount; i++) {
+        debugEndButton(i);
+      }
+    }
   }
 
 }

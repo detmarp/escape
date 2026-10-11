@@ -479,7 +479,7 @@ export default class Ux {
     let div = Ux.div(params);
     Ux.text1({
       parent: div,
-      text: 'Space game',
+      text: 'Love letters',
     });
 
     if (params.buttons) {

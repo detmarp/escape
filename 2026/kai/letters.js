@@ -27,11 +27,10 @@ export default class Letters {
 
   _init(params = {}, data = {}) {
     this.data = { ...data || {} };
-    this.data.playerCount = params.playerCount ?? 3;
-    this.data.players =
-      Array.from({ length: this.data.playerCount }, () => (
-        { tokens: 0 }
-      ));
+
+    params = { ...params || {} };
+    params.playerCount ??= 3;
+
     this.cardTypes = {
       guard: {
         card: { name: 'Guard', rank: 1, suit: 'guard' },
@@ -85,11 +84,27 @@ export default class Letters {
 
     this.cardTable = new CardTable(list);
     this.cardTable.addGroup('discard');
-    for (let i = 0; i < this.data.playerCount; i++) {
+    for (let i = 0; i < params.playerCount; i++) {
       this.cardTable.addGroup(`player${i}`);
       this.cardTable.addGroup(`display${i}`);
       this.cardTable.addGroup(`discard${i}`);
     }
+
+    // init the game state to prior to the first round
+    this.data.gameOver = false;
+    this.data.round = {
+      number: 0,
+      starter: 0,
+      dealt: 0,
+      shuffled: false,
+    };
+    this.data.playerCount = params.playerCount;
+    this.data.players =
+      Array.from({ length: this.data.playerCount }, () => ({
+        tokens: 0,
+        value: 0,
+        discardValue: 0,
+      }));
   }
 
   static createFromSave(data = {}) {
@@ -100,7 +115,6 @@ export default class Letters {
 
   static createDefault(params = {}) {
     let instance = new Letters(params, {});
-    //instance.data.awaitMode = true;
 
     return instance;
   }
@@ -109,50 +123,12 @@ export default class Letters {
   }
 
   enqueueCommand(command) {
-    this.command = command;
+    this.pending ??= {};
+    this.pending.command = command;
   }
 
   isGameOver() {
     return this.data.gameOver;
-  }
-
-  findNextDealer() {
-    // If dealer action is pending, then return that action
-    if (this.data.gameOver) {
-      return;
-    }
-    if (this.data.round == null) {
-      // Start the first round, or the next round
-      return {
-        verb: `round`
-      };
-    }
-    if (!this.data.round.shuffled) {
-      // Shuffle
-      return {
-        verb: `shuffle`
-      };
-    }
-    if (this.data.round.burnt < this.data.round.toBurn) {
-      // Burn the top card (or 4 for 2 player)
-      return {
-        verb: `burn`
-      };
-    }
-    if (this.data.round.dealt < this.data.playerCount) {
-      // Deal cards to players
-      return {
-        verb: `deal`,
-        a: this.data.round.dealt,
-      };
-    }
-    if (this.data.round.turn == null) {
-      // Set the first player's turn
-      return {
-        verb: `turn`,
-        a: 0,
-      };
-    }
   }
 
   findPlayerSelections(playerIndex, cardType) {
@@ -180,21 +156,13 @@ export default class Letters {
   }
 
   *update(command) {
-    command ??= this.command;
-    this.command = null;
+    command ??= this.pending?.command;
 
     if (command) {
       yield* this._doCommand(command);
     }
-    else {
-      if (!this.data.awaitMode) {
-        // normally we try the next dealer action
-        let pendingDealerAction = this.findNextDealer();
-        if (pendingDealerAction) {
-          yield* this._doAction(pendingDealerAction);
-        }
-      }
-    }
+
+    this.pending = {};
   }
 
   hasPlayerCard(playerIndex, cardSuit) {
@@ -219,42 +187,11 @@ export default class Letters {
     }
   }
 
-  *_command_shuffle(command) {
-    let deckCards = this.cardTable.groups['deck']?.cards;
-    if (deckCards) {
-      let rng = new Random();
-      rng.shuffle(deckCards);
-    }
-    yield 'shuffled the deck';
-  }
-
-  *_command_dealer(command) {
-    let action = this.findNextDealer();
-    yield* this._doAction(action);
-  }
-
-  *_command_dealXXX(command) {
-    let playerGroup = `player${command.a}`
-    let deckCards = this.cardTable.groups['deck']?.cards
-    if (deckCards && deckCards.length > 0) {
-      let card = deckCards[0]
-      this.cardTable.move(card, playerGroup)
-      yield `dealt a card to ${playerGroup}`
-    }
-  }
-
-  *_command_pickup(command) {
-    // hard move all non-deck cards back to deck, as facedown
-    for (let groupName in this.cardTable.groups) {
-      if (groupName !== 'deck') {
-        let group = this.cardTable.groups[groupName];
-        while (group.cards.length > 0) {
-          let card = group.cards[0];
-          this.cardTable.move(card, 'deck');
-          yield `moved ${card.name} from ${groupName} to deck`;
-        }
-      }
-    }
+  *_command_debugendround(command) {
+    // debug end the round
+    this.pending ??= {};
+    this.pending.debugEndRound = command;
+    this.round.over = true;
   }
 
   *_command_draw(command) {
@@ -302,8 +239,15 @@ export default class Letters {
           yield *this._doAction({
             verb: 'move',
             from: `player${command.toPlayer}`,
+            fromIndex: command.cardIndex,
             to: `display${command.toPlayer}`,
             face: CardTable.FACE.UP,
+          });
+          yield *this._doAction({
+            verb: 'guessed',
+            fromPlayer: command.player,
+            toPlayer: command.toPlayer,
+            suit: command.guessSuit,
           });
           yield *this._doAction({
             verb: 'out',
@@ -314,7 +258,8 @@ export default class Letters {
           // Bad guess
           yield *this._doAction({
             verb: 'no',
-            player: command.toPlayer,
+            fromPlayer: command.player,
+            toPlayer: command.toPlayer,
             suit: command.guessSuit,
           });
         }
@@ -376,11 +321,70 @@ export default class Letters {
         break;
     }
 
-    // Advance the turn to the next player
-    yield *this._doAction({
-      verb: 'turn',
-      a: (this.data.round.turn + 1) % this.data.playerCount,
-    });
+    yield *this._endOfTurn();
+  }
+
+  *_endOfTurn() {
+    // Full end of turn logic
+    let activePlayers = this.data.players.filter(p => !p.out);
+    let dealerCards = this.cardTable.groups['deck']?.cards.length ?? 0;
+    let roundOver = (activePlayers.length <= 1 || dealerCards === 0);
+
+    if (this.pending?.debugEndRound) {
+      // debug flow to end a round early
+      roundOver = true;
+    }
+
+    if (roundOver) {
+      yield *this._endRound();
+      return;
+    }
+
+    // Round is still ongoing
+    // move on to the next turn
+    for (let i = 0; i < this.data.players.length; i++) {
+      yield *this._clearDisplay(i, true);
+    }
+    for (let j = 0; j < this.data.players.length; j++) {
+      let next = (this.data.round.turn + 1 + j) % this.data.players.length;
+      if (!this.data.players[next].out) {
+        yield* this._clearDisplay(next);
+        yield* this._doAction({
+          verb: 'turn',
+          a: next,
+        });
+        break;
+      }
+    }
+  }
+
+  *_gameStage() {
+  /*
+    0 - before any rounds begin
+    1 - init a new round, deal out the hands
+    2 +-- do a turn, player turn, draw, play, results, conclude turn
+    3 +-- if round not over, continue, GOTO 2
+    4 +-- end round, if game over GOTO 6;
+    5 - (not game over) end of round, pick up cards, GOTO 1
+    6 - game over
+  */
+  }
+
+  *_clearDisplay(player, keepProtected) {
+    let displayGroup = `display${player}`;
+    let discardGroup = `discard${player}`;
+    let displayCards = this.cardTable.groups[displayGroup]?.cards ?? [];
+    for (let card of displayCards) {
+      if (!keepProtected || card.value !== 'handmaid') {
+        this.data.players[player].protected = false;
+        yield *this._doAction({
+          verb: 'move',
+          from: displayGroup,
+          to: discardGroup,
+          face: CardTable.FACE.UP,
+        });
+      }
+    }
   }
 
   *_doAction(action) {
@@ -401,6 +405,7 @@ export default class Letters {
     // Start the next round
     this.data.roundNumber = (this.data.roundNumber ?? 0) + 1;
     this.data.round = {
+      ...this.data.round,
       number: this.data.roundNumber,
       starter: 0,
       toBurn: 1,
@@ -439,8 +444,26 @@ export default class Letters {
     }
   }
 
+  _action_move(action) {
+    let card = this.cardTable.groups[action.from]?.cards[action.fromIndex];
+    if (card) {
+      this.cardTable.move(card, action.to, action.face);
+    }
+  }
+
   _action_turn(action) {
-    // set this player as the the current player
     this.data.round.turn = action.a;
+  }
+
+  _action_guessed(action) {
+    // Player has beed guessed by the guard
+  }
+
+  _action_out(action) {
+    // Player has been knocked out of the round
+    this.data.players[action.player].out = true;
+  }
+
+  _action_no(action) {
   }
 }
