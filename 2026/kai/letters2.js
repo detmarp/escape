@@ -2,6 +2,21 @@ import CardTable from "./cardtable2.js";
 import Rules from "./letters2rules.js";
 import MyRandom from "./myrandom.js";
 
+/*
+  WIP
+  Implements the business logic of the Love Letters card game
+  Client will call update() to get a generator of action objects
+
+  These actions are fairly granular, and let the client know about state changes as commands are processed
+
+  Actions allow the client to perform a fine-grained UX update of game changes
+
+  Client will call enqueueCommand() to queue a command for processing
+
+  There are a small limited number of commands, that let the client or player take a turn or move the game to its next state
+
+*/
+
 export default class Letters2 {
   constructor(params, data) {
     // Typically inited with params or data, but not both
@@ -30,7 +45,7 @@ export default class Letters2 {
         out: false,
       };
     });
-    this.data.firstTurn = params.firstTurn;
+    this.data.firstTurn = params.firstTurn ?? this.random.next(this.data.playerCount);
     // Set up the cards
     this.cardTable = new CardTable(this.rules.data.deck);
     this.cardTable.addGroup(`discard`);
@@ -46,7 +61,7 @@ export default class Letters2 {
   static _normalizeParams(params = {}) {
     params = { ...params || {} };
     params.playerCount ??= 3;
-    params.firstTurn ??= 0;
+    params.firstTurn ??= undefined; // leave undefined to set randomly later
     return params;
   }
 
@@ -132,6 +147,14 @@ export default class Letters2 {
 
   canDeal() {
     return this.state === 'init' || this.state === 'roundover';
+  }
+
+  canTakeTurn() {
+    return this.state === 'ready';
+  }
+
+  canDraw() {
+    return this.state === 'ready';
   }
 
   *_recallCards() {
