@@ -5,23 +5,58 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Clock</title>
   <style>
+    * { box-sizing: border-box; }
+    html {
+      scrollbar-width: none;
+    }
+    html::-webkit-scrollbar {
+      display: none;
+    }
     body {
       margin: 0;
       background: #fff;
-      display: flex;
+      font-family: sans-serif;
+      color: #222;
+      min-height: 100vh;
+      overflow-x: hidden;
+      overflow-y: scroll;
+      scrollbar-width: none;
+    }
+    body::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* menu */
+    #menu-grid {
+      display: none;
+      gap: 12px;
+      padding: 24px;
+      width: 100%;
+      justify-content: center;
+    }
+    #menu-grid.active { display: grid; }
+    .tile {
+      border: 1px solid #ccc;
+      cursor: pointer;
+      aspect-ratio: 1;
+    }
+    .tile canvas { display: block; width: 100%; height: 100%; }
+
+    /* sub screen */
+    #sub-screen {
+      display: none;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      font-family: sans-serif;
+      cursor: pointer;
     }
-    #clock {
-      font-size: 4rem;
-      color: #222;
-    }
+    #sub-screen.active { display: flex; }
+    #sub-screen canvas { display: block; }
   </style>
 </head>
 <body>
-  <div id="clock"></div>
+  <div id="menu-grid"></div>
+  <div id="sub-screen"></div>
   <script type="module" src="main.js"></script>
 </body>
 </html>

@@ -1,18 +1,84 @@
+import { Menu } from './menu.js'
+
+const SCREENS = [
+  'one',
+  'two',
+  'one',
+  'two',
+  'one',
+  'two',
+  'one',
+  'two',
+  'one',
+  'two',
+  'one',
+  'two',
+  'one',
+  'two',
+  'one',
+  'two',
+  'one',
+  'two',
+  'one',
+  'two',
+  'one',
+  'two',
+  'one',
+  'two',
+  'one',
+  'two',
+  'one',
+  'two',
+  'one',
+  'two',
+  'one',
+  'two',
+  'one',
+  'two',
+  'one',
+  'two',
+  'one',
+  'two',
+  ]
+
 export class Clock {
-  constructor(el) {
-    this.el = el
+  constructor() {
+    this.current = null
+    this.goto = this.goto.bind(this)
   }
 
-  start() {
+  run() {
+    const param = new URLSearchParams(location.search).get('clock')
+    if (param && SCREENS.includes(param)) {
+      this.goto(param)
+    } else {
+      this.goto()
+    }
+
     const tick = () => {
-      const now = new Date()
-      const hh = String(now.getHours()).padStart(2, '0')
-      const mm = String(now.getMinutes()).padStart(2, '0')
-      const ss = String(now.getSeconds()).padStart(2, '0')
-      const ff = String(Math.floor(now.getMilliseconds() / 10)).padStart(2, '0')
-      this.el.textContent = `${hh}:${mm}:${ss}.${ff}`
+      if (this.current) {
+        this.current.draw(new Date())
+      }
       requestAnimationFrame(tick)
     }
     requestAnimationFrame(tick)
+  }
+
+  async goto(name = 'menu') {
+    if (name === 'menu') {
+      this.current = new Menu(this.goto, SCREENS)
+      const target = location.pathname
+      if (location.href !== location.origin + target) {
+        history.replaceState(null, '', target)
+      }
+    } else {
+      const mod = await import(`./${name}.js`)
+      const ScreenClass = Object.values(mod)[0]
+      this.current = new ScreenClass(this.goto, SCREENS)
+      const target = `?clock=${name}`
+      if (location.search !== target) {
+        history.replaceState(null, '', target)
+      }
+    }
   }
 }
