@@ -46,6 +46,7 @@ export class Clock {
   constructor() {
     this.current = null
     this.goto = this.goto.bind(this)
+    this.tick = this.tick.bind(this)
     this.running = false
   }
 
@@ -64,17 +65,15 @@ export class Clock {
     if (!this.running) return
     if (this.resize) this.resize()
     if (this.current) this.current.draw(new Date())
-    requestAnimationFrame(() => this.tick())
+    requestAnimationFrame(this.tick)
   }
 
   async goto(name = 'menu') {
-    if (this.navigating) return
-    this.navigating = true
     this.running = false
     this.current = null
+    this.resize = null
 
     if (name === 'menu') {
-      this.resize = null
       const menu = new Menu(this.goto, SCREENS)
       await menu.ready
       this.current = menu
@@ -88,7 +87,6 @@ export class Clock {
       this._setUrl(`?clock=${name}`)
     }
 
-    this.navigating = false
     this.running = true
     this.tick()
   }
