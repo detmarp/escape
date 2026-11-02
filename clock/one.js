@@ -9,6 +9,10 @@ export class One {
   draw(now, ctx = this.ctx) {
     ctx.fillStyle = this.frame % 2 === 0 ? this.color : '#fff'
     ctx.fillRect(0, 0, 400, 400)
+    ctx.fillStyle = 'blue'
+    ctx.font = '100px monospace'
+    ctx.textAlign = 'left'
+    ctx.fillText(this.frame, 10, 110)
     this.frame++
   }
 }
