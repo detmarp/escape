@@ -4,11 +4,9 @@ const PADDING = 2
 const CHROME = (MARGIN + BORDER + PADDING) * 2
 
 export function setupSubScreen(goto) {
-  const subEl = document.getElementById('sub-screen')
-  const gridEl = document.getElementById('menu-grid')
-  gridEl.classList.remove('active')
+  const subEl = document.getElementById('app')
   subEl.innerHTML = ''
-  subEl.classList.add('active')
+  subEl.className = 'screen'
 
   const wrapper = document.createElement('div')
   wrapper.style.cssText = `
@@ -29,21 +27,21 @@ export function setupSubScreen(goto) {
   subEl.appendChild(wrapper)
   subEl.addEventListener('click', () => goto())
 
-  let lastSize = 0
+  canvas.width = 400
+  canvas.height = 400
 
-  return {
-    canvas,
-    resize() {
-      const vw = document.documentElement.clientWidth
-      const vh = window.innerHeight
-      const size = Math.min(vw, vh) - CHROME
-      if (size === lastSize) return
-      lastSize = size
-      wrapper.style.width = size + 'px'
-      canvas.width = Math.round(400 * devicePixelRatio)
-      canvas.height = Math.round(400 * devicePixelRatio)
-      canvas.style.width = size + 'px'
-      canvas.style.height = size + 'px'
-    }
+  let lastSize = 0
+  function resize() {
+    const vw = document.documentElement.clientWidth
+    const vh = window.innerHeight
+    const size = Math.min(vw, vh) - CHROME
+    if (size === lastSize) return
+    lastSize = size
+    wrapper.style.width = size + 'px'
+    canvas.style.width = size + 'px'
+    canvas.style.height = size + 'px'
   }
+  resize()
+
+  return { canvas, resize }
 }

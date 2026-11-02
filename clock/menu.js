@@ -9,11 +9,9 @@ export class Menu {
     this.screens = screens
     this.instances = []
 
-    this.gridEl = document.getElementById('menu-grid')
-    this.subEl = document.getElementById('sub-screen')
-    this.subEl.classList.remove('active')
+    this.gridEl = document.getElementById('app')
     this.gridEl.innerHTML = ''
-    this.gridEl.classList.add('active')
+    this.gridEl.className = 'menu'
 
     this._vw = 0
     this.ready = this._build(goto, screens)
@@ -24,11 +22,11 @@ export class Menu {
       const tile = document.createElement('div')
       tile.className = 'tile'
       const canvas = document.createElement('canvas')
-      canvas.width = Math.round(LOGICAL * devicePixelRatio)
-      canvas.height = Math.round(LOGICAL * devicePixelRatio)
+      canvas.width = LOGICAL
+      canvas.height = LOGICAL
       const ctx = canvas.getContext('2d')
       ctx.fillStyle = '#fff'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.fillRect(0, 0, LOGICAL, LOGICAL)
       tile.appendChild(canvas)
       tile.addEventListener('click', (e) => { e.stopPropagation(); goto(name) })
       this.gridEl.appendChild(tile)

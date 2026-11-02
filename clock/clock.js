@@ -1,4 +1,5 @@
 import { Menu } from './menu.js'
+import { setupSubScreen } from './subscreen.js'
 
 const SCREENS = [
   'one',
@@ -61,6 +62,7 @@ export class Clock {
 
   tick() {
     if (!this.running) return
+    if (this.resize) this.resize()
     if (this.current) this.current.draw(new Date())
     requestAnimationFrame(() => this.tick())
   }
@@ -72,14 +74,17 @@ export class Clock {
     this.current = null
 
     if (name === 'menu') {
+      this.resize = null
       const menu = new Menu(this.goto, SCREENS)
       await menu.ready
       this.current = menu
       this._setUrl(location.pathname)
     } else {
+      const { canvas, resize } = setupSubScreen(this.goto)
       const mod = await import(`./${name}.js`)
       const ScreenClass = Object.values(mod)[0]
-      this.current = new ScreenClass(this.goto, SCREENS)
+      this.current = new ScreenClass(this.goto, SCREENS, canvas)
+      this.resize = resize
       this._setUrl(`?clock=${name}`)
     }
 
