@@ -2,6 +2,7 @@
 
 A fun web app presenting many diffent clock variations.
 
+DO NOT ADD any comments to code
 
 ## phase 1 — skeleton (complete)
 
@@ -74,4 +75,20 @@ Pure refactor, no visible change.
 * width ~1000 - around here go to the max 6 columns, but the tile width will still be < 200
 * very wide window, > 1340 say - 6 columns with tiels at max 200 width
 
-## phse 5 - canvas
+## phase 5 — actual clock drawing (next)
+
+### architecture as-built
+* `clock.js` — single RAF, `goto(name)` stops loop, wipes DOM, builds screen, restarts
+* `menu.js` — builds tile grid, awaits all imports, then starts RAF. `draw(now)` passes each tile's `ctx` to its instance
+* `one.js` / `two.js` — `constructor(goto, screens)`, `draw(now, ctx)` — zero knowledge of canvas setup
+* `subscreen.js` — sets up `#app` as screen, creates wrapper+canvas, returns `{canvas, resize}`
+* `clock.js` owns ctx for subscreen, calls `resize()` each tick, passes ctx to `draw()`
+* All canvases are 400×400 logical pixels — `fillRect(0,0,400,400)` fills exactly
+
+### draw() contract
+* `draw(now, ctx)` — `now` is a `Date`, `ctx` is a 400×400 2D context
+* screens just draw — no sizing, no setup, no imports beyond their own logic
+
+### next
+* replace flicker test in `one.js` and `two.js` with real clock art
+* each clock is a self-contained 400×400 canvas drawing

@@ -54,6 +54,10 @@
 </head>
 <body>
   <div id="app"></div>
+  <script>
+    const p = new URLSearchParams(location.search).get('clock')
+    document.getElementById('app').style.background = p ? '#333' : '#8a9baa'
+  </script>
   <script type="module" src="main.js"></script>
 </body>
 </html>

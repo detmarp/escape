@@ -30,7 +30,7 @@ export class Menu {
       tile.appendChild(canvas)
       tile.addEventListener('click', (e) => { e.stopPropagation(); goto(name) })
       this.gridEl.appendChild(tile)
-      const mod = await import(`./${name}.js`)
+      const mod = await import(`./c-${name}.js`)
       const ScreenClass = Object.values(mod)[0]
       this.instances.push({ instance: new ScreenClass(goto, screens, canvas), ctx })
     }))

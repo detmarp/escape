@@ -2,44 +2,8 @@ import { Menu } from './menu.js'
 import { setupSubScreen } from './subscreen.js'
 
 const SCREENS = [
-  'one',
-  'two',
-  'one',
-  'two',
-  'one',
-  'two',
-  'one',
-  'two',
-  'one',
-  'two',
-  'one',
-  'two',
-  'one',
-  'two',
-  'one',
-  'two',
-  'one',
-  'two',
-  'one',
-  'two',
-  'one',
-  'two',
-  'one',
-  'two',
-  'one',
-  'two',
-  'one',
-  'two',
-  'one',
-  'two',
-  'one',
-  'two',
-  'one',
-  'two',
-  'one',
-  'two',
-  'one',
-  'two',
+  'basic',
+  'school',
   ]
 
 export class Clock {
@@ -64,7 +28,7 @@ export class Clock {
   tick() {
     if (!this.running) return
     if (this.resize) this.resize()
-    if (this.current) this.current.draw(new Date())
+    if (this.current) this.current.draw(new Date(), this.ctx)
     requestAnimationFrame(this.tick)
   }
 
@@ -72,6 +36,7 @@ export class Clock {
     this.running = false
     this.current = null
     this.resize = null
+    this.ctx = null
 
     if (name === 'menu') {
       const menu = new Menu(this.goto, SCREENS)
@@ -80,9 +45,10 @@ export class Clock {
       this._setUrl(location.pathname)
     } else {
       const { canvas, resize } = setupSubScreen(this.goto)
-      const mod = await import(`./${name}.js`)
+      const mod = await import(`./c-${name}.js`)
       const ScreenClass = Object.values(mod)[0]
-      this.current = new ScreenClass(this.goto, SCREENS, canvas)
+      this.current = new ScreenClass(this.goto, SCREENS)
+      this.ctx = canvas.getContext('2d')
       this.resize = resize
       this._setUrl(`?clock=${name}`)
     }
