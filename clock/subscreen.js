@@ -25,7 +25,7 @@ export function setupSubScreen(goto) {
 
   wrapper.appendChild(canvas)
   subEl.appendChild(wrapper)
-  subEl.addEventListener('click', () => goto())
+  subEl.onclick = () => goto()
 
   canvas.width = 400
   canvas.height = 400

@@ -35,10 +35,10 @@ export class Menu {
       this.instances.push({ instance: new ScreenClass(goto, screens, canvas), ctx })
     }))
 
-    this.gridEl.addEventListener('click', () => {
+    this.gridEl.onclick = () => {
       const name = screens[Math.floor(Math.random() * screens.length)]
       goto(name)
-    })
+    }
   }
 
   _layout() {
