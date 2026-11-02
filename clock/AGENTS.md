@@ -73,3 +73,5 @@ Pure refactor, no visible change.
 * width ~800 - maybe 5 columns, tiles approx 150 pixels, with decent margins and padding
 * width ~1000 - around here go to the max 6 columns, but the tile width will still be < 200
 * very wide window, > 1340 say - 6 columns with tiels at max 200 width
+
+## phse 5 - canvas

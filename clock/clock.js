@@ -45,40 +45,46 @@ export class Clock {
   constructor() {
     this.current = null
     this.goto = this.goto.bind(this)
+    this.running = false
   }
 
   run() {
     const param = new URLSearchParams(location.search).get('clock')
-    if (param && SCREENS.includes(param)) {
-      this.goto(param)
-    } else {
-      this.goto()
-    }
+    this.goto(param && SCREENS.includes(param) ? param : 'menu')
+  }
 
-    const tick = () => {
-      if (this.current) {
-        this.current.draw(new Date())
-      }
-      requestAnimationFrame(tick)
-    }
-    requestAnimationFrame(tick)
+  _setUrl(url) {
+    const current = location.search || location.pathname
+    const target = url.startsWith('?') ? url : location.pathname
+    if (current !== target) history.replaceState(null, '', url)
+  }
+
+  tick() {
+    if (!this.running) return
+    if (this.current) this.current.draw(new Date())
+    requestAnimationFrame(() => this.tick())
   }
 
   async goto(name = 'menu') {
+    if (this.navigating) return
+    this.navigating = true
+    this.running = false
+    this.current = null
+
     if (name === 'menu') {
-      this.current = new Menu(this.goto, SCREENS)
-      const target = location.pathname
-      if (location.href !== location.origin + target) {
-        history.replaceState(null, '', target)
-      }
+      const menu = new Menu(this.goto, SCREENS)
+      await menu.ready
+      this.current = menu
+      this._setUrl(location.pathname)
     } else {
       const mod = await import(`./${name}.js`)
       const ScreenClass = Object.values(mod)[0]
       this.current = new ScreenClass(this.goto, SCREENS)
-      const target = `?clock=${name}`
-      if (location.search !== target) {
-        history.replaceState(null, '', target)
-      }
+      this._setUrl(`?clock=${name}`)
     }
+
+    this.navigating = false
+    this.running = true
+    this.tick()
   }
 }

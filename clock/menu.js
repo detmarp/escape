@@ -16,22 +16,26 @@ export class Menu {
     this.gridEl.classList.add('active')
 
     this._vw = 0
+    this.ready = this._build(goto, screens)
+  }
 
-    screens.forEach(async (name) => {
+  async _build(goto, screens) {
+    await Promise.all(screens.map(async (name) => {
       const tile = document.createElement('div')
       tile.className = 'tile'
       const canvas = document.createElement('canvas')
       canvas.width = Math.round(LOGICAL * devicePixelRatio)
       canvas.height = Math.round(LOGICAL * devicePixelRatio)
+      const ctx = canvas.getContext('2d')
+      ctx.fillStyle = '#fff'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
       tile.appendChild(canvas)
-
       tile.addEventListener('click', (e) => { e.stopPropagation(); goto(name) })
       this.gridEl.appendChild(tile)
-
       const mod = await import(`./${name}.js`)
       const ScreenClass = Object.values(mod)[0]
-      this.instances.push({ name, instance: new ScreenClass(goto, screens, canvas) })
-    })
+      this.instances.push({ instance: new ScreenClass(goto, screens, canvas), ctx })
+    }))
 
     this.gridEl.addEventListener('click', () => {
       const name = screens[Math.floor(Math.random() * screens.length)]
@@ -53,6 +57,6 @@ export class Menu {
       this._vw = vw
       this._layout()
     }
-    this.instances.forEach(({ instance }) => instance.draw(now))
+    this.instances.forEach(({ instance, ctx }) => instance.draw(now, ctx))
   }
 }
